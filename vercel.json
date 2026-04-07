@@ -1,0 +1,39 @@
+{
+  "outputDirectory": "public",
+  "functions": {
+    "api/*.js": {
+      "memory": 256,
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/learn",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/sync",
+      "schedule": "0 5 * * *"
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    },
+    {
+      "source": "/widget.js",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    }
+  ]
+}
