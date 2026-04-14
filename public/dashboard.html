@@ -695,10 +695,22 @@ var ind=document.getElementById("refresh_ind");if(ind)ind.textContent="Auto-refr
 // === OPEN SESSION ===
 function openSession(sid){
 var modal=document.createElement("div");modal.className="modal-bg";
-modal.innerHTML='<div class="modal"><div class="modal-header"><h3>Session '+escHtml(sid.slice(0,16))+'</h3><button class="modal-close">&times;</button></div><div class="modal-body"><div class="modal-loading">Cargando...</div></div></div>';
+modal.innerHTML='<div class="modal"><div class="modal-header"><h3>Conversacion '+escHtml(sid.slice(0,16))+'</h3><button class="modal-close">&times;</button></div><div class="modal-body"><div class="modal-loading">Cargando...</div></div></div>';
 document.body.appendChild(modal);
 modal.querySelector(".modal-close").onclick=function(){modal.remove()};
 modal.onclick=function(e){if(e.target===modal)modal.remove()};
+// Try local data first (already loaded chats)
+var localMsgs=(stats&&stats.chats||[]).filter(function(c){return c.session===sid}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts)});
+if(localMsgs.length>0){
+var body=modal.querySelector(".modal-body");
+var html='';localMsgs.forEach(function(m){
+var t=m.ts?new Date(m.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+if(m.user)html+='<div class="modal-msg user">'+escHtml(m.user)+'<div class="msg-time">'+t+'</div></div>';
+if(m.bot)html+='<div class="modal-msg bot">'+escHtml(m.bot)+'<div class="msg-time">'+t+'</div></div>';
+});body.innerHTML=html;
+return;
+}
+// Fallback: fetch from API
 fetch("/api/stats?key="+encodeURIComponent(KEY)+"&session="+encodeURIComponent(sid))
 .then(function(r){return r.json()})
 .then(function(data){
