@@ -603,10 +603,9 @@ if(detectSentiment(c.user)==="negativo")sessionMap[sid].hasNeg=true;
 if(isDeliveryPlatform(c.user))sessionMap[sid].hasDelivery=true;
 });
 var rows='';
-sessionOrder.slice(0,80).forEach(function(sid){
+sessionOrder.slice(0,80).forEach(function(sid,idx){
 var s=sessionMap[sid];var m=s.msgs;
 var time=s.firstTs?new Date(s.firstTs).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-var topCat=Object.keys(s.cats).sort(function(a,b){return s.cats[b]-s.cats[a]})[0]||"general";
 var catTags='';Object.keys(s.cats).forEach(function(cat){catTags+='<span class="cat-tag cat-'+cat+'">'+cat+'</span> '});
 var badges='';
 if(s.hasNeg)badges+=' <span style="color:#dc2626;font-size:9px;font-weight:700">NEG</span>';
@@ -615,7 +614,14 @@ var firstUser=m[0]?m[0].user||"":"";
 var preview=searchQuery?highlightSearch(firstUser,searchQuery):escHtml(firstUser);
 var lastBot=m[m.length-1]?m[m.length-1].bot||"":"";
 var botPreview=searchQuery?highlightSearch(lastBot.slice(0,150),searchQuery):escHtml(lastBot.slice(0,150));
-rows+='<div class="chat-row'+(s.hasError?' style="background:rgba(220,38,38,.04)"':'')+'" data-session="'+escHtml(sid)+'"><div class="meta"><span class="time">'+time+' | '+sid.slice(0,12)+'</span><span style="font-size:9px;color:var(--muted);font-weight:700">'+m.length+' msgs</span> '+catTags+'</div><div class="user-msg">'+preview+badges+'</div><div class="bot-msg">'+botPreview+'</div></div>';
+// Build expanded messages HTML
+var msgsHtml='';
+m.sort(function(a,b){return new Date(a.ts)-new Date(b.ts)}).forEach(function(msg){
+var t=msg.ts?new Date(msg.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+if(msg.user)msgsHtml+='<div style="background:var(--navy);color:#fff;padding:8px 12px;border-radius:10px 10px 4px 10px;max-width:85%;margin-left:auto;margin-bottom:8px;font-size:12px;line-height:1.5">'+escHtml(msg.user)+'<div style="font-size:8px;opacity:.6;margin-top:3px">'+t+'</div></div>';
+if(msg.bot)msgsHtml+='<div style="background:var(--border2);color:var(--text);padding:8px 12px;border-radius:10px 10px 10px 4px;max-width:85%;margin-bottom:8px;font-size:12px;line-height:1.5">'+escHtml(msg.bot)+'<div style="font-size:8px;opacity:.6;margin-top:3px">'+t+'</div></div>';
+});
+rows+='<div class="chat-row'+(s.hasError?' style="background:rgba(220,38,38,.04)"':'')+'" onclick="var d=document.getElementById(\'sess_'+idx+'\');if(d){d.style.display=d.style.display===\'none\'?\'block\':\'none\'}"><div class="meta"><span class="time">'+time+' | '+sid.slice(0,12)+'</span><span style="font-size:9px;color:var(--muted);font-weight:700">'+m.length+' msgs</span> '+catTags+'</div><div class="user-msg">'+preview+badges+'</div><div class="bot-msg">'+botPreview+'</div><div id="sess_'+idx+'" style="display:none;padding:12px 0;border-top:1px solid var(--border);margin-top:8px">'+msgsHtml+'</div></div>';
 });
 return '<div class="section"><h2>Conversaciones <span class="badge-sm">'+sessionOrder.length+' sesiones</span></h2><div class="chat-list">'+rows+'</div></div>';
 }
