@@ -150,7 +150,7 @@ module.exports = async function handler(req, res) {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 2000,
       system: `Genera un informe ${period === "monthly" ? "mensual" : "semanal"} profesional del chatbot de BURGERJAZZ. El informe es para el equipo directivo.
 

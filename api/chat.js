@@ -703,7 +703,7 @@ module.exports = async function handler(req, res) {
       var fullText = "";
       try {
         const stream = client.messages.stream({
-          model: "claude-haiku-4-5-20251001",
+          model: "claude-haiku-4-5",
           max_tokens: 800,
           system: fullPrompt,
           messages: trimmed,
@@ -743,7 +743,7 @@ module.exports = async function handler(req, res) {
     // ═══ NON-STREAMING (standard) ═══
     const response = await withTimeout(
       client.messages.create({
-        model: "claude-haiku-4-5-20251001",
+        model: "claude-haiku-4-5",
         max_tokens: 800,
         system: fullPrompt,
         messages: trimmed,
