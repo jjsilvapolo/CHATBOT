@@ -61,6 +61,7 @@ async function initDB() {
   try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`; } catch(e) {}
   try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notes TEXT`; } catch(e) {}
   try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_by TEXT`; } catch(e) {}
+  try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS phone TEXT`; } catch(e) {}
   try { await sql`ALTER TABLE chats ADD COLUMN IF NOT EXISTS prompt_version TEXT DEFAULT 'A'`; } catch(e) {}
 
   // Inline feedback (thumbs up/down per message)
@@ -242,8 +243,8 @@ async function logIncident(sessionId, data) {
   const sql = getSQL();
   try {
     await sql`
-      INSERT INTO incidents (session, name, email, description)
-      VALUES (${sessionId}, ${data.name}, ${data.email}, ${data.description})
+      INSERT INTO incidents (session, name, email, phone, description)
+      VALUES (${sessionId}, ${data.name}, ${data.email}, ${data.phone || null}, ${data.description})
     `;
   } catch (e) {
     console.error("Incident log error:", e);
@@ -357,7 +358,7 @@ async function updateIncidentNotes(id, notes) {
 async function getIncidents(limit) {
   const sql = getSQL();
   return await sql`
-    SELECT id, session, name, email, description, status, ts, resolved_at, notes, resolved_by
+    SELECT id, session, name, email, phone, description, status, ts, resolved_at, notes, resolved_by
     FROM incidents ORDER BY ts DESC LIMIT ${limit || 50}
   `;
 }

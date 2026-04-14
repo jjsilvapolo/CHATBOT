@@ -51,11 +51,12 @@ Si el cliente tiene un problema que no puedes solucionar:
   1. Muestra empatia: "Entiendo, vamos a solucionarlo"
   2. Pide estos datos:
      - Nombre
-     - Email
+     - Email o telefono (al menos uno de los dos es OBLIGATORIO)
      - Breve descripcion del problema (si no la has entendido ya)
-  3. Cuando te los de, responde: "Listo, he registrado tu incidencia. El equipo de BurgerJazz te contactara a [email] lo antes posible. Tus datos se usaran solo para resolver esta incidencia. Sentimos las molestias!"
-  4. NO digas simplemente "escribe a info@burgerjazz.com". TU recoges los datos.
-  5. IMPORTANTE: Antes de pedir datos personales (nombre, email), informa brevemente: "Necesito tu nombre y email para gestionar la incidencia. Solo los usaremos para contactarte sobre este tema."
+  3. Si el cliente no da ni email ni telefono, INSISTE con amabilidad: "Necesito al menos un email o telefono para que el equipo pueda contactarte. Sin eso no puedo registrar la incidencia."
+  4. Cuando te los de, responde: "Listo, he registrado tu incidencia. El equipo de BurgerJazz te contactara lo antes posible. Tus datos se usaran solo para resolver esta incidencia. Sentimos las molestias!"
+  5. NO digas simplemente "escribe a info@burgerjazz.com". TU recoges los datos.
+  6. IMPORTANTE: Antes de pedir datos personales, informa brevemente: "Necesito tu nombre y un email o telefono para gestionar la incidencia. Solo los usaremos para contactarte sobre este tema."
 
 == CASOS FRECUENTES Y COMO RESOLVERLOS ==
 
@@ -243,6 +244,10 @@ function extractIncidentData(messages, botReply) {
   const emailMatch = allText.match(/[\w.+-]+@[\w.-]+\.\w{2,}/i);
   const email = emailMatch ? emailMatch[0] : null;
 
+  // Extraer telefono
+  const phoneMatch = allText.match(/(?:\+?34[\s.-]?)?[6-9]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}/);
+  const phone = phoneMatch ? phoneMatch[0].replace(/[\s.-]/g, "") : null;
+
   // Extraer nombre — buscar patrones comunes
   let name = null;
   const namePatterns = [
@@ -254,16 +259,14 @@ function extractIncidentData(messages, botReply) {
     if (m) { name = m[1].trim(); break; }
   }
 
-  // Si no encontramos por patron, buscar en el reply del bot (a veces repite el nombre)
   if (!name) {
     const botNameMatch = botReply.match(/contactar[áa]\s+a\s+([^.]+?)\s+(?:a|al|lo)/i);
     if (botNameMatch) name = botNameMatch[1].trim();
   }
 
-  // Descripcion: los mensajes del usuario que parecen quejas
   const description = userMsgs.join("\n");
 
-  return { name: name || "No proporcionado", email: email || "No proporcionado", description };
+  return { name: name || "No proporcionado", email: email || "No proporcionado", phone: phone || "No proporcionado", description };
 }
 
 function escHTML(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -288,6 +291,7 @@ async function sendIncidentEmail(data, sessionId) {
       <tr><td style="padding:8px 0;color:#6b7280;width:120px"><strong>Fecha:</strong></td><td>${escHTML(dateStr)}</td></tr>
       <tr><td style="padding:8px 0;color:#6b7280"><strong>Nombre:</strong></td><td>${escHTML(data.name)}</td></tr>
       <tr><td style="padding:8px 0;color:#6b7280"><strong>Email:</strong></td><td><a href="mailto:${escHTML(data.email)}">${escHTML(data.email)}</a></td></tr>
+      <tr><td style="padding:8px 0;color:#6b7280"><strong>Telefono:</strong></td><td>${data.phone && data.phone !== "No proporcionado" ? '<a href="tel:' + escHTML(data.phone) + '">' + escHTML(data.phone) + '</a>' : 'No proporcionado'}</td></tr>
       <tr><td style="padding:8px 0;color:#6b7280"><strong>Sesion:</strong></td><td style="font-family:monospace;font-size:12px">${escHTML(sessionId)}</td></tr>
     </table>
     <div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:6px;border-left:4px solid #dc2626">
