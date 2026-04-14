@@ -590,19 +590,34 @@ function chatsHTML(){
 var chats=getFilteredChats();
 if(filterCat!=="all")chats=chats.filter(function(c){return c.category===filterCat});
 if(!chats.length)return '<div class="section"><div class="chat-list"><div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Sin conversaciones</div></div></div>';
-var rows='';
-chats.slice(0,100).forEach(function(c){
-var time=c.ts?new Date(c.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-var isErr=c.category==="error"||c.category==="incidencia"||c.category==="pedido_incompleto";
-var sentiment=detectSentiment(c.user);
-var sentIcon=sentiment==="negativo"?' <span style="color:#dc2626;font-size:9px">NEG</span>':"";
-var isDelivery=isDeliveryPlatform(c.user);
-var delIcon=isDelivery?' <span style="font-size:9px;background:#fef3c7;color:#d97706;padding:1px 4px;border-radius:4px">DELIVERY</span>':"";
-var userHtml=searchQuery?highlightSearch(c.user||"",searchQuery):escHtml(c.user||"");
-var botHtml=searchQuery?highlightSearch((c.bot||"").slice(0,180),searchQuery):escHtml((c.bot||"").slice(0,180));
-rows+='<div class="chat-row'+(isErr?" style=\"background:rgba(220,38,38,.04)\"":"")+'" data-session="'+escHtml(c.session||"")+'"><div class="meta"><span class="time">'+time+' | '+((c.session||"").slice(0,12))+'</span><span class="cat-tag cat-'+(c.category||"general")+'">'+(c.category||"general")+'</span></div><div class="user-msg">'+userHtml+sentIcon+delIcon+'</div><div class="bot-msg">'+botHtml+'</div></div>';
+// Group by session
+var sessionMap={};var sessionOrder=[];
+chats.forEach(function(c){
+var sid=c.session||"unknown";
+if(!sessionMap[sid]){sessionMap[sid]={msgs:[],cats:{},firstTs:c.ts,lastTs:c.ts,hasError:false,hasNeg:false,hasDelivery:false};sessionOrder.push(sid)}
+sessionMap[sid].msgs.push(c);
+sessionMap[sid].lastTs=c.ts;
+if(c.category)sessionMap[sid].cats[c.category]=(sessionMap[sid].cats[c.category]||0)+1;
+if(c.category==="error"||c.category==="incidencia"||c.category==="pedido_incompleto")sessionMap[sid].hasError=true;
+if(detectSentiment(c.user)==="negativo")sessionMap[sid].hasNeg=true;
+if(isDeliveryPlatform(c.user))sessionMap[sid].hasDelivery=true;
 });
-return '<div class="section"><h2>Conversaciones <span class="badge-sm">'+chats.length+' resultados</span></h2><div class="chat-list">'+rows+'</div></div>';
+var rows='';
+sessionOrder.slice(0,80).forEach(function(sid){
+var s=sessionMap[sid];var m=s.msgs;
+var time=s.firstTs?new Date(s.firstTs).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+var topCat=Object.keys(s.cats).sort(function(a,b){return s.cats[b]-s.cats[a]})[0]||"general";
+var catTags='';Object.keys(s.cats).forEach(function(cat){catTags+='<span class="cat-tag cat-'+cat+'">'+cat+'</span> '});
+var badges='';
+if(s.hasNeg)badges+=' <span style="color:#dc2626;font-size:9px;font-weight:700">NEG</span>';
+if(s.hasDelivery)badges+=' <span style="font-size:9px;background:#fef3c7;color:#d97706;padding:1px 4px;border-radius:4px">DELIVERY</span>';
+var firstUser=m[0]?m[0].user||"":"";
+var preview=searchQuery?highlightSearch(firstUser,searchQuery):escHtml(firstUser);
+var lastBot=m[m.length-1]?m[m.length-1].bot||"":"";
+var botPreview=searchQuery?highlightSearch(lastBot.slice(0,150),searchQuery):escHtml(lastBot.slice(0,150));
+rows+='<div class="chat-row'+(s.hasError?' style="background:rgba(220,38,38,.04)"':'')+'" data-session="'+escHtml(sid)+'"><div class="meta"><span class="time">'+time+' | '+sid.slice(0,12)+'</span><span style="font-size:9px;color:var(--muted);font-weight:700">'+m.length+' msgs</span> '+catTags+'</div><div class="user-msg">'+preview+badges+'</div><div class="bot-msg">'+botPreview+'</div></div>';
+});
+return '<div class="section"><h2>Conversaciones <span class="badge-sm">'+sessionOrder.length+' sesiones</span></h2><div class="chat-list">'+rows+'</div></div>';
 }
 
 // === EVENTS ===
