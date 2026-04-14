@@ -557,16 +557,22 @@ var list=stats.incidents_list;if(!list||!list.length)return '';
 var pending=list.filter(function(i){return i.status!=="resolved"});
 var resolved=list.filter(function(i){return i.status==="resolved"});
 var html='<div class="section" id="incidents_section"><h2>Incidencias <span class="badge-sm">'+pending.length+' pendientes / '+resolved.length+' resueltas</span></h2><div class="chat-list">';
-list.slice(0,30).forEach(function(inc){
+// Pending first, then resolved
+var sorted=pending.concat(resolved);
+sorted.slice(0,30).forEach(function(inc){
 var time=inc.ts?new Date(inc.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
 var isRes=inc.status==="resolved";
 var statusBadge=isRes?'<span style="background:#dcfce7;color:#16a34a;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px">RESUELTA</span>':'<span style="background:#fee2e2;color:#dc2626;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px">PENDIENTE</span>';
 var resolvedInfo=isRes&&inc.resolved_at?' <span style="font-size:9px;color:var(--muted)">'+new Date(inc.resolved_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+'</span>':'';
 var resolvedBy=isRes&&inc.resolved_by?' por '+escHtml(inc.resolved_by):'';
-html+='<div class="chat-row" style="'+(isRes?"opacity:.5":"")+'"><div class="meta"><span class="time">'+time+' | '+statusBadge+resolvedInfo+resolvedBy+'</span></div>';
-html+='<div class="user-msg">'+escHtml(inc.name||"")+(inc.email&&inc.email!=="No proporcionado"?' — '+escHtml(inc.email):'')+(inc.phone&&inc.phone!=="No proporcionado"?' — Tel: '+escHtml(inc.phone):'')+'</div>';
+var contactParts=[];
+if(inc.name&&inc.name!=="No proporcionado")contactParts.push(escHtml(inc.name));
+if(inc.email&&inc.email!=="No proporcionado")contactParts.push(escHtml(inc.email));
+if(inc.phone&&inc.phone!=="No proporcionado")contactParts.push('Tel: '+escHtml(inc.phone));
+var contactLine=contactParts.length?contactParts.join(' — '):'<span style="color:#dc2626">Sin datos de contacto</span>';
+html+='<div class="chat-row" style="border-left:4px solid '+(isRes?"#16a34a":"#dc2626")+';'+(isRes?"opacity:.6":"")+'"><div class="meta"><span class="time">'+time+' | '+statusBadge+resolvedInfo+resolvedBy+'</span></div>';
+html+='<div class="user-msg">'+contactLine+'</div>';
 html+='<div class="bot-msg">'+escHtml((inc.description||"").slice(0,200))+'</div>';
-// Notes
 html+='<div class="inc-actions">';
 if(!isRes)html+='<button class="resolve-btn" data-id="'+inc.id+'" style="background:#16a34a;color:#fff">Resolver</button>';
 html+='<button class="notes-btn" data-id="'+inc.id+'" data-notes="'+escHtml(inc.notes||"")+'" style="background:var(--navy);color:#fff">Notas</button>';
