@@ -1,19 +1,7 @@
-const { initDB, saveRating } = require("./_db");
+const { initDB, logFeedback } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
-
-// Simple rate limit: max 5 ratings per session per minute
-const _rateBuckets = {};
-function checkRate(sid) {
-  var now = Date.now();
-  if (!_rateBuckets[sid] || now - _rateBuckets[sid].start > 60000) {
-    _rateBuckets[sid] = { start: now, count: 1 };
-    return true;
-  }
-  _rateBuckets[sid].count++;
-  return _rateBuckets[sid].count <= 5;
-}
 
 var ALLOWED_ORIGINS = [
   "https://burgerjazz.com", "https://www.burgerjazz.com",
@@ -26,6 +14,18 @@ function getCorsOrigin(req) {
   for (var i = 0; i < ALLOWED_ORIGINS.length; i++) { if (origin === ALLOWED_ORIGINS[i]) return origin; }
   if (/^https:\/\/burgerjazz-chatbot[a-z0-9-]*\.vercel\.app$/.test(origin)) return origin;
   return ALLOWED_ORIGINS[0];
+}
+
+// Rate limit: 30 feedbacks per session per minute
+var _feedbackBuckets = {};
+function checkRate(sid) {
+  var now = Date.now();
+  if (!_feedbackBuckets[sid] || now - _feedbackBuckets[sid].start > 60000) {
+    _feedbackBuckets[sid] = { start: now, count: 1 };
+    return true;
+  }
+  _feedbackBuckets[sid].count++;
+  return _feedbackBuckets[sid].count <= 30;
 }
 
 module.exports = async function handler(req, res) {
@@ -43,19 +43,21 @@ module.exports = async function handler(req, res) {
     dbReady = true;
   }
 
-  const { sessionId, rating } = req.body;
+  var { chatId, sessionId, vote } = req.body;
   if (!sessionId || typeof sessionId !== "string" || sessionId.length > 60) {
     return res.status(400).json({ error: "Invalid sessionId" });
   }
-  var r = parseInt(rating);
-  if (isNaN(r) || r < 1 || r > 5) {
-    return res.status(400).json({ error: "rating (1-5) required" });
+  if (!chatId || typeof chatId !== "string") {
+    return res.status(400).json({ error: "Invalid chatId" });
+  }
+  if (vote !== "up" && vote !== "down") {
+    return res.status(400).json({ error: "vote must be 'up' or 'down'" });
   }
 
   if (!checkRate(sessionId)) {
     return res.status(429).json({ error: "Too many requests" });
   }
 
-  await saveRating(sessionId, r);
+  await logFeedback(chatId, sessionId, vote);
   return res.status(200).json({ ok: true });
 };

@@ -9,6 +9,11 @@ function getSQL() {
   return _sql;
 }
 
+// Exported for reuse in other modules (report.js, etc.)
+function getSQLInstance() {
+  return getSQL();
+}
+
 async function initDB() {
   const sql = getSQL();
   await sql`
@@ -52,22 +57,63 @@ async function initDB() {
       active BOOLEAN DEFAULT true
     )
   `;
+  // Add columns for new features (safe if already exist)
+  try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`; } catch(e) {}
+  try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notes TEXT`; } catch(e) {}
+  try { await sql`ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_by TEXT`; } catch(e) {}
+  try { await sql`ALTER TABLE chats ADD COLUMN IF NOT EXISTS prompt_version TEXT DEFAULT 'A'`; } catch(e) {}
+
+  // Inline feedback (thumbs up/down per message)
+  await sql`
+    CREATE TABLE IF NOT EXISTS feedback (
+      id SERIAL PRIMARY KEY,
+      chat_id TEXT,
+      session TEXT,
+      vote TEXT CHECK (vote IN ('up', 'down')),
+      ts TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Indexes for performance
+  await sql`CREATE INDEX IF NOT EXISTS idx_chats_session ON chats(session)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_chats_ts ON chats(ts)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_chats_category ON chats(category)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ratings_session ON ratings(session)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_incidents_ts ON incidents(ts)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_insights_active ON insights(active, insight_type)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_feedback_session ON feedback(session)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)`;
 }
 
-async function logChat(sessionId, userMsg, botReply, category, tokens) {
+// Mask personal data (emails) in stored messages for privacy
+function maskPII(text) {
+  if (!text) return text;
+  // Mask emails: user@domain.com → u***@d***.com
+  return text.replace(/[\w.+-]+@[\w.-]+\.\w{2,}/gi, function (email) {
+    var parts = email.split("@");
+    var local = parts[0].charAt(0) + "***";
+    var domParts = parts[1].split(".");
+    var domain = domParts[0].charAt(0) + "***." + domParts.slice(1).join(".");
+    return local + "@" + domain;
+  });
+}
+
+async function logChat(sessionId, userMsg, botReply, category, tokens, promptVersion) {
   const sql = getSQL();
   const id = "c_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5);
   try {
+    // Mask PII in stored messages
+    var safeUserMsg = maskPII(userMsg);
+    var safeBotReply = maskPII(botReply);
     await sql`
-      INSERT INTO chats (id, session, user_msg, bot_msg, category, tokens_input, tokens_output)
-      VALUES (${id}, ${sessionId}, ${userMsg}, ${botReply}, ${category},
-              ${tokens?.input || 0}, ${tokens?.output || 0})
+      INSERT INTO chats (id, session, user_msg, bot_msg, category, tokens_input, tokens_output, prompt_version)
+      VALUES (${id}, ${sessionId}, ${safeUserMsg}, ${safeBotReply}, ${category},
+              ${tokens?.input || 0}, ${tokens?.output || 0}, ${promptVersion || 'A'})
     `;
-    // Borrar chats de mas de 1 año
-    await sql`DELETE FROM chats WHERE ts < NOW() - INTERVAL '365 days'`;
   } catch (e) {
     console.error("DB log error:", e);
   }
+  return id;
 }
 
 async function getChats(limit) {
@@ -256,4 +302,165 @@ async function getActiveSourceUpdate() {
   `;
 }
 
-module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate };
+async function cleanupOldChats() {
+  const sql = getSQL();
+  try {
+    const result = await sql`DELETE FROM chats WHERE ts < NOW() - INTERVAL '365 days'`;
+    return result;
+  } catch (e) {
+    console.error("Cleanup error:", e);
+  }
+}
+
+async function logFeedback(chatId, sessionId, vote) {
+  const sql = getSQL();
+  try {
+    await sql`INSERT INTO feedback (chat_id, session, vote) VALUES (${chatId}, ${sessionId}, ${vote})`;
+  } catch (e) {
+    console.error("Feedback log error:", e);
+  }
+}
+
+async function getFeedbackStats() {
+  const sql = getSQL();
+  const result = await sql`
+    SELECT vote, COUNT(*) as count FROM feedback GROUP BY vote
+  `;
+  var counts = { up: 0, down: 0 };
+  result.forEach(function (r) { counts[r.vote] = parseInt(r.count); });
+
+  // Per-category feedback
+  const catResult = await sql`
+    SELECT c.category, f.vote, COUNT(*) as count
+    FROM feedback f JOIN chats c ON f.chat_id = c.id
+    GROUP BY c.category, f.vote
+  `;
+  var byCat = {};
+  catResult.forEach(function (r) {
+    if (!byCat[r.category]) byCat[r.category] = { up: 0, down: 0 };
+    byCat[r.category][r.vote] = parseInt(r.count);
+  });
+
+  return { counts: counts, byCategory: byCat };
+}
+
+async function resolveIncident(id, resolvedBy) {
+  const sql = getSQL();
+  await sql`UPDATE incidents SET status = 'resolved', resolved_at = NOW(), resolved_by = ${resolvedBy || null} WHERE id = ${id}`;
+}
+
+async function updateIncidentNotes(id, notes) {
+  const sql = getSQL();
+  await sql`UPDATE incidents SET notes = ${notes} WHERE id = ${id}`;
+}
+
+async function getIncidents(limit) {
+  const sql = getSQL();
+  return await sql`
+    SELECT id, session, name, email, description, status, ts, resolved_at, notes, resolved_by
+    FROM incidents ORDER BY ts DESC LIMIT ${limit || 50}
+  `;
+}
+
+async function getRatingsTrend() {
+  const sql = getSQL();
+  const result = await sql`
+    SELECT TO_CHAR(ts, 'YYYY-MM-DD') as day, AVG(rating)::numeric(3,2) as avg, COUNT(*) as count
+    FROM ratings WHERE ts > NOW() - INTERVAL '30 days'
+    GROUP BY day ORDER BY day
+  `;
+  return result.map(function(r) { return { day: r.day, avg: parseFloat(r.avg), count: parseInt(r.count) }; });
+}
+
+async function getSessionResolutionStats() {
+  const sql = getSQL();
+  // Sessions with message counts and whether they were escalated
+  const result = await sql`
+    SELECT s.session, s.msg_count,
+           CASE WHEN e.session IS NOT NULL THEN true ELSE false END as escalated
+    FROM (SELECT session, COUNT(*) as msg_count FROM chats GROUP BY session) s
+    LEFT JOIN (
+      SELECT DISTINCT session FROM chats
+      WHERE bot_msg ILIKE '%registrado tu incidencia%' OR bot_msg ILIKE '%info@burgerjazz%'
+    ) e ON s.session = e.session
+  `;
+  var total = result.length;
+  var quickResolved = 0; // 1-2 messages, not escalated
+  var totalMsgs = 0;
+  var resolvedSessions = 0;
+  result.forEach(function(r) {
+    var mc = parseInt(r.msg_count);
+    totalMsgs += mc;
+    if (!r.escalated) {
+      resolvedSessions++;
+      if (mc <= 2) quickResolved++;
+    }
+  });
+  return {
+    totalSessions: total,
+    quickResolved: quickResolved,
+    quickResolvedPct: total > 0 ? Math.round(quickResolved / total * 100) : 0,
+    avgMsgsPerSession: total > 0 ? (totalMsgs / total).toFixed(1) : "0",
+    resolvedSessions: resolvedSessions
+  };
+}
+
+async function getABStats() {
+  const sql = getSQL();
+  const result = await sql`
+    SELECT c.prompt_version, COUNT(*) as chats,
+           AVG(r.rating)::numeric(3,2) as avg_rating,
+           COUNT(DISTINCT r.session) as rated_sessions
+    FROM chats c
+    LEFT JOIN ratings r ON c.session = r.session
+    WHERE c.prompt_version IS NOT NULL
+    GROUP BY c.prompt_version
+  `;
+  var stats = {};
+  result.forEach(function (r) {
+    stats[r.prompt_version] = {
+      chats: parseInt(r.chats),
+      avgRating: parseFloat(r.avg_rating || "0"),
+      ratedSessions: parseInt(r.rated_sessions)
+    };
+  });
+  return stats;
+}
+
+async function getAlertData() {
+  const sql = getSQL();
+  // Last 24h vs previous 24h
+  const current = await sql`
+    SELECT COUNT(*) as total, COUNT(DISTINCT session) as sessions,
+           COUNT(CASE WHEN category = 'error' THEN 1 END) as errors
+    FROM chats WHERE ts > NOW() - INTERVAL '24 hours'
+  `;
+  const previous = await sql`
+    SELECT COUNT(*) as total, COUNT(DISTINCT session) as sessions,
+           COUNT(CASE WHEN category = 'error' THEN 1 END) as errors
+    FROM chats WHERE ts > NOW() - INTERVAL '48 hours' AND ts <= NOW() - INTERVAL '24 hours'
+  `;
+  const escalations24h = await sql`
+    SELECT COUNT(DISTINCT session) as count FROM chats
+    WHERE ts > NOW() - INTERVAL '24 hours'
+      AND (bot_msg ILIKE '%registrado tu incidencia%' OR bot_msg ILIKE '%info@burgerjazz%'
+           OR bot_msg ILIKE '%no puedo resolver%')
+  `;
+  const avgRating24h = await sql`
+    SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as total FROM ratings
+    WHERE ts > NOW() - INTERVAL '24 hours'
+  `;
+  const avgRatingPrev = await sql`
+    SELECT AVG(rating)::numeric(3,2) as avg FROM ratings
+    WHERE ts > NOW() - INTERVAL '48 hours' AND ts <= NOW() - INTERVAL '24 hours'
+  `;
+  return {
+    current: { total: parseInt(current[0]?.total || 0), sessions: parseInt(current[0]?.sessions || 0), errors: parseInt(current[0]?.errors || 0) },
+    previous: { total: parseInt(previous[0]?.total || 0), sessions: parseInt(previous[0]?.sessions || 0), errors: parseInt(previous[0]?.errors || 0) },
+    escalations: parseInt(escalations24h[0]?.count || 0),
+    rating: { avg: parseFloat(avgRating24h[0]?.avg || 0), total: parseInt(avgRating24h[0]?.total || 0) },
+    ratingPrev: parseFloat(avgRatingPrev[0]?.avg || 0),
+  };
+}
+
+module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats };

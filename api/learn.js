@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, getRecentConversations, saveInsight, deactivateOldInsights } = require("./_db");
+const { initDB, getRecentConversations, saveInsight, deactivateOldInsights, cleanupOldChats } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -26,12 +26,12 @@ REGLAS:
 - Maximo 500 palabras total.`;
 
 module.exports = async function handler(req, res) {
-  // Auth: Vercel cron header or manual trigger with key
+  // Auth: Vercel cron header or manual trigger with key (env var required)
   const isCron = req.headers["x-vercel-cron"] === "true";
-  const authKey = process.env.LEARN_KEY || "bjlearn2024";
+  const authKey = process.env.LEARN_KEY;
   const providedKey = req.query?.key || req.headers["x-learn-key"];
 
-  if (!isCron && providedKey !== authKey) {
+  if (!isCron && (!authKey || providedKey !== authKey)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -100,6 +100,9 @@ module.exports = async function handler(req, res) {
       await deactivateOldInsights();
       await saveInsight("weekly_analysis", insightText, sessionKeys.slice(0, count).join(","));
     }
+
+    // Weekly cleanup: remove chats older than 1 year
+    await cleanupOldChats();
 
     return res.status(200).json({
       status: "ok",

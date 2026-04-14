@@ -1,19 +1,9 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, saveSourceUpdate } = require("./_db");
+const { CURRENT_KNOWLEDGE } = require("./_knowledge");
 
 let dbReady = false;
 let _dbInitPromise = null;
-
-// Current knowledge embedded in the system prompt (keep in sync with chat.js)
-const CURRENT_KNOWLEDGE = `BURGERS: BASIC JAZZ 9,95€ | BURGER JAZZ 13,95€ | ROYAL JAZZ 13,95€ | OLD JAZZ 14,95€ | BLUE JAZZ 13,95€ | MONTERREY JAZZ 14,95€ | BACON CHEESE JAZZ 13,95€
-COMBOS: COMBO JAZZ SOLO 13,95€ | MENU DIA 14,90€
-PATATAS: Basic 3,90€ | Spicy 3,90€ | Bacon Cheese 5,90€ | Truffle 5,90€
-SALSAS: Ketchup, Mostaza, Cheddar Jalapeno, BBQ, Truffle Mayo, Salsa BJ (1,50€, Truffle Mayo 1,90€)
-BATIDOS: Chocolate Belga, Galleta Maria, Vainilla Madagascar (5,90€)
-POSTRES: Nutella Candy Jazz, Pistachio Candy Jazz (4,90€)
-EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€ | +Jalapeno 0,50€
-LOCALES: Chamberi, Plaza Espana, Retiro, Delicias, Alcorcon, Majadahonda, Pozuelo, Mirasierra, Alcobendas, Valladolid
-CERRADOS: Malasana, CC Moraleja Green`;
 
 const SYNC_PROMPT = `Eres un verificador de datos para el chatbot de BURGERJAZZ. Tu trabajo es comparar la informacion que el chatbot tiene actualmente con la informacion real de la web.
 
@@ -67,10 +57,10 @@ async function fetchPage(url) {
 
 module.exports = async function handler(req, res) {
   const isCron = req.headers["x-vercel-cron"] === "true";
-  const authKey = process.env.LEARN_KEY || "bjlearn2024";
+  const authKey = process.env.LEARN_KEY;
   const providedKey = req.query?.key || req.headers["x-learn-key"];
 
-  if (!isCron && providedKey !== authKey) {
+  if (!isCron && (!authKey || providedKey !== authKey)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -82,16 +72,18 @@ module.exports = async function handler(req, res) {
 
   try {
     // Fetch key pages from burgerjazz.com
-    const [menuPage, mainPage, allergenPage] = await Promise.all([
+    const [menuPage, mainPage, allergenPage, ayudaPage] = await Promise.all([
       fetchPage("https://www.burgerjazz.com/menu"),
       fetchPage("https://www.burgerjazz.com"),
       fetchPage("https://www.burgerjazz.com/alergenos-burgerjazz"),
+      fetchPage("https://www.burgerjazz.com/ayuda"),
     ]);
 
     const webContent = [
       menuPage ? "=== PAGINA MENU ===\n" + menuPage : "",
       mainPage ? "=== PAGINA PRINCIPAL ===\n" + mainPage : "",
       allergenPage ? "=== PAGINA ALERGENOS ===\n" + allergenPage : "",
+      ayudaPage ? "=== PAGINA AYUDA (HORARIOS/FAQ) ===\n" + ayudaPage : "",
     ].filter(Boolean).join("\n\n");
 
     if (webContent.length < 100) {
