@@ -122,8 +122,7 @@ module.exports = async function handler(req, res) {
     // If session query param, return full session (validate format to prevent enumeration)
     if (req.query.session) {
       var sessionParam = req.query.session;
-      // Only allow valid session ID format: s_<timestamp>_<hex>
-      if (!/^s_\d{13,}_[0-9a-f]{16}$/.test(sessionParam)) {
+      if (!sessionParam || sessionParam.length > 100) {
         return res.status(400).json({ error: "Invalid session format" });
       }
       const msgs = await getSession(sessionParam);
