@@ -9,8 +9,10 @@ SALSAS: Ketchup, Mostaza, Cheddar Jalapeno, BBQ, Truffle Mayo, Salsa BJ (1,50€
 BATIDOS: Chocolate Belga, Galleta Maria, Vainilla Madagascar (5,90€)
 POSTRES: Nutella Candy Jazz, Pistachio Candy Jazz (4,90€)
 EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€ | +Jalapeno 0,50€
-LOCALES: Chamberi, Plaza Espana, Retiro, Delicias, Alcorcon, Majadahonda, Pozuelo, Mirasierra, Alcobendas, Valladolid
-CERRADOS: Malasana, CC Moraleja Green
+LOCALES: Chamberi, Plaza Espana, Retiro, Delicias, Alcorcon, Majadahonda, Pozuelo, Mirasierra, Alcobendas, Valladolid, Moraleja Green
+CERRADOS: Malasana
+DELIVERY PROPIO: pedidos.burgerjazz.com — Chamberi, Retiro, Delicias, Plaza Espana, Mirasierra (min 25€, envio 2,99€, radio 3km)
+SIN GLUTEN: Chamberi (Basic Jazz, Burger Jazz, Royal Jazz sin gluten)
 HORARIOS:
 - Plaza Espana (Fomento): L-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-0:00
 - Delicias: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-0:00

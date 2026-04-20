@@ -72,11 +72,13 @@ module.exports = async function handler(req, res) {
 
   try {
     // Fetch key pages from burgerjazz.com
-    const [menuPage, mainPage, allergenPage, ayudaPage] = await Promise.all([
+    const [menuPage, mainPage, allergenPage, ayudaPage, localesPage, pideYaPage] = await Promise.all([
       fetchPage("https://www.burgerjazz.com/menu"),
       fetchPage("https://www.burgerjazz.com"),
       fetchPage("https://www.burgerjazz.com/alergenos-burgerjazz"),
       fetchPage("https://www.burgerjazz.com/ayuda"),
+      fetchPage("https://www.burgerjazz.com/locales"),
+      fetchPage("https://pedidos.burgerjazz.com"),
     ]);
 
     const webContent = [
@@ -84,6 +86,8 @@ module.exports = async function handler(req, res) {
       mainPage ? "=== PAGINA PRINCIPAL ===\n" + mainPage : "",
       allergenPage ? "=== PAGINA ALERGENOS ===\n" + allergenPage : "",
       ayudaPage ? "=== PAGINA AYUDA (HORARIOS/FAQ) ===\n" + ayudaPage : "",
+      localesPage ? "=== PAGINA LOCALES ===\n" + localesPage : "",
+      pideYaPage ? "=== DELIVERY PROPIO ===\n" + pideYaPage : "",
     ].filter(Boolean).join("\n\n");
 
     if (webContent.length < 100) {
