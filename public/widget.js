@@ -458,7 +458,7 @@
       scrollBottom();
     }
     // When closing: show farewell + rating
-    if (!isOpen && userMsgCount >= 2) {
+    if (!isOpen && userMsgCount >= 1) {
       if (!hasRated) showRating();
     }
   }
@@ -526,10 +526,12 @@
         replies: [LANG === "en" ? "See the menu" : "Ver la carta", LANG === "en" ? "Opening hours" : "Horarios de mi local", LANG === "en" ? "Help me choose" : "Ayudame a elegir"]
       };
     }
-    // Default
+    // Default — clear options to reduce "general" category
     return {
       msg: t("welcome"),
-      replies: [t("quickOrder"), t("quickHelp"), LANG === "en" ? "Help me choose a burger" : "Ayudame a elegir burger"]
+      replies: LANG === "en"
+        ? ["Order now", "Menu & prices", "Find a location", "Help with my order"]
+        : ["Quiero pedir", "Ver carta y precios", "Locales cerca", "Problema con mi pedido"]
     };
   }
 
@@ -952,7 +954,7 @@
   // CONVERSATION END DETECTION
   // ═══════════════════════════════════════
   var _inactivityTimer = null;
-  var INACTIVITY_DELAY = 90000; // 90 seconds
+  var INACTIVITY_DELAY = 45000; // 45 seconds — faster rating prompt
 
   // Patterns that indicate the bot has resolved/closed the conversation
   var END_PATTERNS_BOT = /\b(listo|resuelto|tema resuelto|cualquier cosa aqu[ií]|estamos aqu[ií]|lo dicho|buen provecho|a disfrutar|que aproveche|nos vemos|pasa buen|cuídate|disfruta|que vaya bien|de nada|no hay de qu[eé]|encantado de ayudar|me alegro de haberte ayudado|aqu[ií] estamos para lo que necesites|si necesitas algo m[áa]s|ha quedado registrad|he registrado tu incidencia)\b/i;
@@ -961,15 +963,14 @@
   var END_PATTERNS_USER = /\b(gracias|grax|thx|thanks|thank you|perfecto|genial|vale|ok|adi[oó]s|bye|hasta luego|chao|nos vemos|eso es todo|ya est[áa]|nada m[áa]s|era eso)\b/i;
 
   function checkConversationEnd(botReply) {
-    if (hasRated || userMsgCount < 2) return;
+    if (hasRated || userMsgCount < 1) return;
     clearInactivityTimer();
 
     // Check if bot response signals resolution
     if (END_PATTERNS_BOT.test(botReply)) {
-      // Show rating after a short delay so the user reads the message
       setTimeout(function () {
         if (!hasRated) showRating();
-      }, 2500);
+      }, 1500);
       return;
     }
 
@@ -978,19 +979,19 @@
     if (lastUser && END_PATTERNS_USER.test(lastUser.content)) {
       setTimeout(function () {
         if (!hasRated) showRating();
-      }, 2000);
+      }, 1500);
       return;
     }
 
-    // Start inactivity timer — if no new messages in 90s, show rating
+    // Start inactivity timer
     startInactivityTimer();
   }
 
   function startInactivityTimer() {
     clearInactivityTimer();
-    if (hasRated || userMsgCount < 2) return;
+    if (hasRated || userMsgCount < 1) return;
     _inactivityTimer = setTimeout(function () {
-      if (!hasRated && userMsgCount >= 2 && isOpen) showRating();
+      if (!hasRated && userMsgCount >= 1 && isOpen) showRating();
     }, INACTIVITY_DELAY);
   }
 

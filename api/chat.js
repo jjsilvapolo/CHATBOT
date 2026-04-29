@@ -85,9 +85,9 @@ Si el cliente tiene un problema que no puedes solucionar:
      - Email o telefono (al menos uno de los dos es OBLIGATORIO)
      - Breve descripcion del problema (si no la has entendido ya)
   3. Si el cliente no da ni email ni telefono, INSISTE con amabilidad: "Necesito al menos un email o telefono para que el equipo pueda contactarte. Sin eso no puedo registrar la incidencia."
-  4. Cuando te los de, responde: "Listo, he registrado tu incidencia. El equipo de BurgerJazz te contactara lo antes posible. Tus datos se usaran solo para resolver esta incidencia. Sentimos las molestias!"
+  4. Cuando te los de, responde: "Listo, he registrado tu incidencia. El equipo de BurgerJazz te contactara en un plazo maximo de 24-48 horas. Tus datos se usaran unicamente para resolver esta incidencia. Sentimos las molestias!"
   5. NO digas simplemente "escribe a info@burgerjazz.com". TU recoges los datos.
-  6. IMPORTANTE: Antes de pedir datos personales, informa brevemente: "Necesito tu nombre y un email o telefono para gestionar la incidencia. Solo los usaremos para contactarte sobre este tema."
+  6. IMPORTANTE: Antes de pedir datos personales, informa brevemente: "Para gestionar tu incidencia necesito tu nombre y un email o telefono. Solo los usaremos para contactarte sobre este tema y te responderemos en 24-48h."
 
 == CASOS FRECUENTES Y COMO RESOLVERLOS ==
 
@@ -171,6 +171,7 @@ CASO 10: POST-RESOLUCION / DESPEDIDA
 - Los locales SIN delivery propio (Alcorcon, Majadahonda, Pozuelo, Alcobendas, Moraleja Green, Valladolid): recomienda recoger en local (pick-up) via burgerjazz.com/pide-ya.
 - La web https://burgerjazz.com/pide-ya es para pedir y RECOGER en el local (pick-up). Para delivery propio a domicilio: pedidos.burgerjazz.com
 - NO aceptamos reservas. Eventos grandes: info@burgerjazz.com
+- JAZZFRIENZZ: NO tienes acceso al sistema de puntos. NUNCA ofrezcas consultar saldo, puntos acumulados ni canjear recompensas. Si preguntan por su saldo o puntos, responde: "Para consultar tus puntos JazzFrienzz escanea el QR en cualquiera de nuestros locales o pregunta en barra, ahi te lo pueden mirar al momento." Puedes explicar que ES el programa (acumulas puntos con cada pedido en local o web, promos semanales) pero NUNCA prometas acciones que no puedes hacer.
 - No inventes info. Si no sabes algo, ESCALA.
 - Temas fuera de BurgerJazz: responde con humor y redirige. Ejemplos: "Uf, eso no es lo mio, yo solo entiendo de smash burgers. Pero si te apetece una, aqui estoy 🍔" o "Se me escapa esa, pero si quieres saber que burger te pega mas, ahi si que soy experto"
 
@@ -256,7 +257,7 @@ Redes: Instagram @burger_jazz, TikTok @burgerjazz` }
 // Knowledge cache (5 min TTL)
 let _knowledgeCache = null;
 let _knowledgeCacheTs = 0;
-const KNOWLEDGE_TTL = 5 * 60 * 1000;
+const KNOWLEDGE_TTL = 2 * 60 * 1000; // 2 min cache for faster updates
 
 async function buildSystemPrompt() {
   var now = Date.now();
@@ -277,21 +278,24 @@ async function buildSystemPrompt() {
 
 function detectCategory(text) {
   var t = (text || "").toLowerCase();
-  if (/donde.*(mi|esta|va).*pedido|no.*(llega|ha llegado)|seguimiento|tracking|tarda|tardando|retraso|cuanto.*(tarda|falta)/i.test(t)) return "seguimiento";
-  if (/falta|incompleto|no.*(viene|vino|incluye)|me.falta|producto.que.no/i.test(t)) return "pedido_incompleto";
-  if (/alerg|gluten|intoler|celiac|lactosa|huevo|soja|frutos.secos/i.test(t)) return "alergenos";
+  if (/donde.*(mi|esta|va).*pedido|no.*(llega|ha llegado)|seguimiento|tracking|tarda|tardando|retraso|cuanto.*(tarda|falta)|estado.*pedido/i.test(t)) return "seguimiento";
+  if (/falta|incompleto|no.*(viene|vino|incluye)|me.falta|producto.que.no|equivocad/i.test(t)) return "pedido_incompleto";
+  if (/alerg|gluten|intoler|celiac|lactosa|huevo|soja|frutos.secos|sin.lactosa/i.test(t)) return "alergenos";
   if (/factur|ticket|recibo|comprobante/i.test(t)) return "facturas";
-  if (/horari|hora.*abr|hora.*cierr|abierto|cerrado|cuando.abr/i.test(t)) return "horarios";
-  if (/local|direcci|donde.esta|ubicaci|como.llego|cerca/i.test(t)) return "locales";
-  if (/carta|menu|burger|hambur|patata|batido|postre|precio|combo|ingrediente|diferencia|que.lleva|que.tiene/i.test(t)) return "carta";
-  if (/pedir|pedido|delivery|uber|glovo|domicilio|envio|llevar|pide.ya/i.test(t)) return "pedidos";
-  if (/queja|incidencia|problema|reclamaci|devoluci|reembolso|mal.estado|frio|asco|asqueroso|mal/i.test(t)) return "incidencia";
-  if (/jazz.?day|promo|2x1|oferta|descuento|fideliz|jazzfrienzz|punto/i.test(t)) return "promos";
-  if (/reserv|evento|grupo|cater/i.test(t)) return "reservas";
-  if (/trabaj|empleo|curriculum|cv|job/i.test(t)) return "empleo";
-  if (/pago|tarjeta|efectivo|bizum|visa/i.test(t)) return "pagos";
-  if (/vegan|vegetarian|embaraz|dieta|sin.gluten/i.test(t)) return "dieta";
-  if (/recomiend|no.se.que.pedir|que.me.pido|cual.es.la.mejor|favorit|ayud.*elegir|suger/i.test(t)) return "recomendacion";
+  if (/horari|hora.*abr|hora.*cierr|abierto|cerrado|cuando.abr|a.que.hora|que.hora|abren|cierran|lunes|martes|miercoles|jueves|viernes|sabado|domingo/i.test(t)) return "horarios";
+  if (/local|direcci|donde.esta|ubicaci|como.llego|cerca|en.chamberi|en.retiro|en.delicias|en.pozuelo|en.majadahonda|en.alcorcon|en.mirasierra|en.alcobendas|en.valladolid|moraleja|plaza.espa/i.test(t)) return "locales";
+  if (/carta|menu|burger|hambur|patata|batido|postre|precio|combo|ingrediente|diferencia|que.lleva|que.tiene|old.jazz|blue.jazz|royal|basic.jazz|monterrey|bacon.cheese|truffle|shake|candy/i.test(t)) return "carta";
+  if (/pedir|pedido|delivery|uber|glovo|domicilio|envio|llevar|pide.ya|como.pido|quiero.pedir|hacer.un.pedido|recoger|pick.?up/i.test(t)) return "pedidos";
+  if (/queja|incidencia|problema|reclamaci|devoluci|reembolso|mal.estado|frio|asco|asqueroso|decepcion|horrible|inaceptable|lamentable|fatal|desastre/i.test(t)) return "incidencia";
+  if (/jazz.?day|promo|2x1|oferta|descuento|fideliz|jazzfrienzz|punto|cupon|codigo/i.test(t)) return "promos";
+  if (/reserv|evento|grupo|cater|cumple|celebra/i.test(t)) return "reservas";
+  if (/trabaj|empleo|curriculum|cv|job|contratar/i.test(t)) return "empleo";
+  if (/pago|tarjeta|efectivo|bizum|visa|apple.pay|google.pay/i.test(t)) return "pagos";
+  if (/vegan|vegetarian|embaraz|dieta|sin.gluten|celiac|intolerancia/i.test(t)) return "dieta";
+  if (/recomiend|no.se.que.pedir|que.me.pido|cual.es.la.mejor|favorit|ayud.*elegir|suger|que.tal|merece.la.pena|esta.buena/i.test(t)) return "recomendacion";
+  if (/hola|buenas|buenos.dias|buenas.tardes|buenas.noches|hey|hi|hello/i.test(t)) return "saludo";
+  if (/gracias|adios|hasta.luego|bye|chao|vale.gracias|ok.gracias|perfecto.gracias/i.test(t)) return "despedida";
+  if (/wifi|perro|mascota|pet|ni[ñn]o|infantil|silla|trona|accesib|parking|aparcamiento/i.test(t)) return "servicios";
   return "general";
 }
 
@@ -410,11 +414,14 @@ function getSuggestedReplies(category, botReply) {
     horarios: ["Horario de hoy", "Abris los domingos?"],
     pedidos: ["Quiero pedir para recoger", "Haceis delivery?", "Cual es la web?"],
     incidencia: ["Fue por Uber Eats", "Fue por Glovo", "Fue en el local", "Quiero poner una reclamacion"],
-    promos: ["Que es JAZZFRIENZZ?", "Cuando son los Jazz Days?"],
+    promos: ["Que es JAZZFRIENZZ?", "Cuando son los Jazz Days?", "Teneis algun descuento?"],
     recomendacion: ["Me va lo clasico", "Quiero algo intenso", "Sorprendeme"],
     reservas: [],
     empleo: [],
-    general: ["Ver la carta", "Locales cerca de mi", "Ayudame a elegir burger"],
+    saludo: ["Ver la carta", "Donde teneis locales?", "Quiero hacer un pedido", "Horarios", "Teneis ofertas?"],
+    despedida: [],
+    servicios: [],
+    general: ["Ver la carta", "Donde teneis locales?", "Quiero hacer un pedido", "Horarios", "Ayudame a elegir burger"],
   };
 
   return suggestions[category] || suggestions.general;
