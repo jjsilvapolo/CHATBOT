@@ -4,6 +4,25 @@ const { initDB, getStats, getSession, getRatings, getFeedbackStats, getIncidents
 let dbReady = false;
 let _dbInitPromise = null;
 
+// Multi-user auth: DASHBOARD_USERS env var is JSON like {"Marta":"pass1","Nacho":"pass2","Manuel":"pass3"}
+// Falls back to DASHBOARD_KEY for backwards compatibility
+function validateDashKey(rawKey) {
+  if (!rawKey) return false;
+  // New format: "user:password"
+  var parts = rawKey.split(":");
+  if (parts.length >= 2) {
+    var user = parts[0];
+    var pass = parts.slice(1).join(":");
+    try {
+      var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
+      if (users[user] && users[user] === pass) return true;
+    } catch(e) {}
+  }
+  // Fallback: single shared key
+  if (rawKey === process.env.DASHBOARD_KEY) return true;
+  return false;
+}
+
 // Cache credit check for 1 hour to avoid wasting tokens on every dashboard load
 let _creditCache = null;
 let _creditCacheTs = 0;
@@ -86,7 +105,7 @@ module.exports = async function handler(req, res) {
     var clientIPP = getClientIP(req);
     if (!checkBruteForce(clientIPP)) return res.status(429).json({ error: "Too many attempts" });
     const postAuthKey = req.body?.key || req.headers.authorization?.replace("Bearer ", "");
-    if (postAuthKey !== process.env.DASHBOARD_KEY) { recordFailedAttempt(clientIPP); return res.status(401).json({ error: "Unauthorized" }); }
+    if (!validateDashKey(postAuthKey)) { recordFailedAttempt(clientIPP); return res.status(401).json({ error: "Unauthorized" }); }
     clearAttempts(clientIPP);
 
     if (req.body?.action === "resolve_incident" && req.body?.incidentId) {
@@ -126,7 +145,7 @@ module.exports = async function handler(req, res) {
   }
 
   const authKey = req.query.key || req.headers.authorization?.replace("Bearer ", "") || req.headers["x-dashboard-key"];
-  if (authKey !== process.env.DASHBOARD_KEY) {
+  if (!validateDashKey(authKey)) {
     recordFailedAttempt(clientIP);
     return res.status(401).json({ error: "Unauthorized" });
   }

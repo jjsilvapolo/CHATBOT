@@ -165,6 +165,7 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);min-he
 <script>
 (function(){
 var KEY=localStorage.getItem("bj_dash_key")||"";
+var CURRENT_USER_INIT=localStorage.getItem("bj_dash_user")||"";
 var stats=null;
 var filterCat="all";
 var filterLocal="all";
@@ -212,11 +213,17 @@ bindEvents();
 startAutoRefresh();
 }
 
+var CURRENT_USER="";
 function loginHTML(){
-return '<div class="login"><div class="login-box"><h2>BURGERJAZZ Dashboard</h2><p style="font-size:12px;color:var(--muted);margin-bottom:16px">Introduce la clave del dashboard</p><input id="key_input" type="password" placeholder="Dashboard key..."><button id="key_btn">Entrar</button></div></div>';
+return '<div class="login"><div class="login-box"><h2>BURGERJAZZ Dashboard</h2><p style="font-size:12px;color:var(--muted);margin-bottom:16px">Introduce tu usuario y clave</p><input id="user_input" type="text" placeholder="Usuario..." style="margin-bottom:8px"><input id="key_input" type="password" placeholder="Clave..."><button id="key_btn">Entrar</button></div></div>';
 }
 function bindLogin(){
-setTimeout(function(){var b=document.getElementById("key_btn");var i=document.getElementById("key_input");if(b)b.onclick=function(){KEY=i.value.trim();localStorage.setItem("bj_dash_key",KEY);render()};if(i)i.onkeydown=function(e){if(e.key==="Enter")b.click()}},50);
+setTimeout(function(){var b=document.getElementById("key_btn");var u=document.getElementById("user_input");var i=document.getElementById("key_input");if(b)b.onclick=function(){
+var user=u.value.trim();var pass=i.value.trim();
+if(!user||!pass){alert("Introduce usuario y clave");return}
+KEY=user+":"+pass;localStorage.setItem("bj_dash_key",KEY);CURRENT_USER=user;localStorage.setItem("bj_dash_user",user);render()};
+if(i)i.onkeydown=function(e){if(e.key==="Enter")b.click()};
+if(u)u.onkeydown=function(e){if(e.key==="Enter")i.focus()}},50);
 }
 
 function headerHTML(){
@@ -642,7 +649,7 @@ return '<div class="section"><h2>Conversaciones <span class="badge-sm">'+session
 function bindEvents(){
 setTimeout(function(){
 var r=document.getElementById("btn_refresh");if(r)r.onclick=function(){stats=null;render()};
-var l=document.getElementById("btn_logout");if(l)l.onclick=function(){KEY="";localStorage.removeItem("bj_dash_key");stats=null;render()};
+var l=document.getElementById("btn_logout");if(l)l.onclick=function(){KEY="";CURRENT_USER="";localStorage.removeItem("bj_dash_key");localStorage.removeItem("bj_dash_user");stats=null;render()};
 var rw=document.getElementById("btn_report_week");if(rw)rw.onclick=function(){generateReport("weekly")};
 var rm=document.getElementById("btn_report_month");if(rm)rm.onclick=function(){generateReport("monthly")};
 var ex=document.getElementById("btn_export_csv");if(ex)ex.onclick=exportCSV;
@@ -885,9 +892,8 @@ return outputArray;
 
 function subscribePush(){
 if(!("serviceWorker" in navigator)||!("PushManager" in window)){alert("Tu navegador no soporta notificaciones push");return}
-// Ask user name
-var userName=prompt("Selecciona tu nombre:\n"+PUSH_USERS.join(", "));
-if(!userName||PUSH_USERS.indexOf(userName)===-1){alert("Nombre no valido. Usa: "+PUSH_USERS.join(", "));return}
+var userName=CURRENT_USER||CURRENT_USER_INIT||localStorage.getItem("bj_dash_user")||"";
+if(!userName){alert("Inicia sesion primero");return}
 // Get VAPID key from server
 fetch("/api/push?key="+KEY).then(function(r){return r.json()}).then(function(data){
 if(!data.vapidPublicKey){alert("Error: VAPID no configurado");return}

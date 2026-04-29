@@ -7,6 +7,19 @@ let _dbInitPromise = null;
 
 function getSQL() { return neon(process.env.DATABASE_URL); }
 
+function validatePushKey(rawKey) {
+  if (!rawKey) return false;
+  var parts = rawKey.split(":");
+  if (parts.length >= 2) {
+    try {
+      var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
+      if (users[parts[0]] && users[parts[0]] === parts.slice(1).join(":")) return true;
+    } catch(e) {}
+  }
+  if (rawKey === process.env.DASHBOARD_KEY) return true;
+  return false;
+}
+
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 
@@ -34,7 +47,7 @@ module.exports = async function handler(req, res) {
   }
 
   var key = req.body?.key || req.query?.key;
-  if (key !== process.env.DASHBOARD_KEY) {
+  if (!validatePushKey(key)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
