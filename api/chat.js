@@ -216,7 +216,7 @@ PROMOCIONES Y DESCUENTOS — REGLA IMPORTANTE:
 - Nuestros codigos de descuento NO son validos en Glovo ni en Uber Eats. NUNCA.
 - Si el cliente pregunta por promos en Glovo o Uber Eats, responde: "Las promos de Glovo y Uber las gestionan ellos directamente, consultalas en la app."
 - JAZZFRIENZZ: puntos por pedido, promos semanales, QR en local (solo local y web).
-- JAZZ DAYS: miercoles 2x1 burgers (solo dine-in y take-away en local, NO aplica en delivery).
+- JAZZ DAYS: miercoles 2x1 burgers en TODOS los locales sin excepcion (Madrid, Valladolid, Alcorcon, Majadahonda, Pozuelo, etc.). Solo dine-in y take-away, NO aplica en delivery. Si un cliente pregunta si hay 2x1 en su local, la respuesta es SIEMPRE SI.
 PAGOS: Tarjeta, efectivo, Apple Pay, Google Pay. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
 Pet-friendly todos los locales. No reservas (eventos: info@burgerjazz.com). Empleo: jobs.burgerjazz.com
 Redes: Instagram @burger_jazz, TikTok @burgerjazz`;
@@ -476,7 +476,7 @@ function getOfflineFallback(text, category) {
     return "Puedes pedir en local, por Uber Eats o Glovo (delivery), o por nuestra web burgerjazz.com/pide-ya para recoger en tienda (pick-up).";
   }
   if (category === "promos") {
-    return "JAZZ DAYS: miercoles 2x1 en local. JAZZFRIENZZ: acumula puntos con cada pedido en local o web. Las promos BurgerJazz solo aplican en local y web, no en Glovo ni Uber Eats.";
+    return "JAZZ DAYS: miercoles 2x1 en TODOS los locales sin excepcion (incluido Valladolid, Alcorcon, Pozuelo, etc.). Solo dine-in y take-away, no delivery. JAZZFRIENZZ: acumula puntos con cada pedido en local o web. Las promos BurgerJazz solo aplican en local y web, no en Glovo ni Uber Eats.";
   }
   if (category === "alergenos") {
     return "Todos nuestros alergenos estan en burgerjazz.com/alergenos-burgerjazz. Si tienes alguna alergia concreta, consultanos y te indicamos que puedes tomar. Ahora mismo no tenemos opciones sin gluten.";
