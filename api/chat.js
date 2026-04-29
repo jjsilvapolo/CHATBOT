@@ -66,7 +66,16 @@ NUNCA escales internamente un problema de Glovo/Uber. NUNCA recojas datos del cl
 == ESCALACION (CUANDO NO PUEDES RESOLVER) ==
 Si el cliente tiene un problema que no puedes solucionar:
 - Si es un problema con un pedido take-away/pick-up (web o en local) → SIEMPRE dirige al QR: "Para cualquier incidencia con tu pedido, escanea el codigo QR que aparece en la bolsa o en la parte inferior del ticket y sigue las instrucciones."
-- Si es un problema con delivery propio (pedidos.burgerjazz.com) tipo falta de productos, productos equivocados, etc. → Dirige al QR de la bolsa o a enviar un correo con el numero de pedido a info@burgerjazz.com: "Puedes reclamarlo escaneando el QR de la bolsa o enviando un correo a info@burgerjazz.com con tu numero de pedido y el problema. Lo resolvemos lo antes posible."
+- Si es un problema con delivery propio (pedidos.burgerjazz.com) tipo falta de productos, productos equivocados, pedido no llega, frio, derramado, etc. → ANTES de escalar, debes recoger OBLIGATORIAMENTE estos 4 datos uno por uno:
+  1. Numero de pedido
+  2. Nombre y apellidos
+  3. Telefono de contacto
+  4. Tipo de incidencia (breve descripcion del problema)
+  Pidelos de forma natural, uno a uno o agrupados si el cliente ya ha dado alguno. Ejemplo: "Vaya, siento mucho eso. Para gestionar tu incidencia necesito unos datos. Me dices tu numero de pedido?"
+  NO escales hasta tener los 4 datos. Si falta alguno, insiste con amabilidad.
+  Cuando tengas TODOS los datos, responde EXACTAMENTE con este formato (es obligatorio para que el sistema lo procese):
+  "DATOS RECOGIDOS: Pedido: [numero], Nombre: [nombre apellidos], Telefono: [telefono], Incidencia: [descripcion]. Le paso con un agente para resolverlo lo antes posible."
+  NUNCA digas "escribe a info@burgerjazz.com" para delivery propio. TU recoges los datos y escalas al agente.
 - Si es un problema con delivery (Glovo/Uber Eats) → redirige SIEMPRE al soporte de la plataforma (ver regla fundamental arriba). NO escales.
 - Para cualquier OTRO problema no relacionado con pedidos (queja general, caso particular, etc.), sigue estos pasos:
   1. Muestra empatia: "Entiendo, vamos a solucionarlo"
@@ -847,10 +856,8 @@ module.exports = async function handler(req, res) {
 async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) {
   var shouldEscalate = false;
 
-  // Solo escalar por delivery propio (no Glovo/UberEats)
-  var isDeliveryIssue = /pedido.*(no ha llegado|no lleg[oó]|tard|retras|falta|equivocad|incorrecto|frio|derramad)/i.test(lastUserMsg) || /delivery.*(problema|error|tard|falta)/i.test(lastUserMsg);
-  var isThirdParty = /uber\s*eats|glovo|just\s*eat/i.test(lastUserMsg) || /uber\s*eats|glovo|just\s*eat/i.test(text);
-  if (isDeliveryIssue && !isThirdParty) {
+  // Solo escalar cuando el bot ha recogido todos los datos de delivery propio
+  if (/DATOS RECOGIDOS:.*Pedido:.*Nombre:.*Telefono:.*Incidencia:/i.test(text)) {
     shouldEscalate = true;
   }
 
@@ -874,7 +881,10 @@ async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) 
           await sqlEsc`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
           await sqlEsc`INSERT INTO escalated_sessions (session_id) VALUES (${sid}) ON CONFLICT DO NOTHING`;
         } catch(e2) {}
-        notifyEscalation((incidentData.description || lastUserMsg).substring(0, 80));
+        // Extract collected data from bot response for the push notification
+        var dataMatch = text.match(/DATOS RECOGIDOS:(.+?)(?:\.|$)/i);
+        var pushBody = dataMatch ? dataMatch[1].trim().substring(0, 120) : (incidentData.description || lastUserMsg).substring(0, 80);
+        notifyEscalation(pushBody);
       } catch (emailErr) {
         console.error("Incident notification error:", emailErr);
       }
