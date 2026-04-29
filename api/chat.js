@@ -673,6 +673,16 @@ module.exports = async function handler(req, res) {
     return res.status(429).json({ error: "Too many requests", reply: "Estas enviando mensajes muy rapido. Espera un momento." });
   }
 
+  // Check DB for escalated sessions (persists across serverless restarts)
+  if (!_escalatedSessions.has(sid)) {
+    try {
+      const { neon } = require("@neondatabase/serverless");
+      const sql = neon(process.env.DATABASE_URL);
+      var esc = await sql`SELECT 1 FROM escalated_sessions WHERE session_id = ${sid} LIMIT 1`;
+      if (esc.length > 0) _escalatedSessions.add(sid);
+    } catch(e) {}
+  }
+
   // If session is escalated (agent mode), don't use bot — just log the client message
   if (_escalatedSessions.has(sid)) {
     var agentMsg = messages[messages.length - 1];
@@ -828,22 +838,10 @@ module.exports = async function handler(req, res) {
 async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) {
   var shouldEscalate = false;
 
-  if (/registrado tu incidencia|he registrado tu|queda registrad/i.test(text)) {
-    shouldEscalate = true;
-  }
-  else if (/te contactar[áa]|nos pondremos en contacto|equipo.*contactar/i.test(text)) {
-    shouldEscalate = true;
-  }
-  else if (/no puedo resolver|no puedo ayudarte/i.test(text) && !/se me escapa/i.test(text)) {
-    var isOffTopic = category === "general" && !/burger|pedido|local|comida|hambur/i.test(lastUserMsg);
-    if (!isOffTopic) shouldEscalate = true;
-  }
-  else if (/reembolso|devoluci|reclamaci/i.test(text)) {
-    var redirectsToApp = /uber\s*eats|glovo|desde la (propia )?app|en la app/i.test(text);
-    var redirectsToQR = /escanea el.*QR|codigo QR/i.test(text);
-    if (!redirectsToApp && !redirectsToQR) shouldEscalate = true;
-  }
-  else if (/info@burgerjazz/i.test(text)) {
+  // Solo escalar por delivery propio (no Glovo/UberEats)
+  var isDeliveryIssue = /pedido.*(no ha llegado|no lleg[oó]|tard|retras|falta|equivocad|incorrecto|frio|derramad)/i.test(lastUserMsg) || /delivery.*(problema|error|tard|falta)/i.test(lastUserMsg);
+  var isThirdParty = /uber\s*eats|glovo|just\s*eat/i.test(lastUserMsg) || /uber\s*eats|glovo|just\s*eat/i.test(text);
+  if (isDeliveryIssue && !isThirdParty) {
     shouldEscalate = true;
   }
 
@@ -859,9 +857,13 @@ async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) 
           sendSlackNotification(incidentData, sid),
           logIncident(sid, incidentData),
         ]);
-        // Send automatic agent handoff message
+        // Send automatic agent handoff message + persist escalation
         try {
           await logChat(sid, "[ADMIN]", "Un momento, le paso con un agente para atenderle personalmente.", "admin_reply", { input: 0, output: 0 }, "ADMIN");
+          const { neon } = require("@neondatabase/serverless");
+          const sqlEsc = neon(process.env.DATABASE_URL);
+          await sqlEsc`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
+          await sqlEsc`INSERT INTO escalated_sessions (session_id) VALUES (${sid}) ON CONFLICT DO NOTHING`;
         } catch(e2) {}
         notifyNewChat("INCIDENCIA: " + (incidentData.description || trimmed).substring(0, 80));
       } catch (emailErr) {

@@ -718,7 +718,7 @@ var ind=document.getElementById("refresh_ind");if(ind)ind.textContent="Auto-refr
 
 // === OPEN SESSION ===
 function adminReplyBar(sid){
-return '<div style="display:flex;gap:6px;padding:12px 0;border-top:2px solid var(--gold);margin-top:12px"><input id="admin_reply_input" type="text" placeholder="Responder como admin..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:Lato,sans-serif;background:var(--bg);color:var(--text)"><button id="admin_reply_btn" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Enviar</button></div>';
+return '<div style="display:flex;gap:6px;padding:12px 0;border-top:2px solid var(--gold);margin-top:12px"><input id="admin_reply_input" type="text" placeholder="Responder como admin..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:Lato,sans-serif;background:var(--bg);color:var(--text)"><button id="admin_reply_btn" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Enviar</button><button id="admin_takeover_btn" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap" title="Tomar control: el bot deja de responder y tu gestionas la conversacion">Tomar control</button></div>';
 }
 function bindAdminReply(sid,modal){
 var btn=document.getElementById("admin_reply_btn");
@@ -738,6 +738,16 @@ inp.value="";btn.textContent="Enviar";btn.disabled=false;inp.disabled=false;inp.
 }
 btn.onclick=send;
 inp.onkeydown=function(e){if(e.key==="Enter")send()};
+// Takeover button
+var tk=document.getElementById("admin_takeover_btn");if(tk)tk.onclick=function(){
+if(!confirm("Tomar control? El bot dejara de responder y tu gestionaras la conversacion."))return;
+tk.textContent="...";tk.disabled=true;
+fetch("/api/stats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"takeover",session:sid})})
+.then(function(r){return r.json()}).then(function(){
+tk.textContent="Controlando";tk.style.background="#16a34a";
+inp.focus();
+}).catch(function(){alert("Error");tk.textContent="Tomar control";tk.disabled=false});
+};
 }
 function renderMsgs(msgs){
 var html='';msgs.forEach(function(m){

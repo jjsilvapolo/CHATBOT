@@ -103,6 +103,20 @@ module.exports = async function handler(req, res) {
       await logChat(req.body.session, "[ADMIN]", req.body.message, "admin_reply", { input: 0, output: 0 }, "ADMIN");
       return res.status(200).json({ ok: true });
     }
+    // Admin takeover: mark session as escalated so bot stops responding
+    if (req.body?.action === "takeover" && req.body?.session) {
+      if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+      const { logChat } = require("./_db");
+      await logChat(req.body.session, "[ADMIN]", "Un momento, le paso con un agente para atenderle personalmente.", "admin_reply", { input: 0, output: 0 }, "ADMIN");
+      // Mark in chat.js escalated sessions via a flag in DB
+      const { neon } = require("@neondatabase/serverless");
+      const sql = neon(process.env.DATABASE_URL);
+      try {
+        await sql`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
+        await sql`INSERT INTO escalated_sessions (session_id) VALUES (${req.body.session}) ON CONFLICT DO NOTHING`;
+      } catch(e) {}
+      return res.status(200).json({ ok: true });
+    }
     return res.status(400).json({ error: "Unknown action" });
   }
 
