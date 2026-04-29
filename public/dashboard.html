@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#002855">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/logo.png">
 <title>BurgerJazz Chatbot - Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -222,7 +225,10 @@ var dot=cs==="ok"?"ok":cs==="NO_CREDIT"?"err":"warn";
 var label=cs==="ok"?"OK":cs==="NO_CREDIT"?"SIN CREDITOS":"?";
 var pendingInc=(stats.incidents_list||[]).filter(function(i){return i.status!=="resolved"}).length;
 var notifHtml=pendingInc>0?'<div class="notif-badge"><button id="btn_incidents_jump" title="Ir a incidencias">Incidencias<div class="badge">'+pendingInc+'</div></button></div>':'';
-return '<div class="header"><div class="left"><h1>BURGERJAZZ DASHBOARD</h1><div class="status"><div class="dot '+dot+'"></div><span>'+label+'</span></div><span class="refresh-indicator" id="refresh_ind">'+(autoRefresh?'Auto-refresh ON':'')+'</span></div><div class="right">'+notifHtml+'<button id="btn_dark" title="Dark mode">'+(darkMode?'&#9788;':'&#9790;')+'</button><button id="btn_export_csv" style="background:#d97706">CSV</button><button id="btn_report_week" style="background:#16a34a">Semanal</button><button id="btn_report_month" style="background:#2563eb">Mensual</button><button id="btn_refresh">Actualizar</button><button id="btn_logout">Salir</button></div></div>';
+var pushBtnLabel=window._pushSubscribed?'Notif ON':'Notif OFF';
+var pushBtnStyle=window._pushSubscribed?'background:#16a34a':'background:#d97706';
+var pushTestBtn=window._pushSubscribed?'<button id="btn_push_test" style="background:#2563eb" title="Enviar notificacion de prueba">Test</button>':'';
+return '<div class="header"><div class="left"><h1>BURGERJAZZ DASHBOARD</h1><div class="status"><div class="dot '+dot+'"></div><span>'+label+'</span></div><span class="refresh-indicator" id="refresh_ind">'+(autoRefresh?'Auto-refresh ON':'')+'</span></div><div class="right">'+notifHtml+'<button id="btn_push" style="'+pushBtnStyle+'" title="Activar notificaciones push">'+pushBtnLabel+'</button>'+pushTestBtn+'<button id="btn_dark" title="Dark mode">'+(darkMode?'&#9788;':'&#9790;')+'</button><button id="btn_export_csv" style="background:#d97706">CSV</button><button id="btn_report_week" style="background:#16a34a">Semanal</button><button id="btn_report_month" style="background:#2563eb">Mensual</button><button id="btn_refresh">Actualizar</button><button id="btn_logout">Salir</button></div></div>';
 }
 
 function toolbarHTML(){
@@ -642,6 +648,12 @@ var rm=document.getElementById("btn_report_month");if(rm)rm.onclick=function(){g
 var ex=document.getElementById("btn_export_csv");if(ex)ex.onclick=exportCSV;
 // Dark mode
 var dm=document.getElementById("btn_dark");if(dm)dm.onclick=function(){darkMode=!darkMode;document.body.classList.toggle("dark",darkMode);localStorage.setItem("bj_dark",darkMode?"1":"0");render()};
+// Push notifications
+var pb=document.getElementById("btn_push");if(pb)pb.onclick=function(){subscribePush()};
+var pt=document.getElementById("btn_push_test");if(pt)pt.onclick=function(){
+fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"test"})})
+.then(function(r){return r.json()}).then(function(d){alert("Enviadas: "+d.sent+", Fallidas: "+d.failed)}).catch(function(){alert("Error")});
+};
 // Date filter
 var df=document.getElementById("btn_date_filter");if(df)df.onclick=function(){dateFrom=document.getElementById("date_from").value;dateTo=document.getElementById("date_to").value;render()};
 var dc=document.getElementById("btn_date_clear");if(dc)dc.onclick=function(){dateFrom="";dateTo="";render()};
@@ -812,6 +824,56 @@ var blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});var url=URL.cr
 var a=document.createElement("a");a.href=url;a.download="burgerjazz-export-"+new Date().toISOString().slice(0,10)+".csv";
 document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
 }
+
+// === PWA & PUSH NOTIFICATIONS ===
+var PUSH_USERS=["Rodrigo","JJ","Admin"];
+window._pushSubscribed=false;
+
+function initServiceWorker(){
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("/sw-admin.js").then(function(reg){
+console.log("SW registered");
+// Check if already subscribed
+reg.pushManager.getSubscription().then(function(sub){
+if(sub){window._pushSubscribed=true;render()}
+});
+}).catch(function(e){console.error("SW error:",e)});
+}
+}
+
+function urlBase64ToUint8Array(base64String){
+var padding="=".repeat((4-base64String.length%4)%4);
+var base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+var rawData=atob(base64);var outputArray=new Uint8Array(rawData.length);
+for(var i=0;i<rawData.length;++i)outputArray[i]=rawData.charCodeAt(i);
+return outputArray;
+}
+
+function subscribePush(){
+if(!("serviceWorker" in navigator)||!("PushManager" in window)){alert("Tu navegador no soporta notificaciones push");return}
+// Ask user name
+var userName=prompt("Selecciona tu nombre:\n"+PUSH_USERS.join(", "));
+if(!userName||PUSH_USERS.indexOf(userName)===-1){alert("Nombre no valido. Usa: "+PUSH_USERS.join(", "));return}
+// Get VAPID key from server
+fetch("/api/push?key="+KEY).then(function(r){return r.json()}).then(function(data){
+if(!data.vapidPublicKey){alert("Error: VAPID no configurado");return}
+navigator.serviceWorker.ready.then(function(reg){
+return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(data.vapidPublicKey)});
+}).then(function(subscription){
+// Send subscription to server
+return fetch("/api/push",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"subscribe",subscription:subscription.toJSON(),userName:userName})});
+}).then(function(r){return r.json()}).then(function(result){
+if(result.ok){window._pushSubscribed=true;render();alert("Notificaciones activadas para "+userName)}
+else{alert("Error: "+(result.error||"desconocido"))}
+}).catch(function(e){
+if(e.name==="NotAllowedError"){alert("Permiso denegado. Activa las notificaciones en la configuracion del navegador.")}
+else{alert("Error: "+e.message)}
+});
+}).catch(function(){alert("Error de conexion")});
+}
+
+// Init SW on load
+setTimeout(initServiceWorker,1000);
 
 render();
 })();

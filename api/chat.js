@@ -1,5 +1,16 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, logChat, logIncident, getActiveInsights, getActiveSourceUpdate } = require("./_db");
+var _pushModule;
+try { _pushModule = require("./push"); } catch(e) { _pushModule = null; }
+
+function notifyNewChat(userMsg) {
+  try {
+    if (_pushModule && _pushModule.sendPushToAll) {
+      var preview = userMsg.length > 60 ? userMsg.substring(0, 60) + "..." : userMsg;
+      _pushModule.sendPushToAll("Nueva conversacion", preview).catch(function(){});
+    }
+  } catch(e) {}
+}
 
 const SYSTEM_PROMPT = `Eres JAZZBOT, el asistente virtual de BURGERJAZZ™, cadena de smash burgers de alta calidad en Madrid (y Valladolid), fundada en 2021. Tu objetivo principal es RESOLVER el problema del cliente en el menor numero de mensajes posible.
 
@@ -730,9 +741,10 @@ module.exports = async function handler(req, res) {
 
         var chatId = await logChat(sid, lastUserMsg, fullText, streamCategory, streamTokens, promptVersion);
 
-        // Cache if single turn
+        // Cache if single turn + notify new conversation
         if (cleanMessages.length === 1) {
           setCachedResponse(getCacheKey(lastUserMsg), fullText, streamCategory, streamQuickReplies);
+          notifyNewChat(lastUserMsg);
         }
 
         // Escalation check (same logic as non-streaming)
@@ -771,10 +783,11 @@ module.exports = async function handler(req, res) {
 
     var chatId = await logChat(sid, lastUserMsg, text, category, tokens, promptVersion);
 
-    // Cache single-turn responses
+    // Cache single-turn responses + notify new conversation
     if (cleanMessages.length === 1) {
       var quickForCache = getSuggestedReplies(category, text);
       setCachedResponse(getCacheKey(lastUserMsg), text, category, quickForCache);
+      notifyNewChat(lastUserMsg);
     }
 
     // Handle escalations
@@ -834,6 +847,7 @@ async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) 
           sendSlackNotification(incidentData, sid),
           logIncident(sid, incidentData),
         ]);
+        notifyNewChat("INCIDENCIA: " + (incidentData.description || trimmed).substring(0, 80));
       } catch (emailErr) {
         console.error("Incident notification error:", emailErr);
       }
