@@ -94,7 +94,7 @@ async function sendPushToAll(title, body, res) {
 }
 
 // Export for use in chat.js
-module.exports.sendPushToAll = async function (title, body) {
+module.exports.sendPushToAll = async function (title, body, urgent) {
   if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
   webpush.setVapidDetails("mailto:info@burgerjazz.com", VAPID_PUBLIC, VAPID_PRIVATE);
   var sql = getSQL();
@@ -103,7 +103,7 @@ module.exports.sendPushToAll = async function (title, body) {
     for (var i = 0; i < subs.length; i++) {
       try {
         var sub = typeof subs[i].subscription === "string" ? JSON.parse(subs[i].subscription) : subs[i].subscription;
-        await webpush.sendNotification(sub, JSON.stringify({ title: title, body: body, url: "/dashboard.html" }));
+        await webpush.sendNotification(sub, JSON.stringify({ title: title, body: body, url: "/dashboard.html", urgent: !!urgent }));
       } catch (e) {
         if (e.statusCode === 410 || e.statusCode === 404) {
           try { await sql`DELETE FROM push_subscriptions WHERE endpoint = ${subs[i].endpoint}`; } catch (e2) {}

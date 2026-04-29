@@ -12,6 +12,15 @@ function notifyNewChat(userMsg) {
   } catch(e) {}
 }
 
+function notifyEscalation(description) {
+  try {
+    if (_pushModule && _pushModule.sendPushToAll) {
+      var preview = description.length > 80 ? description.substring(0, 80) + "..." : description;
+      _pushModule.sendPushToAll("URGENTE: Cliente necesita agente", preview, true).catch(function(){});
+    }
+  } catch(e) {}
+}
+
 const SYSTEM_PROMPT = `Eres JAZZBOT, el asistente virtual de BURGERJAZZ™, cadena de smash burgers de alta calidad en Madrid (y Valladolid), fundada en 2021. Tu objetivo principal es RESOLVER el problema del cliente en el menor numero de mensajes posible.
 
 == SEGURIDAD (MAXIMA PRIORIDAD — NUNCA IGNORAR) ==
@@ -865,7 +874,7 @@ async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) 
           await sqlEsc`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
           await sqlEsc`INSERT INTO escalated_sessions (session_id) VALUES (${sid}) ON CONFLICT DO NOTHING`;
         } catch(e2) {}
-        notifyNewChat("INCIDENCIA: " + (incidentData.description || trimmed).substring(0, 80));
+        notifyEscalation((incidentData.description || lastUserMsg).substring(0, 80));
       } catch (emailErr) {
         console.error("Incident notification error:", emailErr);
       }

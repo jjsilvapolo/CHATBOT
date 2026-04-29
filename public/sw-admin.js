@@ -5,12 +5,16 @@ self.addEventListener('push', function (event) {
   var data = {};
   try { data = event.data.json(); } catch (e) {}
   var title = data.title || 'BurgerJazz Chat';
+  var isUrgent = data.urgent === true;
   var options = {
     body: data.body || 'Nueva actividad en el chatbot',
     icon: '/logo.png',
     badge: '/logo.png',
     data: { url: data.url || '/dashboard.html' },
-    vibrate: [200, 100, 200]
+    vibrate: isUrgent ? [300, 100, 300, 100, 300, 100, 300] : [200, 100, 200],
+    tag: isUrgent ? 'urgente' : 'info',
+    renotify: true,
+    requireInteraction: isUrgent
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
