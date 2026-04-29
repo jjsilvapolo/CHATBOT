@@ -673,6 +673,18 @@ module.exports = async function handler(req, res) {
     return res.status(429).json({ error: "Too many requests", reply: "Estas enviando mensajes muy rapido. Espera un momento." });
   }
 
+  // If session is escalated (agent mode), don't use bot — just log the client message
+  if (_escalatedSessions.has(sid)) {
+    var agentMsg = messages[messages.length - 1];
+    var agentUserMsg = (agentMsg && typeof agentMsg.content === "string") ? agentMsg.content.slice(0, 2000) : "";
+    if (agentUserMsg) {
+      await logChat(sid, agentUserMsg, "", "agent_mode", { input: 0, output: 0 }, "AGENT_WAIT");
+      // Notify admins that client sent a new message
+      notifyNewChat("Cliente esperando: " + agentUserMsg.substring(0, 60));
+    }
+    return res.status(200).json({ reply: "", category: "agent_mode", agentMode: true });
+  }
+
   // Validate and sanitize messages
   const cleanMessages = [];
   for (var i = 0; i < messages.length && i < 24; i++) {
@@ -847,6 +859,10 @@ async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) 
           sendSlackNotification(incidentData, sid),
           logIncident(sid, incidentData),
         ]);
+        // Send automatic agent handoff message
+        try {
+          await logChat(sid, "[ADMIN]", "Un momento, le paso con un agente para atenderle personalmente.", "admin_reply", { input: 0, output: 0 }, "ADMIN");
+        } catch(e2) {}
         notifyNewChat("INCIDENCIA: " + (incidentData.description || trimmed).substring(0, 80));
       } catch (emailErr) {
         console.error("Incident notification error:", emailErr);

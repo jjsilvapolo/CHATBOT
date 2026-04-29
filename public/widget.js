@@ -29,6 +29,7 @@
   var hasConsented = false;
   var userMsgCount = 0;
   var sessionId = "";
+  var inAgentMode = false;
   var container = null;
   var chatBody = null;
   var restoredSession = false;
@@ -787,7 +788,8 @@
             hideTyping();
             isLoading = false;
             document.getElementById("bj-chat-send").disabled = false;
-            if (data.reply) addBotMessage(data.reply, data.quickReplies || null, data.chatId);
+            if (data.agentMode) { inAgentMode = true; setHeaderStatus("Agente conectado", false); }
+            else if (data.reply) addBotMessage(data.reply, data.quickReplies || null, data.chatId);
           });
         }
 
@@ -917,7 +919,10 @@
         isLoading = false;
         document.getElementById("bj-chat-send").disabled = false;
 
-        if (data.reply) {
+        if (data.agentMode) {
+          inAgentMode = true;
+          setHeaderStatus("Agente conectado", false);
+        } else if (data.reply) {
           addBotMessage(data.reply, data.quickReplies || null, data.chatId);
           checkConversationEnd(data.reply);
         } else {
@@ -1113,7 +1118,7 @@
     // Refresh open/closed status every 5 min
     setInterval(function () { setHeaderStatus(t("online"), false); }, 5 * 60 * 1000);
 
-    // Poll for admin messages every 10 seconds
+    // Poll for admin messages (3s in agent mode, 10s normal)
     var lastPollTs = new Date().toISOString();
     setInterval(function () {
       if (!sessionId || !isOpen) return;
@@ -1122,7 +1127,6 @@
         .then(function (data) {
           if (data.messages && data.messages.length > 0) {
             data.messages.forEach(function (m) {
-              // Avoid duplicates
               var isDup = messages.some(function (existing) {
                 return existing.role === "assistant" && existing.content === m.text;
               });
@@ -1135,7 +1139,7 @@
           }
         })
         .catch(function () {});
-    }, 10000);
+    }, 3000);
   }
 
   if (document.readyState === "loading") {
