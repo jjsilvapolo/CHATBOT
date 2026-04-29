@@ -1112,6 +1112,30 @@
 
     // Refresh open/closed status every 5 min
     setInterval(function () { setHeaderStatus(t("online"), false); }, 5 * 60 * 1000);
+
+    // Poll for admin messages every 10 seconds
+    var lastPollTs = new Date().toISOString();
+    setInterval(function () {
+      if (!sessionId || !isOpen) return;
+      fetch(BASE_URL + "/api/poll?session=" + encodeURIComponent(sessionId) + "&after=" + encodeURIComponent(lastPollTs))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.messages && data.messages.length > 0) {
+            data.messages.forEach(function (m) {
+              // Avoid duplicates
+              var isDup = messages.some(function (existing) {
+                return existing.role === "assistant" && existing.content === m.text;
+              });
+              if (!isDup) {
+                addBotMessage(m.text);
+                scrollBottom();
+              }
+            });
+            lastPollTs = new Date().toISOString();
+          }
+        })
+        .catch(function () {});
+    }, 10000);
   }
 
   if (document.readyState === "loading") {
