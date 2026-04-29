@@ -705,34 +705,57 @@ var ind=document.getElementById("refresh_ind");if(ind)ind.textContent="Auto-refr
 }
 
 // === OPEN SESSION ===
+function adminReplyBar(sid){
+return '<div style="display:flex;gap:6px;padding:12px 0;border-top:2px solid var(--gold);margin-top:12px"><input id="admin_reply_input" type="text" placeholder="Responder como admin..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:Lato,sans-serif;background:var(--bg);color:var(--text)"><button id="admin_reply_btn" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Enviar</button></div>';
+}
+function bindAdminReply(sid,modal){
+var btn=document.getElementById("admin_reply_btn");
+var inp=document.getElementById("admin_reply_input");
+if(!btn||!inp)return;
+function send(){
+var msg=inp.value.trim();if(!msg)return;
+btn.textContent="...";btn.disabled=true;inp.disabled=true;
+fetch("/api/stats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"admin_reply",session:sid,message:msg})})
+.then(function(r){return r.json()}).then(function(){
+var body=modal.querySelector(".modal-body");
+var replyDiv=document.createElement("div");replyDiv.className="modal-msg bot";
+replyDiv.innerHTML='<div style="background:#FEF3C7;color:#92400E;padding:8px 12px;border-radius:10px 10px 10px 4px;max-width:85%;margin-bottom:8px;font-size:12px;line-height:1.5;border-left:3px solid var(--gold)"><b style="font-size:9px;text-transform:uppercase;letter-spacing:1px">ADMIN</b><br>'+escHtml(msg)+'<div class="msg-time">Ahora</div></div>';
+body.insertBefore(replyDiv,body.querySelector("[style*=border-top]"));
+inp.value="";btn.textContent="Enviar";btn.disabled=false;inp.disabled=false;inp.focus();
+}).catch(function(){alert("Error enviando");btn.textContent="Enviar";btn.disabled=false;inp.disabled=false});
+}
+btn.onclick=send;
+inp.onkeydown=function(e){if(e.key==="Enter")send()};
+}
+function renderMsgs(msgs){
+var html='';msgs.forEach(function(m){
+var t=m.ts?new Date(m.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+var isAdmin=m.user==="[ADMIN]"||m.prompt_version==="ADMIN";
+if(m.user&&!isAdmin)html+='<div class="modal-msg user">'+escHtml(m.user)+'<div class="msg-time">'+t+'</div></div>';
+if(m.bot&&!isAdmin)html+='<div class="modal-msg bot">'+escHtml(m.bot)+'<div class="msg-time">'+t+'</div></div>';
+if(isAdmin&&m.bot)html+='<div style="background:#FEF3C7;color:#92400E;padding:8px 12px;border-radius:10px 10px 10px 4px;max-width:85%;margin-bottom:8px;font-size:12px;line-height:1.5;border-left:3px solid var(--gold)"><b style="font-size:9px;text-transform:uppercase;letter-spacing:1px">ADMIN</b><br>'+escHtml(m.bot)+'<div class="msg-time" style="font-size:8px;opacity:.6;margin-top:3px">'+t+'</div></div>';
+});return html;
+}
 function openSession(sid){
 var modal=document.createElement("div");modal.className="modal-bg";
 modal.innerHTML='<div class="modal"><div class="modal-header"><h3>Conversacion '+escHtml(sid.slice(0,16))+'</h3><button class="modal-close">&times;</button></div><div class="modal-body"><div class="modal-loading">Cargando...</div></div></div>';
 document.body.appendChild(modal);
 modal.querySelector(".modal-close").onclick=function(){modal.remove()};
 modal.onclick=function(e){if(e.target===modal)modal.remove()};
-// Try local data first (already loaded chats)
 var localMsgs=(stats&&stats.chats||[]).filter(function(c){return c.session===sid}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts)});
 if(localMsgs.length>0){
 var body=modal.querySelector(".modal-body");
-var html='';localMsgs.forEach(function(m){
-var t=m.ts?new Date(m.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-if(m.user)html+='<div class="modal-msg user">'+escHtml(m.user)+'<div class="msg-time">'+t+'</div></div>';
-if(m.bot)html+='<div class="modal-msg bot">'+escHtml(m.bot)+'<div class="msg-time">'+t+'</div></div>';
-});body.innerHTML=html;
+body.innerHTML=renderMsgs(localMsgs)+adminReplyBar(sid);
+bindAdminReply(sid,modal);
 return;
 }
-// Fallback: fetch from API
 fetch("/api/stats?key="+encodeURIComponent(KEY)+"&session="+encodeURIComponent(sid))
 .then(function(r){return r.json()})
 .then(function(data){
 var body=modal.querySelector(".modal-body");
-if(!data.messages||!data.messages.length){body.innerHTML='<div class="modal-loading">Sin mensajes</div>';return}
-var html='';data.messages.forEach(function(m){
-var t=m.ts?new Date(m.ts).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-if(m.user)html+='<div class="modal-msg user">'+escHtml(m.user)+'<div class="msg-time">'+t+'</div></div>';
-if(m.bot)html+='<div class="modal-msg bot">'+escHtml(m.bot)+'<div class="msg-time">'+t+'</div></div>';
-});body.innerHTML=html;
+if(!data.messages||!data.messages.length){body.innerHTML='<div class="modal-loading">Sin mensajes</div>'+adminReplyBar(sid);bindAdminReply(sid,modal);return}
+body.innerHTML=renderMsgs(data.messages)+adminReplyBar(sid);
+bindAdminReply(sid,modal);
 }).catch(function(){modal.querySelector(".modal-body").innerHTML='<div class="modal-loading">Error</div>'});
 }
 

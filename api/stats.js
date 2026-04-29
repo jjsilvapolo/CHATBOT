@@ -97,6 +97,12 @@ module.exports = async function handler(req, res) {
       await updateIncidentNotes(parseInt(req.body.incidentId), req.body.notes || "");
       return res.status(200).json({ ok: true });
     }
+    if (req.body?.action === "admin_reply" && req.body?.session && req.body?.message) {
+      if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+      const { logChat } = require("./_db");
+      await logChat(req.body.session, "[ADMIN]", req.body.message, "admin_reply", { input: 0, output: 0 }, "ADMIN");
+      return res.status(200).json({ ok: true });
+    }
     return res.status(400).json({ error: "Unknown action" });
   }
 
