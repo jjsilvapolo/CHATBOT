@@ -133,7 +133,7 @@ module.exports = async function handler(req, res) {
       }
       const msgs = await getSession(sessionParam);
       return res.status(200).json({ messages: msgs.map(function(m) {
-        return { ts: m.ts, user: m.user_msg, bot: m.bot_msg, category: m.category };
+        return { ts: m.ts, user: m.user_msg, bot: m.bot_msg, category: m.category, prompt_version: m.prompt_version };
       })});
     }
 

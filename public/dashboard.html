@@ -750,25 +750,49 @@ if(isAdmin&&m.bot)html+='<div style="background:#FEF3C7;color:#92400E;padding:8p
 }
 function openSession(sid){
 var modal=document.createElement("div");modal.className="modal-bg";
-modal.innerHTML='<div class="modal"><div class="modal-header"><h3>Conversacion '+escHtml(sid.slice(0,16))+'</h3><button class="modal-close">&times;</button></div><div class="modal-body"><div class="modal-loading">Cargando...</div></div></div>';
+modal.innerHTML='<div class="modal"><div class="modal-header"><h3>Conversacion '+escHtml(sid.slice(0,16))+'</h3><div style="display:flex;align-items:center;gap:8px"><span id="live_indicator" style="display:flex;align-items:center;gap:4px;font-size:10px;color:#16a34a;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite"></span>EN VIVO</span><button class="modal-close">&times;</button></div></div><div class="modal-body" id="live_chat_body"><div class="modal-loading">Cargando...</div></div></div>';
 document.body.appendChild(modal);
-modal.querySelector(".modal-close").onclick=function(){modal.remove()};
-modal.onclick=function(e){if(e.target===modal)modal.remove()};
-var localMsgs=(stats&&stats.chats||[]).filter(function(c){return c.session===sid}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts)});
-if(localMsgs.length>0){
-var body=modal.querySelector(".modal-body");
-body.innerHTML=renderMsgs(localMsgs)+adminReplyBar(sid);
-bindAdminReply(sid,modal);
-return;
-}
+var _liveInterval=null;
+var _lastMsgCount=0;
+modal.querySelector(".modal-close").onclick=function(){if(_liveInterval)clearInterval(_liveInterval);modal.remove()};
+modal.onclick=function(e){if(e.target===modal){if(_liveInterval)clearInterval(_liveInterval);modal.remove()}};
+
+function loadAndRender(isInitial){
 fetch("/api/stats?key="+encodeURIComponent(KEY)+"&session="+encodeURIComponent(sid))
 .then(function(r){return r.json()})
 .then(function(data){
-var body=modal.querySelector(".modal-body");
-if(!data.messages||!data.messages.length){body.innerHTML='<div class="modal-loading">Sin mensajes</div>'+adminReplyBar(sid);bindAdminReply(sid,modal);return}
-body.innerHTML=renderMsgs(data.messages)+adminReplyBar(sid);
+var body=document.getElementById("live_chat_body");if(!body)return;
+var msgs=data.messages||[];
+if(!isInitial&&msgs.length===_lastMsgCount)return;
+_lastMsgCount=msgs.length;
+var scrollEl=body;
+var wasAtBottom=scrollEl.scrollHeight-scrollEl.scrollTop-scrollEl.clientHeight<60;
+body.innerHTML=renderMsgs(msgs)+adminReplyBar(sid);
 bindAdminReply(sid,modal);
-}).catch(function(){modal.querySelector(".modal-body").innerHTML='<div class="modal-loading">Error</div>'});
+if(wasAtBottom||isInitial)scrollEl.scrollTop=scrollEl.scrollHeight;
+if(!isInitial&&msgs.length>0){
+var last=msgs[msgs.length-1];
+if(last.user&&last.user!=="[ADMIN]"){
+var ind=document.getElementById("live_indicator");
+if(ind)ind.innerHTML='<span style="width:7px;height:7px;border-radius:50%;background:#dc2626;animation:pulse 1.5s infinite"></span><span style="color:#dc2626">NUEVO MSG</span>';
+setTimeout(function(){if(ind)ind.innerHTML='<span style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite"></span>EN VIVO'},3000);
+}
+}
+}).catch(function(){});
+}
+
+// Try local data first for instant display
+var localMsgs=(stats&&stats.chats||[]).filter(function(c){return c.session===sid}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts)});
+if(localMsgs.length>0){
+var body=document.getElementById("live_chat_body");
+_lastMsgCount=localMsgs.length;
+body.innerHTML=renderMsgs(localMsgs)+adminReplyBar(sid);
+bindAdminReply(sid,modal);
+body.scrollTop=body.scrollHeight;
+}
+// Fetch fresh + start live polling
+loadAndRender(true);
+_liveInterval=setInterval(function(){loadAndRender(false)},3000);
 }
 
 // === LOAD STATS ===
