@@ -20,6 +20,9 @@
       "schedule": "0 8 * * *"
     }
   ],
+  "redirects": [
+    { "source": "/", "destination": "/dashboard.html", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
