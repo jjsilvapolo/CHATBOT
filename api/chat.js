@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, logChat, logIncident, getActiveInsights, getActiveSourceUpdate } = require("./_db");
+const { initDB, logChat, logIncident, getActiveInsights, getActiveSourceUpdate, getKnowledgeSections, seedKnowledge } = require("./_db");
 var _pushModule;
 try { _pushModule = require("./push"); } catch(e) { _pushModule = null; }
 
@@ -116,21 +116,9 @@ CASO 4: FACTURAS / TICKETS
 - Ticket perdido → puede rellenar formulario en la web con referencia del articulo, ultimos digitos de la tarjeta y fecha.
 
 CASO 5: HORARIOS
-- Usa los horarios exactos de la tabla de abajo. Da el horario del local concreto que pregunte.
+- Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
 - IMPORTANTE: Varios locales cierran lunes y martes. Avisalo si preguntan por esos dias.
-
-HORARIOS POR LOCAL:
-- Plaza Espana (Fomento): L-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-0:00
-- Delicias: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-0:00
-- Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Retiro (O'Donnell): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Pozuelo: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Majadahonda: L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Alcorcon: L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
-- Mirasierra (Fermin Caballero): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Alcobendas: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-23:30
-- Valladolid: L-M 12:30-16:00 (solo comida) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -196,8 +184,11 @@ CASO 10: POST-RESOLUCION / DESPEDIDA
 - Solo ESCALA si despues de intentar resolver, el cliente sigue sin solucion Y su problema requiere intervencion humana real.
 
 == BASE DE CONOCIMIENTO ==
+(La informacion factual se carga dinamicamente desde la base de datos)`;
 
-LOCALES (10 activos) — incluye SIEMPRE el link de Google Maps cuando menciones un local:
+// Knowledge sections seed data (initial load into DB)
+const KNOWLEDGE_SEED = [
+  { key: "locales", title: "Locales", content: `LOCALES (10 activos) — incluye SIEMPRE el link de Google Maps cuando menciones un local:
 1. Chamberi - C/ Modesto Lafuente, 64 (Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Chamberi+Madrid
 2. Plaza Espana - C/ Fomento, 37 (Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
 3. Retiro - C/ O'Donnell, 40 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Retiro+Madrid
@@ -210,18 +201,27 @@ LOCALES (10 activos) — incluye SIEMPRE el link de Google Maps cuando menciones
 10. Valladolid - Claudio Moyano, 20 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 11. Moraleja Green - Av. Europa, 13, CC Moraleja Green (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
 CERRADOS: Malasana (C/ Marques de Santa Ana, 7 - antiguo local sin gluten).
-Chamberi y Plaza Espana: solo delivery y recogida, NO dine-in.
-
-CARTA:
+Chamberi y Plaza Espana: solo delivery y recogida, NO dine-in.` },
+  { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL:
+- Plaza Espana (Fomento): L-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-0:00
+- Delicias: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-0:00
+- Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Retiro (O'Donnell): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Pozuelo: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Majadahonda: L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Alcorcon: L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
+- Mirasierra (Fermin Caballero): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Alcobendas: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-23:30
+- Valladolid: L-M 12:30-16:00 (solo comida) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30` },
+  { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | OLD JAZZ (2x vaca vieja, 2x cheddar ahumado, cebolla plancha, salsa Old Beef) 14,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | MONTERREY JAZZ (2x vaca vieja, 2x queso Monterrey, relish de pepinillo y jalapeno, lechuga iceberg, salsa Emmy) 14,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
 COMBOS: COMBO JAZZ SOLO (burger+patatas+bebida) 13,95€ | MENU DIA (burger+patatas+bebida) 14,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away). NO disponible en cenas, fines de semana, ni en delivery.
 PATATAS: Basic 3,90€ | Spicy 3,90€ | Bacon Cheese 5,90€ | Truffle 5,90€
 SALSAS: Ketchup, Mostaza, Cheddar Jalapeno, BBQ, Truffle Mayo, Salsa BJ (1,50€, Truffle Mayo 1,90€)
 BATIDOS: Chocolate Belga, Galleta Maria, Vainilla Madagascar (5,90€)
 POSTRES: Nutella Candy Jazz, Pistachio Candy Jazz (4,90€)
-EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€ | +Jalapeno 0,50€
-
-ALERGENOS (✓=contiene):
+EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€ | +Jalapeno 0,50€` },
+  { key: "alergenos", title: "Alergenos", content: `ALERGENOS (✓=contiene):
 BASIC JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Apio✓ Mostaza✓ Sesamo✓ Sulfitos✓
 BURGER JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Apio✓ Mostaza✓ Sesamo✓ Sulfitos✓
 ROYAL JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Mostaza✓ Sesamo✓ Sulfitos✓
@@ -237,19 +237,43 @@ SHAKE CHOCOLATE: Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
 SHAKE GALLETA: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
 SHAKE VAINILLA: Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
 NUTELLA CANDY: Lacteos✓ F.Cascara✓
-PISTACHIO CANDY: F.Cascara✓
-
-PEDIDOS: En local (dine-in/take-away) | Delivery propio a domicilio: pedidos.burgerjazz.com (Chamberi, Retiro, Delicias, Plaza Espana, Mirasierra — pedido min 25€, envio 2,99€, radio 3km) | Pick-up por la web: https://burgerjazz.com/pide-ya (pides online y recoges en el local)
+PISTACHIO CANDY: F.Cascara✓` },
+  { key: "delivery", title: "Pedidos y Delivery", content: `PEDIDOS: En local (dine-in/take-away) | Delivery propio a domicilio: pedidos.burgerjazz.com (Chamberi, Retiro, Delicias, Plaza Espana, Mirasierra — pedido min 25€, envio 2,99€, radio 3km) | Pick-up por la web: https://burgerjazz.com/pide-ya (pides online y recoges en el local)
 Precios iguales en local y online. Se pueden personalizar ingredientes.
-PROMOCIONES Y DESCUENTOS — REGLA IMPORTANTE:
+Los locales SIN delivery propio (Alcorcon, Majadahonda, Pozuelo, Alcobendas, Moraleja Green, Valladolid): recomienda recoger en local (pick-up) via burgerjazz.com/pide-ya.
+La web https://burgerjazz.com/pide-ya es para pedir y RECOGER en el local (pick-up). Para delivery propio a domicilio: pedidos.burgerjazz.com` },
+  { key: "promos", title: "Promociones", content: `PROMOCIONES Y DESCUENTOS — REGLA IMPORTANTE:
 - TODAS las promociones de BurgerJazz (JAZZFRIENZZ, JAZZ DAYS, codigos de descuento, etc.) son EXCLUSIVAMENTE para pedidos en nuestros locales o a traves de nuestra web (burgerjazz.com/pide-ya).
 - Nuestros codigos de descuento NO son validos en Glovo ni en Uber Eats. NUNCA.
 - Si el cliente pregunta por promos en Glovo o Uber Eats, responde: "Las promos de Glovo y Uber las gestionan ellos directamente, consultalas en la app."
 - JAZZFRIENZZ: puntos por pedido, promos semanales, QR en local (solo local y web).
-- JAZZ DAYS: miercoles 2x1 burgers en TODOS los locales sin excepcion (Madrid, Valladolid, Alcorcon, Majadahonda, Pozuelo, etc.). Solo dine-in y take-away, NO aplica en delivery. Si un cliente pregunta si hay 2x1 en su local, la respuesta es SIEMPRE SI.
-PAGOS: Tarjeta, efectivo, Apple Pay, Google Pay. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
+- JAZZ DAYS: miercoles 2x1 burgers en TODOS los locales sin excepcion (Madrid, Valladolid, Alcorcon, Majadahonda, Pozuelo, etc.). Solo dine-in y take-away, NO aplica en delivery. Si un cliente pregunta si hay 2x1 en su local, la respuesta es SIEMPRE SI.` },
+  { key: "pagos", title: "Pagos y Otros", content: `PAGOS: Tarjeta, efectivo, Apple Pay, Google Pay. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
 Pet-friendly todos los locales. No reservas (eventos: info@burgerjazz.com). Empleo: jobs.burgerjazz.com
-Redes: Instagram @burger_jazz, TikTok @burgerjazz`;
+Redes: Instagram @burger_jazz, TikTok @burgerjazz` }
+];
+
+// Knowledge cache (5 min TTL)
+let _knowledgeCache = null;
+let _knowledgeCacheTs = 0;
+const KNOWLEDGE_TTL = 5 * 60 * 1000;
+
+async function buildSystemPrompt() {
+  var now = Date.now();
+  if (!_knowledgeCache || now - _knowledgeCacheTs > KNOWLEDGE_TTL) {
+    try {
+      await seedKnowledge(KNOWLEDGE_SEED);
+      var sections = await getKnowledgeSections();
+      if (sections && sections.length > 0) {
+        _knowledgeCache = "\n\n== BASE DE CONOCIMIENTO ==\n" + sections.map(function(s) { return s.content; }).join("\n\n");
+      }
+      _knowledgeCacheTs = now;
+    } catch(e) {
+      console.error("Knowledge load error:", e);
+    }
+  }
+  return SYSTEM_PROMPT + (_knowledgeCache || "");
+}
 
 function detectCategory(text) {
   var t = (text || "").toLowerCase();
@@ -749,9 +773,10 @@ module.exports = async function handler(req, res) {
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    // Append ML insights + source updates to system prompt
+    // Build prompt from DB knowledge + ML insights
+    var basePrompt = await buildSystemPrompt();
     const learnedInsights = await getDynamicPrompt();
-    var fullPrompt = SYSTEM_PROMPT + learnedInsights;
+    var fullPrompt = basePrompt + learnedInsights;
     // Apply B variant if assigned
     if (promptVersion === "B") fullPrompt += PROMPT_B_PATCH;
 

@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, getStats, getSession, getRatings, getFeedbackStats, getIncidents, getABStats, resolveIncident, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats } = require("./_db");
+const { initDB, getStats, getSession, getRatings, getFeedbackStats, getIncidents, getABStats, resolveIncident, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -135,6 +135,23 @@ module.exports = async function handler(req, res) {
         await sql`INSERT INTO escalated_sessions (session_id) VALUES (${req.body.session}) ON CONFLICT DO NOTHING`;
       } catch(e) {}
       return res.status(200).json({ ok: true });
+    }
+    // Knowledge base CRUD
+    if (req.body?.action === "get_knowledge") {
+      if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+      var sections = await getKnowledgeSections();
+      return res.status(200).json({ sections: sections });
+    }
+    if (req.body?.action === "update_knowledge" && req.body?.section_key && req.body?.content) {
+      if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+      var userName = (req.body.key || "").split(":")[0] || "admin";
+      await upsertKnowledgeSection(req.body.section_key, req.body.title || req.body.section_key, req.body.content, userName);
+      return res.status(200).json({ ok: true });
+    }
+    if (req.body?.action === "get_knowledge_history" && req.body?.section_key) {
+      if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+      var history = await getKnowledgeHistory(req.body.section_key, 10);
+      return res.status(200).json({ history: history });
     }
     return res.status(400).json({ error: "Unknown action" });
   }

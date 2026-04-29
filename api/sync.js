@@ -1,30 +1,32 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, saveSourceUpdate } = require("./_db");
-const { CURRENT_KNOWLEDGE } = require("./_knowledge");
+const { initDB, saveSourceUpdate, getKnowledgeSections, upsertKnowledgeSection } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
 
-const SYNC_PROMPT = `Eres un verificador de datos para el chatbot de BURGERJAZZ. Tu trabajo es comparar la informacion que el chatbot tiene actualmente con la informacion real de la web.
+function buildSyncPrompt(currentKnowledge) {
+  return `Eres un verificador de datos para el chatbot de BURGERJAZZ. Tu trabajo es comparar la informacion que el chatbot tiene actualmente con la informacion real de la web.
 
 DATOS ACTUALES DEL CHATBOT:
-${CURRENT_KNOWLEDGE}
+${currentKnowledge}
 
-Analiza el contenido de la web que te proporciono y compara con los datos actuales. Genera SOLO las diferencias encontradas en este formato:
+Analiza el contenido de la web que te proporciono y compara con los datos actuales.
 
-Si hay cambios:
-- Lista cada cambio concreto: que era antes y que es ahora
-- Nuevos productos, precios actualizados, locales nuevos/cerrados, horarios cambiados, promos nuevas
-- Se especifico con precios y nombres exactos
+Si hay cambios, responde en formato JSON exacto (sin markdown):
+{"changes":[{"section":"nombre_seccion","description":"que cambio","new_content":"contenido completo actualizado de esa seccion"}]}
 
-Si NO hay cambios relevantes, responde exactamente: "SIN CAMBIOS"
+Secciones validas: locales, horarios, carta, alergenos, delivery, promos, pagos
+
+IMPORTANTE: "new_content" debe contener el texto COMPLETO actualizado de la seccion, no solo el cambio. Copia todo el contenido actual y aplica el cambio.
+
+Si NO hay cambios relevantes, responde exactamente: {"changes":[]}
 
 REGLAS:
 - Solo reporta cambios REALES y verificables del contenido web
 - No inventes ni asumas cambios
 - Ignora diferencias de formato o redaccion
-- Maximo 400 palabras
-- Texto plano, sin markdown`;
+- El JSON debe ser valido`;
+}
 
 // Fetch a webpage and extract text content
 async function fetchPage(url) {
@@ -94,26 +96,52 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ status: "error", message: "No se pudo obtener contenido de la web" });
     }
 
+    // Read current knowledge from DB
+    var sections = await getKnowledgeSections();
+    var currentKnowledge = sections.map(function(s) { return s.title + ":\n" + s.content; }).join("\n\n");
+    if (!currentKnowledge || currentKnowledge.length < 50) {
+      currentKnowledge = "Sin datos previos";
+    }
+
     // Ask Claude to compare
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      system: SYNC_PROMPT,
+      max_tokens: 2000,
+      system: buildSyncPrompt(currentKnowledge),
       messages: [{ role: "user", content: "Contenido actual de la web de BurgerJazz:\n\n" + webContent }],
     });
 
     const result = response.content?.[0]?.text || "";
-    const hasChanges = !result.includes("SIN CAMBIOS");
+    var changesApplied = 0;
 
-    if (hasChanges && result.trim().length > 20) {
-      await saveSourceUpdate(result);
+    try {
+      var parsed = JSON.parse(result);
+      if (parsed.changes && parsed.changes.length > 0) {
+        for (var i = 0; i < parsed.changes.length; i++) {
+          var ch = parsed.changes[i];
+          if (ch.section && ch.new_content) {
+            var existingSection = sections.find(function(s) { return s.section_key === ch.section; });
+            var title = existingSection ? existingSection.title : ch.section;
+            await upsertKnowledgeSection(ch.section, title, ch.new_content, "sync");
+            changesApplied++;
+          }
+        }
+        // Also save as source update for the dynamic prompt layer
+        var summary = parsed.changes.map(function(c) { return c.description; }).join(". ");
+        await saveSourceUpdate(summary);
+      }
+    } catch(parseErr) {
+      // Fallback: save as text source update if JSON parse fails
+      if (result.length > 20 && !result.includes('"changes":[]')) {
+        await saveSourceUpdate(result);
+      }
     }
 
     return res.status(200).json({
       status: "ok",
-      has_changes: hasChanges,
+      changes_applied: changesApplied,
       content_length: webContent.length,
       result_preview: result.slice(0, 500),
       tokens: {

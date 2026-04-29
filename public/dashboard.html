@@ -208,7 +208,7 @@ function render(){
 var app=document.getElementById("app");
 if(!KEY){app.innerHTML=loginHTML();bindLogin();return}
 if(!stats){app.innerHTML='<div class="login"><div class="login-box"><h2>Cargando...</h2></div></div>';loadStats();return}
-app.innerHTML=headerHTML()+toolbarHTML()+cardsHTML()+satisfactionHTML()+feedbackHTML()+abTestHTML()+weeklyHTML()+chartAndHeatmapHTML()+hourlyChartHTML()+funnelHTML()+insightsHTML()+incidentsHTML()+catsHTML()+chatsHTML();
+app.innerHTML=headerHTML()+toolbarHTML()+cardsHTML()+knowledgeHTML()+satisfactionHTML()+feedbackHTML()+abTestHTML()+weeklyHTML()+chartAndHeatmapHTML()+hourlyChartHTML()+funnelHTML()+insightsHTML()+incidentsHTML()+catsHTML()+chatsHTML();
 bindEvents();
 startAutoRefresh();
 }
@@ -564,6 +564,79 @@ html+='</div>';
 return html;
 }
 
+// === KNOWLEDGE BASE ===
+var _knowledgeSections=null;
+function knowledgeHTML(){
+return '<div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">Base de Conocimiento <button id="btn_load_knowledge" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">'+(_knowledgeSections?'Recargar':'Cargar')+'</button></h3><div id="knowledge_container">'+(_knowledgeSections?renderKnowledgeSections():'<p style="font-size:12px;color:var(--muted)">Pulsa Cargar para ver y editar la informacion del bot</p>')+'</div></div>';
+}
+function renderKnowledgeSections(){
+if(!_knowledgeSections||!_knowledgeSections.length)return '<p style="font-size:12px;color:var(--muted)">Sin secciones</p>';
+var h='';_knowledgeSections.forEach(function(s,i){
+var updated=s.updated_at?new Date(s.updated_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+h+='<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden">';
+h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);cursor:pointer" class="kb-toggle" data-idx="'+i+'">';
+h+='<div><b style="font-size:13px">'+escHtml(s.title)+'</b> <span style="font-size:10px;color:var(--muted);margin-left:8px">'+updated+' por '+(s.updated_by||"system")+'</span></div>';
+h+='<span style="font-size:10px;color:var(--muted)">v'+s.version+'</span></div>';
+h+='<div class="kb-body" data-idx="'+i+'" style="display:none;padding:10px 14px">';
+h+='<textarea class="kb-textarea" data-key="'+escHtml(s.section_key)+'" data-title="'+escHtml(s.title)+'" style="width:100%;min-height:120px;font-family:monospace;font-size:11px;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);resize:vertical">'+escHtml(s.content)+'</textarea>';
+h+='<div style="display:flex;gap:6px;margin-top:8px"><button class="kb-save" data-key="'+escHtml(s.section_key)+'" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">Guardar</button><button class="kb-history" data-key="'+escHtml(s.section_key)+'" style="background:var(--muted);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:10px;cursor:pointer">Historial</button><span class="kb-status" data-key="'+escHtml(s.section_key)+'" style="font-size:10px;color:var(--green);display:none">Guardado!</span></div>';
+h+='<div class="kb-history-list" data-key="'+escHtml(s.section_key)+'" style="display:none;margin-top:8px"></div>';
+h+='</div></div>';
+});return h;
+}
+function bindKnowledge(){
+var btn=document.getElementById("btn_load_knowledge");if(btn)btn.onclick=function(){
+btn.textContent="...";btn.disabled=true;
+fetch("/api/stats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"get_knowledge"})})
+.then(function(r){return r.json()}).then(function(data){
+_knowledgeSections=data.sections||[];
+document.getElementById("knowledge_container").innerHTML=renderKnowledgeSections();
+btn.textContent="Recargar";btn.disabled=false;
+bindKnowledgeEvents();
+}).catch(function(){alert("Error cargando");btn.textContent="Cargar";btn.disabled=false});
+};
+if(_knowledgeSections)bindKnowledgeEvents();
+}
+function bindKnowledgeEvents(){
+// Toggle sections
+document.querySelectorAll(".kb-toggle").forEach(function(el){el.onclick=function(){
+var body=document.querySelector('.kb-body[data-idx="'+el.dataset.idx+'"]');
+if(body)body.style.display=body.style.display==="none"?"block":"none";
+}});
+// Save
+document.querySelectorAll(".kb-save").forEach(function(btn){btn.onclick=function(){
+var key=btn.dataset.key;
+var textarea=document.querySelector('.kb-textarea[data-key="'+key+'"]');
+var title=textarea.dataset.title;
+btn.textContent="...";btn.disabled=true;
+fetch("/api/stats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"update_knowledge",section_key:key,title:title,content:textarea.value})})
+.then(function(r){return r.json()}).then(function(){
+btn.textContent="Guardar";btn.disabled=false;
+var st=document.querySelector('.kb-status[data-key="'+key+'"]');if(st){st.style.display="inline";setTimeout(function(){st.style.display="none"},3000)}
+}).catch(function(){alert("Error");btn.textContent="Guardar";btn.disabled=false});
+}});
+// History
+document.querySelectorAll(".kb-history").forEach(function(btn){btn.onclick=function(){
+var key=btn.dataset.key;
+var list=document.querySelector('.kb-history-list[data-key="'+key+'"]');
+if(list.style.display!=="none"){list.style.display="none";return}
+list.innerHTML="Cargando...";list.style.display="block";
+fetch("/api/stats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:KEY,action:"get_knowledge_history",section_key:key})})
+.then(function(r){return r.json()}).then(function(data){
+if(!data.history||!data.history.length){list.innerHTML='<p style="font-size:10px;color:var(--muted)">Sin historial</p>';return}
+var h='';data.history.forEach(function(v){
+var d=new Date(v.updated_at).toLocaleString("es-ES",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+h+='<div style="border:1px solid var(--border);border-radius:4px;padding:6px 8px;margin-bottom:4px;font-size:10px"><b>v'+v.version+'</b> — '+d+' por '+(v.updated_by||"?")+' <button class="kb-revert" data-key="'+key+'" data-content="'+btoa(unescape(encodeURIComponent(v.content)))+'" style="background:var(--orange);color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;margin-left:4px">Restaurar</button></div>';
+});list.innerHTML=h;
+list.querySelectorAll(".kb-revert").forEach(function(rb){rb.onclick=function(){
+var content=decodeURIComponent(escape(atob(rb.dataset.content)));
+var ta=document.querySelector('.kb-textarea[data-key="'+rb.dataset.key+'"]');
+if(ta){ta.value=content;alert("Contenido restaurado. Pulsa Guardar para confirmar.")}
+}});
+}).catch(function(){list.innerHTML="Error"});
+}});
+}
+
 // === INCIDENTS ===
 function incidentsHTML(){
 var list=stats.incidents_list;if(!list||!list.length)return '';
@@ -655,6 +728,8 @@ var rm=document.getElementById("btn_report_month");if(rm)rm.onclick=function(){g
 var ex=document.getElementById("btn_export_csv");if(ex)ex.onclick=exportCSV;
 // Dark mode
 var dm=document.getElementById("btn_dark");if(dm)dm.onclick=function(){darkMode=!darkMode;document.body.classList.toggle("dark",darkMode);localStorage.setItem("bj_dark",darkMode?"1":"0");render()};
+// Knowledge base
+bindKnowledge();
 // Push notifications
 var pb=document.getElementById("btn_push");if(pb)pb.onclick=function(){subscribePush()};
 var pt=document.getElementById("btn_push_test");if(pt)pt.onclick=function(){

@@ -75,6 +75,29 @@ async function initDB() {
     )
   `;
 
+  // Knowledge base (dynamic, editable from dashboard)
+  await sql`
+    CREATE TABLE IF NOT EXISTS knowledge_sections (
+      id SERIAL PRIMARY KEY,
+      section_key TEXT UNIQUE NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_by TEXT DEFAULT 'system',
+      version INTEGER DEFAULT 1
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS knowledge_history (
+      id SERIAL PRIMARY KEY,
+      section_key TEXT NOT NULL,
+      content TEXT NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_by TEXT,
+      version INTEGER
+    )
+  `;
+
   // Indexes for performance
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_session ON chats(session)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_ts ON chats(ts)`;
@@ -464,4 +487,38 @@ async function getAlertData() {
   };
 }
 
-module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats };
+// === KNOWLEDGE BASE ===
+async function getKnowledgeSections() {
+  const sql = getSQL();
+  return await sql`SELECT section_key, title, content, updated_at, updated_by, version FROM knowledge_sections ORDER BY id ASC`;
+}
+
+async function upsertKnowledgeSection(key, title, content, updatedBy) {
+  const sql = getSQL();
+  // Save history first
+  var existing = await sql`SELECT content, version FROM knowledge_sections WHERE section_key = ${key}`;
+  var newVersion = existing.length > 0 ? (existing[0].version || 0) + 1 : 1;
+  if (existing.length > 0) {
+    await sql`INSERT INTO knowledge_history (section_key, content, updated_by, version) VALUES (${key}, ${existing[0].content}, ${updatedBy || 'system'}, ${existing[0].version || 0})`;
+  }
+  await sql`INSERT INTO knowledge_sections (section_key, title, content, updated_by, version, updated_at)
+    VALUES (${key}, ${title}, ${content}, ${updatedBy || 'system'}, ${newVersion}, NOW())
+    ON CONFLICT (section_key) DO UPDATE SET title = ${title}, content = ${content}, updated_by = ${updatedBy || 'system'}, version = ${newVersion}, updated_at = NOW()`;
+}
+
+async function getKnowledgeHistory(key, limit) {
+  const sql = getSQL();
+  return await sql`SELECT content, updated_at, updated_by, version FROM knowledge_history WHERE section_key = ${key} ORDER BY version DESC LIMIT ${limit || 10}`;
+}
+
+async function seedKnowledge(sections) {
+  const sql = getSQL();
+  var existing = await sql`SELECT COUNT(*) as c FROM knowledge_sections`;
+  if (parseInt(existing[0].c) > 0) return;
+  for (var i = 0; i < sections.length; i++) {
+    var s = sections[i];
+    await sql`INSERT INTO knowledge_sections (section_key, title, content, updated_by) VALUES (${s.key}, ${s.title}, ${s.content}, 'system')`;
+  }
+}
+
+module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, seedKnowledge };
