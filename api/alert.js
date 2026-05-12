@@ -75,7 +75,7 @@ module.exports = async function handler(req, res) {
         '<div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:6px;font-size:12px;color:#6b7280">' +
         '<strong>Resumen 24h:</strong> ' + data.current.total + ' mensajes, ' + data.current.sessions + ' sesiones, ' + data.escalations + ' escalaciones, ' + data.current.errors + ' errores' +
         '</div>' +
-        '<p style="margin-top:12px;font-size:11px;color:#9ca3af">Ver detalles en el <a href="https://burgerjazz-chatbot.vercel.app/dashboard.html">dashboard</a></p>' +
+        '<p style="margin-top:12px;font-size:11px;color:#9ca3af">Ver detalles en el <a href="https://bot.burgerjazz.com/dashboard.html">dashboard</a></p>' +
         '</div></div>';
 
       await fetch("https://api.resend.com/emails", {

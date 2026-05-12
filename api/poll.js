@@ -4,7 +4,10 @@ let dbReady = false;
 let _dbInitPromise = null;
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  var origin = req.headers.origin || "";
+  var allowed = "https://bot.burgerjazz.com";
+  if (origin === "https://bot.burgerjazz.com" || origin === "https://burgerjazz-chatbot.vercel.app" || /^https:\/\/burgerjazz-chatbot[a-z0-9-]*\.vercel\.app$/.test(origin) || origin === "https://burgerjazz.com" || origin === "https://www.burgerjazz.com" || origin === "http://localhost:3000" || origin === "http://localhost:5500") allowed = origin;
+  res.setHeader("Access-Control-Allow-Origin", allowed);
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();

@@ -24,7 +24,10 @@ const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  var origin = req.headers.origin || "";
+  var allowed = "https://bot.burgerjazz.com";
+  if (origin === "https://bot.burgerjazz.com" || origin === "https://burgerjazz-chatbot.vercel.app" || /^https:\/\/burgerjazz-chatbot[a-z0-9-]*\.vercel\.app$/.test(origin) || origin === "http://localhost:3000" || origin === "http://localhost:5500") allowed = origin;
+  res.setHeader("Access-Control-Allow-Origin", allowed);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -74,9 +77,11 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // POST: send test notification
+  // POST: send test notification (supports custom message)
   if (req.method === "POST" && req.body?.action === "test") {
-    return await sendPushToAll("Test BJ Chat", "Las notificaciones funcionan correctamente", res);
+    var title = req.body.title || "Test BJ Chat";
+    var body = req.body.body || "Las notificaciones funcionan correctamente";
+    return await sendPushToAll(title, body, res);
   }
 
   return res.status(400).json({ error: "Unknown action" });
@@ -89,8 +94,8 @@ async function sendPushToAll(title, body, res) {
   }
   webpush.setVapidDetails("mailto:info@burgerjazz.com", VAPID_PUBLIC, VAPID_PRIVATE);
   var sql = getSQL();
-  var subs = await sql`SELECT subscription, endpoint FROM push_subscriptions`;
-  var sent = 0, failed = 0;
+  var subs = await sql`SELECT user_name, subscription, endpoint FROM push_subscriptions`;
+  var sent = 0, failed = 0, errors = [];
   for (var i = 0; i < subs.length; i++) {
     try {
       var sub = typeof subs[i].subscription === "string" ? JSON.parse(subs[i].subscription) : subs[i].subscription;
@@ -98,12 +103,13 @@ async function sendPushToAll(title, body, res) {
       sent++;
     } catch (e) {
       failed++;
+      errors.push({ user: subs[i].user_name || "?", status: e.statusCode || 0, msg: (e.body || e.message || "").slice(0, 120) });
       if (e.statusCode === 410 || e.statusCode === 404) {
         try { await sql`DELETE FROM push_subscriptions WHERE endpoint = ${subs[i].endpoint}`; } catch (e2) {}
       }
     }
   }
-  if (res) return res.status(200).json({ sent: sent, failed: failed });
+  if (res) return res.status(200).json({ sent: sent, failed: failed, errors: errors });
 }
 
 // Export for use in chat.js

@@ -4,7 +4,7 @@
   // ═══════════════════════════════════════
   // CONFIG
   // ═══════════════════════════════════════
-  var BASE_URL = window.BURGERJAZZ_CHAT_API || "https://burgerjazz-chatbot.vercel.app";
+  var BASE_URL = window.BURGERJAZZ_CHAT_API || "https://bot.burgerjazz.com";
   var API_URL = BASE_URL + "/api/chat";
   var RATE_URL = BASE_URL + "/api/rate";
   var FEEDBACK_URL = BASE_URL + "/api/feedback";
@@ -790,7 +790,7 @@
             hideTyping();
             isLoading = false;
             document.getElementById("bj-chat-send").disabled = false;
-            if (data.agentMode) { inAgentMode = true; setHeaderStatus("Agente conectado", false); }
+            if (data.agentMode) { if (!inAgentMode) { inAgentMode = true; setHeaderStatus("Conectado con agente", false); addBotMessage("Tu mensaje ha sido enviado al agente. En breve te responderá."); } }
             else if (data.reply) addBotMessage(data.reply, data.quickReplies || null, data.chatId);
           });
         }
@@ -824,7 +824,18 @@
               if (!line.startsWith("data: ")) return;
               try {
                 var data = JSON.parse(line.slice(6));
-                if (data.type === "text") {
+                if (data.type === "agent_mode") {
+                  // Session escalated to agent — remove empty stream wrapper and enter agent mode
+                  if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+                  if (!inAgentMode) {
+                    inAgentMode = true;
+                    setHeaderStatus("Conectado con agente", false);
+                    addBotMessage("Tu mensaje ha sido enviado al agente. En breve te responderá.");
+                  }
+                  isLoading = false;
+                  document.getElementById("bj-chat-send").disabled = false;
+                  return;
+                } else if (data.type === "text") {
                   fullText += data.text;
                   wrapper.innerHTML = parseMarkdown(escapeHTML(fullText));
                   scrollBottom();
@@ -922,8 +933,11 @@
         document.getElementById("bj-chat-send").disabled = false;
 
         if (data.agentMode) {
-          inAgentMode = true;
-          setHeaderStatus("Agente conectado", false);
+          if (!inAgentMode) {
+            inAgentMode = true;
+            setHeaderStatus("Conectado con agente", false);
+            addBotMessage("Tu mensaje ha sido enviado al agente. En breve te responderá.");
+          }
         } else if (data.reply) {
           addBotMessage(data.reply, data.quickReplies || null, data.chatId);
           checkConversationEnd(data.reply);
@@ -1119,19 +1133,31 @@
     // Refresh open/closed status every 5 min
     setInterval(function () { setHeaderStatus(t("online"), false); }, 5 * 60 * 1000);
 
-    // Poll for admin messages (3s in agent mode, 10s normal)
+    // Poll for admin messages (3s)
     var lastPollTs = new Date().toISOString();
+    var _agentWaitTimer = null;
+    var _agentWaitShown = false;
+    var _agentFallbackShown = false;
     setInterval(function () {
       if (!sessionId || !isOpen) return;
       fetch(BASE_URL + "/api/poll?session=" + encodeURIComponent(sessionId) + "&after=" + encodeURIComponent(lastPollTs))
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.messages && data.messages.length > 0) {
+            // Agent responded — clear wait timers
+            _agentWaitShown = true;
+            _agentFallbackShown = true;
+            if (_agentWaitTimer) { clearTimeout(_agentWaitTimer); _agentWaitTimer = null; }
             data.messages.forEach(function (m) {
               var isDup = messages.some(function (existing) {
                 return existing.role === "assistant" && existing.content === m.text;
               });
               if (!isDup) {
+                // Check if bot was released
+                if (m.text && m.text.indexOf("bot vuelve a estar disponible") !== -1) {
+                  inAgentMode = false;
+                  setHeaderStatus(t("online"), false);
+                }
                 addBotMessage(m.text);
                 scrollBottom();
               }
@@ -1140,6 +1166,24 @@
           }
         })
         .catch(function () {});
+      // Agent wait feedback: show reassuring messages if no agent responds
+      if (inAgentMode && !_agentWaitTimer && !_agentWaitShown) {
+        _agentWaitTimer = setTimeout(function () {
+          if (!_agentWaitShown && inAgentMode) {
+            _agentWaitShown = true;
+            addBotMessage("Un agente ha sido notificado y te atendera en breve. Gracias por tu paciencia.");
+            scrollBottom();
+          }
+          // 5 min fallback
+          setTimeout(function () {
+            if (!_agentFallbackShown && inAgentMode) {
+              _agentFallbackShown = true;
+              addBotMessage("Nuestros agentes estan ocupados en este momento. Si lo prefieres, puedes escribirnos a info@burgerjazz.com y te responderemos lo antes posible.");
+              scrollBottom();
+            }
+          }, 180000);
+        }, 120000);
+      }
     }, 3000);
   }
 

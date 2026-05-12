@@ -98,6 +98,9 @@ async function initDB() {
     )
   `;
 
+  // Escalated sessions (agent takeover)
+  await sql`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
+
   // Indexes for performance
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_session ON chats(session)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_ts ON chats(ts)`;
@@ -143,7 +146,7 @@ async function logChat(sessionId, userMsg, botReply, category, tokens, promptVer
 async function getChats(limit) {
   const sql = getSQL();
   return await sql`
-    SELECT id, session, ts, user_msg, bot_msg, category, tokens_input, tokens_output
+    SELECT id, session, ts, user_msg, bot_msg, category, tokens_input, tokens_output, prompt_version
     FROM chats ORDER BY ts DESC LIMIT ${limit || 200}
   `;
 }
@@ -217,6 +220,7 @@ async function getStats() {
       user: c.user_msg,
       bot: c.bot_msg,
       category: c.category,
+      prompt_version: c.prompt_version,
       tokens: { input: c.tokens_input, output: c.tokens_output },
     };
   });
@@ -513,11 +517,21 @@ async function getKnowledgeHistory(key, limit) {
 
 async function seedKnowledge(sections) {
   const sql = getSQL();
-  var existing = await sql`SELECT COUNT(*) as c FROM knowledge_sections`;
-  if (parseInt(existing[0].c) > 0) return;
+  var existing = await sql`SELECT section_key, content FROM knowledge_sections`;
+  var existingMap = {};
+  for (var j = 0; j < existing.length; j++) {
+    existingMap[existing[j].section_key] = existing[j].content;
+  }
   for (var i = 0; i < sections.length; i++) {
     var s = sections[i];
-    await sql`INSERT INTO knowledge_sections (section_key, title, content, updated_by) VALUES (${s.key}, ${s.title}, ${s.content}, 'system')`;
+    if (!(s.key in existingMap)) {
+      await sql`INSERT INTO knowledge_sections (section_key, title, content, updated_by) VALUES (${s.key}, ${s.title}, ${s.content}, 'system')`;
+    } else if (existingMap[s.key] !== s.content) {
+      // Seed content changed — update DB to match
+      var oldVersion = await sql`SELECT version FROM knowledge_sections WHERE section_key = ${s.key}`;
+      var newV = (oldVersion.length > 0 ? (oldVersion[0].version || 0) : 0) + 1;
+      await sql`UPDATE knowledge_sections SET content = ${s.content}, updated_by = 'seed-sync', version = ${newV}, updated_at = NOW() WHERE section_key = ${s.key}`;
+    }
   }
 }
 
