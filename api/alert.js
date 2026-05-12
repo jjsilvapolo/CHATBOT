@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
         headers: { "Authorization": "Bearer " + RESEND_KEY, "Content-Type": "application/json" },
         body: JSON.stringify({
           from: "JazzBot <alertas@burgerjazz.com>",
-          to: ["martam@burgerjazz.com"],
+          to: ["rodrigo@burgerjazz.com"],
           subject: (alerts.some(function(a){return a.type==="error"}) ? "🔴" : "🟡") + " Alerta JazzBot — " + alerts.length + " anomalia(s) detectada(s)",
           html: html,
         }),
