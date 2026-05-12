@@ -8,8 +8,10 @@ let dbReady = false;
 let _dbInitPromise = null;
 
 module.exports = async function handler(req, res) {
-  var authHeader = req.headers["authorization"];
-  if (authHeader !== "Bearer " + process.env.CRON_SECRET) {
+  var isCron = req.headers["x-vercel-cron"] === "true";
+  var authKey = process.env.LEARN_KEY;
+  var providedKey = req.query?.key || req.headers["x-learn-key"];
+  if (!isCron && (!authKey || providedKey !== authKey)) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
@@ -145,7 +147,12 @@ module.exports = async function handler(req, res) {
       }),
     });
 
-    var emailResult = await emailRes.json();
+    var emailResult = {};
+    if (emailRes.ok) {
+      emailResult = await emailRes.json();
+    } else {
+      console.error("Resend error:", emailRes.status, await emailRes.text().catch(function(){return ""}));
+    }
 
     return res.status(200).json({
       status: "ok",
@@ -158,6 +165,6 @@ module.exports = async function handler(req, res) {
     });
   } catch (err) {
     console.error("Cron report error:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Internal error" });
   }
 };

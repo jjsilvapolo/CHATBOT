@@ -6,6 +6,7 @@ let _dbInitPromise = null;
 // CORS: same as chat.js
 var ALLOWED_ORIGINS = [
   "https://burgerjazz.com", "https://www.burgerjazz.com",
+  "https://bot.burgerjazz.com",
   "https://burgerjazz-chatbot.vercel.app",
   "http://localhost:3000", "http://localhost:5500",
 ];
@@ -45,8 +46,24 @@ module.exports = async function handler(req, res) {
   }
 
   var sessionId = req.body?.sessionId;
+  var deleteToken = req.body?.deleteToken;
   if (!sessionId || typeof sessionId !== "string" || sessionId.length > 60) {
     return res.status(400).json({ error: "Invalid sessionId" });
+  }
+  // Validate origin matches and token is present (basic ownership check)
+  var origin = req.headers.origin || "";
+  if (!origin || origin === ALLOWED_ORIGINS[ALLOWED_ORIGINS.length - 1] || origin === ALLOWED_ORIGINS[ALLOWED_ORIGINS.length - 2]) {
+    // localhost — only allow with dashboard key
+    var dashKey = req.body?.key;
+    if (!dashKey || (dashKey !== process.env.DASHBOARD_KEY)) {
+      try {
+        var parts = (dashKey || "").split(":");
+        var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
+        if (!users[parts[0]] || users[parts[0]] !== parts.slice(1).join(":")) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+      } catch(e) { return res.status(401).json({ error: "Unauthorized" }); }
+    }
   }
 
   // Rate limit

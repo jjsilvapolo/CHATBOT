@@ -557,7 +557,8 @@ function generateReport(period){
     var body=document.getElementById("rpt_body");if(!body)return;
     if(data.error){body.innerHTML='<div class="modal-loading" style="color:var(--red)">Error: '+escHtml(data.error)+'</div>';return}
     var report=data.report||"Sin datos";
-    body.innerHTML='<div style="font-size:12px;line-height:1.7">'+report+'</div>';
+    var reportSafe=report.replace(/<script[\s\S]*?<\/script>/gi,"").replace(/on\w+\s*=/gi,"data-blocked=");
+    body.innerHTML='<div style="font-size:12px;line-height:1.7">'+reportSafe+'</div>';
     body.querySelectorAll("table").forEach(function(t){t.style.cssText="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px";t.querySelectorAll("th").forEach(function(th){th.style.cssText="background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase"});t.querySelectorAll("td").forEach(function(td){td.style.cssText="padding:8px 10px;border-bottom:1px solid var(--border)"})});
     body.querySelectorAll("h2").forEach(function(h){h.style.cssText="font-size:14px;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #F5E1A4"});
     var copyBtn=document.getElementById("rpt_copy");var dlBtn=document.getElementById("rpt_download");
@@ -568,7 +569,7 @@ function generateReport(period){
       win.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Informe BurgerJazz</title><style>@page{margin:16mm}body{font-family:system-ui,sans-serif;color:#1a1a2e;line-height:1.7;font-size:13px;max-width:750px;margin:0 auto;padding:30px}h2{font-size:15px;margin:20px 0 8px;border-bottom:2px solid #F5E1A4;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}th{background:#002855;color:#fff;padding:8px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #e8eaed}.header-bar{background:linear-gradient(135deg,#002855,#003d7a);color:#fff;padding:28px 32px;border-radius:14px;margin-bottom:24px}.header-bar h1{font-size:22px;margin:0}.header-bar .sub{font-size:13px;opacity:.8;margin-top:4px}.kpi-row{display:flex;gap:12px;margin-bottom:20px}.kpi{flex:1;background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e8eaed}.kpi .val{font-size:26px;font-weight:900}.kpi .label{font-size:9px;color:#8893a4;text-transform:uppercase;margin-top:2px}.footer{margin-top:30px;padding-top:16px;border-top:2px solid #F5E1A4;font-size:10px;color:#8893a4;text-align:center}</style></head><body>'
         +'<div class="header-bar"><h1>BURGERJAZZ</h1><div class="sub">Informe '+(period==="monthly"?"Mensual":"Semanal")+'</div><div style="font-size:12px;opacity:.6;margin-top:6px">'+dateStr+'</div></div>'
         +'<div class="kpi-row"><div class="kpi"><div class="val">'+(d.total_messages||0)+'</div><div class="label">Mensajes</div></div><div class="kpi"><div class="val">'+(d.sessions||0)+'</div><div class="label">Sesiones</div></div><div class="kpi"><div class="val" style="color:'+resColor+'">'+(d.resolution_rate||0)+'%</div><div class="label">Resolucion</div></div><div class="kpi"><div class="val">'+(d.satisfaction?d.satisfaction.toFixed(1):"N/A")+'</div><div class="label">Satisfaccion</div></div></div>'
-        +'<div style="font-size:13px;line-height:1.8">'+report+'</div>'
+        +'<div style="font-size:13px;line-height:1.8">'+reportSafe+'</div>'
         +'<div class="footer">JazzBot Analytics | BurgerJazz &copy; '+new Date().getFullYear()+'</div></body></html>');
       win.document.close();setTimeout(function(){win.print()},500);
     }}

@@ -78,7 +78,7 @@ module.exports = async function handler(req, res) {
         '<p style="margin-top:12px;font-size:11px;color:#9ca3af">Ver detalles en el <a href="https://bot.burgerjazz.com/dashboard.html">dashboard</a></p>' +
         '</div></div>';
 
-      await fetch("https://api.resend.com/emails", {
+      var emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": "Bearer " + RESEND_KEY, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,6 +88,7 @@ module.exports = async function handler(req, res) {
           html: html,
         }),
       });
+      if (!emailRes.ok) console.error("Alert email error:", emailRes.status, await emailRes.text().catch(function(){return ""}));
     }
 
     // Send Slack alert too
@@ -108,6 +109,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ status: "alerts_sent", alerts: alerts, data: data });
   } catch (err) {
     console.error("Alert error:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Internal error" });
   }
 };

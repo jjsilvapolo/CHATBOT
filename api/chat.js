@@ -143,6 +143,7 @@ CASO 3: "ME FALTA UN PRODUCTO" / PEDIDO INCOMPLETO
 - Muestra empatia: "Vaya, sentimos mucho que te falte algo"
 - Pregunta por que plataforma pidio
 - Si Uber Eats o Glovo → "Uf, cuanto lo siento. Que te falte algo en el pedido es lo peor. Nosotros ponemos todo nuestro cariño en preparar cada burger, pero una vez que sale por [Uber Eats/Glovo] el envio lo controlan ellos y a veces pasan estas cosas que nos fastidia mucho. Abre una reclamacion en la app, en la seccion del pedido, y te dan reembolso o reenvio. Para la proxima, prueba nuestro delivery propio en pedidos.burgerjazz.com, te lo llevamos nosotros y asi no hay intermediarios."
+- Si delivery propio (pedidos.burgerjazz.com) → ESCALA A AGENTE. Recoge datos (numero de pedido, nombre, telefono, que producto falta) y pasa a agente.
 - Si por la web (pick-up) o en local (take-away) → "Escanea el codigo QR que aparece en la bolsa o en la parte inferior del ticket y sigue las instrucciones. Asi gestionamos tu incidencia lo mas rapido posible."
 
 CASO 4: FACTURAS / TICKETS
@@ -156,7 +157,8 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
 - IMPORTANTE: Varios locales cierran lunes y martes. Avisalo si preguntan por esos dias.
-- MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a jueves en horario de comidas (hasta 16:00). NO viernes, NO fines de semana, NO cenas, NO delivery. Cuando el cliente pregunte por el menu del dia, PRIMERO pregunta a que local ira para confirmar que esta abierto ese dia.
+- MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a jueves en horario de comidas (hasta 16:00). NO viernes, NO fines de semana, NO cenas, NO delivery.
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" ANTES de dar info del menu. Esto es OBLIGATORIO porque Delicias y Retiro cierran lunes y martes, y Moraleja Green cierra lunes y martes. Si el cliente ya dijo el local, comprueba si ese local esta abierto ese dia antes de responder. Ejemplo: si es martes y dice Delicias → "Delicias esta cerrado los martes, pero puedes ir a Chamberi o Plaza Espana que si estan abiertos y tienen menu del dia."
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -233,13 +235,13 @@ const KNOWLEDGE_SEED = [
 2. Plaza Espana - C/ Fomento, 37 (Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
 3. Retiro - C/ O'Donnell, 40 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Retiro+Madrid
 4. Delicias - Paseo de las Delicias, 129 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Delicias+Madrid
-5. Alcorcon - C/ Timanfaya, 40 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Alcorcon
-6. Majadahonda - Av. Reyes Catolicos, 8 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
-7. Pozuelo - C/ Atenas, 2 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
+5. Alcorcon - C/ Timanfaya, 40 (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Alcorcon
+6. Majadahonda - Av. Reyes Catolicos, 8 (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
+7. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 8. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-9. Alcobendas - Paseo Fuente Lucha, 14 local 2 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Alcobendas
+9. Alcobendas - Paseo Fuente Lucha, 14 local 2 (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Alcobendas
 10. Moraleja Green - Av. Europa, 13, CC Moraleja Green (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
-11. Valladolid - Claudio Moyano, 20 (Dine-in, Delivery, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Valladolid
+11. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS: Malasana (C/ Marques de Santa Ana, 7 - antiguo local sin gluten).
 Chamberi y Plaza Espana: solo delivery y recogida, NO dine-in.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL:
@@ -883,7 +885,8 @@ module.exports = async function handler(req, res) {
   // Check response cache (only for single-turn, first message)
   var useStream = req.body.stream === true;
   if (cleanMessages.length === 1 && !useStream) {
-    var cacheKey = getCacheKey(lastUserMsg);
+    var hourBlock = Math.floor(new Date().getHours() / 3); // 3-hour blocks for temporal context
+    var cacheKey = getCacheKey(lastUserMsg + "_h" + hourBlock);
     var cached = getCachedResponse(cacheKey);
     if (cached) {
       await logChat(sid, lastUserMsg, cached.reply, cached.category || category, { input: 0, output: 0 }, promptVersion);
@@ -912,6 +915,7 @@ module.exports = async function handler(req, res) {
         const stream = client.messages.stream({
           model: "claude-haiku-4-5",
           max_tokens: 800,
+          temperature: 0.4,
           system: fullPrompt,
           messages: trimmed,
         });
@@ -953,6 +957,7 @@ module.exports = async function handler(req, res) {
       client.messages.create({
         model: "claude-haiku-4-5",
         max_tokens: 800,
+        temperature: 0.4,
         system: fullPrompt,
         messages: trimmed,
       }),
@@ -994,7 +999,6 @@ module.exports = async function handler(req, res) {
       category: category,
       quickReplies: [],
       fallback: true,
-      _credit_error: isCredit,
     });
   }
 };

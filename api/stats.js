@@ -1,4 +1,4 @@
-const { initDB, getStats, getSession, getRatings, getIncidents, resolveIncident, updateIncidentNotes, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory } = require("./_db");
+const { initDB, getStats, getSession, getRatings, getIncidents, resolveIncident, updateIncidentNotes, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, getSQLInstance } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -104,23 +104,21 @@ module.exports = async function handler(req, res) {
       const { logChat } = require("./_db");
       await logChat(req.body.session, "[ADMIN]", "Un momento, le paso con un agente para atenderle personalmente.", "admin_reply", { input: 0, output: 0 }, "ADMIN");
       // Mark in chat.js escalated sessions via a flag in DB
-      const { neon } = require("@neondatabase/serverless");
-      const sql = neon(process.env.DATABASE_URL);
+      var sqlTk = getSQLInstance();
       try {
-        await sql`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
-        await sql`INSERT INTO escalated_sessions (session_id) VALUES (${req.body.session}) ON CONFLICT DO NOTHING`;
+        await sqlTk`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
+        await sqlTk`INSERT INTO escalated_sessions (session_id) VALUES (${req.body.session}) ON CONFLICT DO NOTHING`;
       } catch(e) {
         console.error("Takeover DB error:", e);
-        return res.status(500).json({ error: "Error al tomar control: " + e.message });
+        return res.status(500).json({ error: "Error al tomar control" });
       }
       return res.status(200).json({ ok: true });
     }
     // Release session: return control to bot
     if (req.body?.action === "release_session" && req.body?.session) {
-      const { neon } = require("@neondatabase/serverless");
-      const sql = neon(process.env.DATABASE_URL);
+      var sqlRel = getSQLInstance();
       try {
-        await sql`DELETE FROM escalated_sessions WHERE session_id = ${req.body.session}`;
+        await sqlRel`DELETE FROM escalated_sessions WHERE session_id = ${req.body.session}`;
       } catch(e) {}
       if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
       const { logChat } = require("./_db");
@@ -176,9 +174,8 @@ module.exports = async function handler(req, res) {
       // Check if session is currently escalated (agent has control)
       var isEscalated = false;
       try {
-        const { neon } = require("@neondatabase/serverless");
-        const sql = neon(process.env.DATABASE_URL);
-        var escRows = await sql`SELECT 1 FROM escalated_sessions WHERE session_id = ${sessionParam} AND created_at > NOW() - INTERVAL '24 hours' LIMIT 1`;
+        var sqlEsc = getSQLInstance();
+        var escRows = await sqlEsc`SELECT 1 FROM escalated_sessions WHERE session_id = ${sessionParam} AND created_at > NOW() - INTERVAL '24 hours' LIMIT 1`;
         isEscalated = escRows.length > 0;
       } catch(e) { console.error("Escalation check error:", e); }
       return res.status(200).json({ is_escalated: isEscalated, messages: msgs.map(function(m) {
@@ -203,6 +200,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json(stats);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error("Stats error:", err);
+    return res.status(500).json({ error: "Internal error" });
   }
 };

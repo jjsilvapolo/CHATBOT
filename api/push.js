@@ -1,11 +1,8 @@
 const webpush = require("web-push");
-const { initDB } = require("./_db");
-const { neon } = require("@neondatabase/serverless");
+const { initDB, getSQLInstance } = require("./_db");
 
 let dbReady = false;
 let _dbInitPromise = null;
-
-function getSQL() { return neon(process.env.DATABASE_URL); }
 
 function validatePushKey(rawKey) {
   if (!rawKey) return false;
@@ -36,7 +33,7 @@ module.exports = async function handler(req, res) {
     if (!_dbInitPromise) _dbInitPromise = initDB();
     await _dbInitPromise;
     // Create push_subscriptions table
-    var sql = getSQL();
+    var sql = getSQLInstance();
     try {
       await sql`CREATE TABLE IF NOT EXISTS push_subscriptions (
         id SERIAL PRIMARY KEY,
@@ -66,7 +63,7 @@ module.exports = async function handler(req, res) {
     if (!sub || !sub.endpoint || !userName) {
       return res.status(400).json({ error: "subscription and userName required" });
     }
-    var sql2 = getSQL();
+    var sql2 = getSQLInstance();
     try {
       await sql2`INSERT INTO push_subscriptions (user_name, endpoint, subscription)
         VALUES (${userName}, ${sub.endpoint}, ${JSON.stringify(sub)})
@@ -93,7 +90,7 @@ async function sendPushToAll(title, body, res) {
     return;
   }
   webpush.setVapidDetails("mailto:info@burgerjazz.com", VAPID_PUBLIC, VAPID_PRIVATE);
-  var sql = getSQL();
+  var sql = getSQLInstance();
   var subs = await sql`SELECT user_name, subscription, endpoint FROM push_subscriptions`;
   var sent = 0, failed = 0, errors = [];
   for (var i = 0; i < subs.length; i++) {
@@ -116,7 +113,7 @@ async function sendPushToAll(title, body, res) {
 module.exports.sendPushToAll = async function (title, body, urgent) {
   if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
   webpush.setVapidDetails("mailto:info@burgerjazz.com", VAPID_PUBLIC, VAPID_PRIVATE);
-  var sql = getSQL();
+  var sql = getSQLInstance();
   try {
     var subs = await sql`SELECT subscription, endpoint FROM push_subscriptions`;
     for (var i = 0; i < subs.length; i++) {

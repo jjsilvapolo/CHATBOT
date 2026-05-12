@@ -5,6 +5,7 @@ let _dbInitPromise = null;
 
 var ALLOWED_ORIGINS = [
   "https://burgerjazz.com", "https://www.burgerjazz.com",
+  "https://bot.burgerjazz.com",
   "https://burgerjazz-chatbot.vercel.app",
   "http://localhost:3000", "http://localhost:5500",
 ];
