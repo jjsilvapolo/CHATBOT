@@ -238,12 +238,13 @@ var chatViewFilter="all";
 if(darkMode)document.body.classList.add("dark");
 
 // === AUDIO ===
+var _notifAudioCtx=null;
 function playNotifSound(){
-  try{var a=new(window.AudioContext||window.webkitAudioContext)();var o=a.createOscillator();var g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;o.type="sine";g.gain.value=0.15;o.start();o.stop(a.currentTime+0.15);setTimeout(function(){var o2=a.createOscillator();var g2=a.createGain();o2.connect(g2);g2.connect(a.destination);o2.frequency.value=1100;o2.type="sine";g2.gain.value=0.12;o2.start();o2.stop(a.currentTime+0.15)},180)}catch(e){}
+  try{if(!_notifAudioCtx)_notifAudioCtx=new(window.AudioContext||window.webkitAudioContext)();var a=_notifAudioCtx;if(a.state==="suspended")a.resume();var o=a.createOscillator();var g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;o.type="sine";g.gain.value=0.15;o.start();o.stop(a.currentTime+0.15);setTimeout(function(){var o2=a.createOscillator();var g2=a.createGain();o2.connect(g2);g2.connect(a.destination);o2.frequency.value=1100;o2.type="sine";g2.gain.value=0.12;o2.start();o2.stop(a.currentTime+0.15)},180)}catch(e){}
 }
 
 // === HELPERS ===
-function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 function highlightSearch(text,query){
   if(!query)return escHtml(text);
   var esc=escHtml(text);

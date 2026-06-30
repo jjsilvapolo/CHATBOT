@@ -351,13 +351,16 @@
     // Chat container
     container = document.createElement("div");
     container.id = "bj-chat-container";
+    container.setAttribute("role", "dialog");
+    container.setAttribute("aria-modal", "true");
+    container.setAttribute("aria-label", "Chat de atención BurgerJazz");
     container.innerHTML =
       '<div id="bj-chat-header">' +
       '<img id="bj-chat-header-logo" src="' + LOGO_URL + '" alt="BJ" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 rx=%228%22 fill=%22%23002855%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22 font-weight=%22bold%22>BJ</text></svg>\'">' +
       '<div id="bj-chat-header-info"><div id="bj-chat-header-name"><img src="' + LOGO_URL + '" style="height:22px;object-fit:contain;display:block;filter:brightness(0) invert(1)" alt="BURGERJAZZ\u2122"></div><div id="bj-chat-header-status"><span class="dot"></span> Online</div></div>' +
       '<button id="bj-chat-close" aria-label="Cerrar">&times;</button>' +
       "</div>" +
-      '<div id="bj-chat-body"></div>' +
+      '<div id="bj-chat-body" role="log" aria-live="polite" aria-atomic="false" aria-label="Conversación"></div>' +
       '<div id="bj-chat-quick"></div>' +
       '<div class="bj-contact-bar" id="bj-contact-bar"></div>' +
       '<div id="bj-rating" style="display:none"></div>' +
@@ -623,7 +626,7 @@
     if (type === "bot" && !isRestored && chatId && userMsgCount > 0) {
       var fb = document.createElement("div");
       fb.className = "bj-feedback";
-      fb.innerHTML = '<button data-vote="up" title="Util">\uD83D\uDC4D</button><button data-vote="down" title="No util">\uD83D\uDC4E</button>';
+      fb.innerHTML = '<button data-vote="up" title="Util" aria-label="Respuesta \u00FAtil">\uD83D\uDC4D</button><button data-vote="down" title="No util" aria-label="Respuesta no \u00FAtil">\uD83D\uDC4E</button>';
       fb.querySelectorAll("button").forEach(function (btn) {
         btn.onclick = function () {
           fb.querySelectorAll("button").forEach(function (b) { b.classList.remove("voted", "voted-down"); b.disabled = true; });
@@ -858,7 +861,7 @@
                   if (data.chatId && userMsgCount > 0) {
                     var fb = document.createElement("div");
                     fb.className = "bj-feedback";
-                    fb.innerHTML = '<button data-vote="up" title="Util">\uD83D\uDC4D</button><button data-vote="down" title="No util">\uD83D\uDC4E</button>';
+                    fb.innerHTML = '<button data-vote="up" title="Util" aria-label="Respuesta \u00FAtil">\uD83D\uDC4D</button><button data-vote="down" title="No util" aria-label="Respuesta no \u00FAtil">\uD83D\uDC4E</button>';
                     fb.querySelectorAll("button").forEach(function (btn) {
                       btn.onclick = function () {
                         fb.querySelectorAll("button").forEach(function (b) { b.classList.remove("voted", "voted-down"); b.disabled = true; });

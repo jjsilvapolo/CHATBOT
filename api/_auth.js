@@ -14,6 +14,27 @@ function timingSafeEqualStr(a, b) {
   return crypto.timingSafeEqual(ha, hb) && ba.length === bb.length;
 }
 
+// Verify a provided password against a stored value. The stored value may be
+// either plaintext (legacy) or a scrypt hash "scrypt$<saltHex>$<hashHex>".
+// Both paths are constant-time. This lets us migrate DASHBOARD_USERS to hashes
+// without breaking logins (code accepts both formats).
+function verifyPassword(stored, provided) {
+  stored = String(stored || "");
+  provided = String(provided || "");
+  if (stored.indexOf("scrypt$") === 0) {
+    var parts = stored.split("$"); // ["scrypt", salt, hash]
+    if (parts.length !== 3) return false;
+    var salt, expected;
+    try {
+      salt = Buffer.from(parts[1], "hex");
+      expected = Buffer.from(parts[2], "hex");
+      var derived = crypto.scryptSync(provided, salt, expected.length);
+      return expected.length === derived.length && crypto.timingSafeEqual(expected, derived);
+    } catch (e) { return false; }
+  }
+  return timingSafeEqualStr(stored, provided);
+}
+
 // Validate a dashboard credential of the form "user:password" against
 // DASHBOARD_USERS (JSON map) or a single shared DASHBOARD_KEY. Constant-time.
 function validateDashKey(rawKey) {
@@ -25,10 +46,10 @@ function validateDashKey(rawKey) {
     try {
       var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
       if (Object.prototype.hasOwnProperty.call(users, user) &&
-          timingSafeEqualStr(users[user], pass)) return true;
+          verifyPassword(users[user], pass)) return true;
     } catch (e) {}
   }
-  if (process.env.DASHBOARD_KEY && timingSafeEqualStr(rawKey, process.env.DASHBOARD_KEY)) return true;
+  if (process.env.DASHBOARD_KEY && verifyPassword(process.env.DASHBOARD_KEY, rawKey)) return true;
   return false;
 }
 

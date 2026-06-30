@@ -1,5 +1,6 @@
 const { initDB, getSQLInstance } = require("./_db");
 const { validateDashKey, verifySessionToken } = require("./_auth");
+const { checkRate } = require("./_ratelimit");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -19,17 +20,7 @@ function getCorsOrigin(req) {
   return ALLOWED_ORIGINS[0];
 }
 
-// Rate limit: max 3 delete requests per IP per hour
-var _deleteBuckets = {};
-function checkDeleteRate(ip) {
-  var now = Date.now();
-  if (!_deleteBuckets[ip] || now - _deleteBuckets[ip].start > 3600000) {
-    _deleteBuckets[ip] = { start: now, count: 1 };
-    return true;
-  }
-  _deleteBuckets[ip].count++;
-  return _deleteBuckets[ip].count <= 3;
-}
+// Rate limit: max 3 delete requests per IP per hour (cross-instance via DB).
 
 module.exports = async function handler(req, res) {
   var corsOrigin = getCorsOrigin(req);
@@ -65,9 +56,9 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // Rate limit
+  // Rate limit (cross-instance, fail-open)
   var ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "unknown";
-  if (!checkDeleteRate(ip)) {
+  if (!(await checkRate("delete:" + ip, 3, 3600)).allowed) {
     return res.status(429).json({ error: "Too many requests" });
   }
 

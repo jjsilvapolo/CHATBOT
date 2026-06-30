@@ -1,5 +1,6 @@
 const { initDB, getStats, getSession, getRatings, getIncidents, resolveIncident, updateIncidentNotes, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, getSQLInstance } = require("./_db");
 const { validateDashKey, readDashKey } = require("./_auth");
+const { peekRate, bumpRate, clearRate } = require("./_ratelimit");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -39,6 +40,17 @@ function clearAttempts(ip) {
   delete _loginAttempts[ip];
 }
 
+const LOGIN_WINDOW_SEC = 15 * 60;
+// Locked if either the per-instance memory counter or the cross-instance DB
+// counter has reached the limit. Memory is a fast first line; DB closes the
+// multi-instance gap. Both fail open.
+async function loginLocked(ip) {
+  if (!checkBruteForce(ip)) return true;
+  return (await peekRate("login:" + ip, LOGIN_WINDOW_SEC)) >= MAX_ATTEMPTS;
+}
+async function loginFail(ip) { recordFailedAttempt(ip); await bumpRate("login:" + ip, LOGIN_WINDOW_SEC); }
+async function loginOk(ip) { clearAttempts(ip); await clearRate("login:" + ip); }
+
 function getDashboardCors(req) {
   var origin = req.headers.origin || "";
   if (origin === "https://burgerjazz-chatbot.vercel.app") return origin;
@@ -59,10 +71,10 @@ module.exports = async function handler(req, res) {
   // POST: resolve incident
   if (req.method === "POST") {
     var clientIPP = getClientIP(req);
-    if (!checkBruteForce(clientIPP)) return res.status(429).json({ error: "Too many attempts" });
+    if (await loginLocked(clientIPP)) return res.status(429).json({ error: "Too many attempts" });
     const postAuthKey = readDashKey(req);
-    if (!validateDashKey(postAuthKey)) { recordFailedAttempt(clientIPP); return res.status(401).json({ error: "Unauthorized" }); }
-    clearAttempts(clientIPP);
+    if (!validateDashKey(postAuthKey)) { await loginFail(clientIPP); return res.status(401).json({ error: "Unauthorized" }); }
+    await loginOk(clientIPP);
 
     if (req.body?.action === "resolve_incident" && req.body?.incidentId) {
       if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
@@ -128,16 +140,16 @@ module.exports = async function handler(req, res) {
   }
 
   var clientIP = getClientIP(req);
-  if (!checkBruteForce(clientIP)) {
+  if (await loginLocked(clientIP)) {
     return res.status(429).json({ error: "Too many failed attempts. Try again in 15 minutes." });
   }
 
   const authKey = readDashKey(req);
   if (!validateDashKey(authKey)) {
-    recordFailedAttempt(clientIP);
+    await loginFail(clientIP);
     return res.status(401).json({ error: "Unauthorized" });
   }
-  clearAttempts(clientIP);
+  await loginOk(clientIP);
 
   try {
     if (!dbReady) {
