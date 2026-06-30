@@ -112,17 +112,25 @@ async function initDB() {
   await sql`CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)`;
 }
 
-// Mask personal data (emails) in stored messages for privacy
+// Mask personal data (emails + phones) in stored messages for privacy
 function maskPII(text) {
   if (!text) return text;
   // Mask emails: user@domain.com → u***@d***.com
-  return text.replace(/[\w.+-]+@[\w.-]+\.\w{2,}/gi, function (email) {
+  text = text.replace(/[\w.+-]+@[\w.-]+\.\w{2,}/gi, function (email) {
     var parts = email.split("@");
     var local = parts[0].charAt(0) + "***";
     var domParts = parts[1].split(".");
     var domain = domParts[0].charAt(0) + "***." + domParts.slice(1).join(".");
     return local + "@" + domain;
   });
+  // Mask Spanish phone numbers: optional +34 then 9 digits (6/7/8/9...) with
+  // common separators. Keep the last 2 digits for support reference.
+  text = text.replace(/(\+?34[\s.-]?)?[6-9]\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}/g, function (m) {
+    var digits = m.replace(/\D/g, "");
+    if (digits.length < 9) return m;
+    return "******" + digits.slice(-2);
+  });
+  return text;
 }
 
 async function logChat(sessionId, userMsg, botReply, category, tokens, promptVersion) {
@@ -340,6 +348,23 @@ async function cleanupOldChats() {
   }
 }
 
+// RGPD: anonymize personal data in incidents older than 180 days while keeping
+// the row for aggregate stats. PII (name/email/phone/description) is stripped.
+async function cleanupOldIncidents() {
+  const sql = getSQL();
+  try {
+    return await sql`
+      UPDATE incidents
+      SET name = 'ELIMINADO', email = 'ELIMINADO', phone = NULL,
+          description = 'Datos anonimizados por politica de retencion'
+      WHERE ts < NOW() - INTERVAL '180 days'
+        AND (name IS DISTINCT FROM 'ELIMINADO' OR email IS DISTINCT FROM 'ELIMINADO' OR phone IS NOT NULL)
+    `;
+  } catch (e) {
+    console.error("Incident cleanup error:", e);
+  }
+}
+
 async function logFeedback(chatId, sessionId, vote) {
   const sql = getSQL();
   try {
@@ -535,4 +560,4 @@ async function seedKnowledge(sections) {
   }
 }
 
-module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, seedKnowledge };
+module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, cleanupOldIncidents, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, seedKnowledge };

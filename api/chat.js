@@ -1,5 +1,6 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, logChat, logIncident, getActiveInsights, getActiveSourceUpdate, getKnowledgeSections, seedKnowledge } = require("./_db");
+const { sessionToken } = require("./_auth");
 var _pushModule;
 try { _pushModule = require("./push"); } catch(e) { _pushModule = null; }
 
@@ -449,7 +450,7 @@ async function sendIncidentEmail(data, sessionId) {
       },
       body: JSON.stringify({
         from: "JazzBot <incidencias@burgerjazz.com>",
-        to: ["martam@burgerjazz.com"],
+        to: ["rodrigo@burgerjazz.com"],
         subject: "🚨 Incidencia JazzBot — " + (data.name !== "No proporcionado" ? data.name : "Cliente") + " — " + dateStr,
         html: html,
       }),
@@ -531,6 +532,19 @@ function getCacheKey(text) {
   var hash = 0;
   for (var i = 0; i < n.length; i++) { hash = ((hash << 5) - hash) + n.charCodeAt(i); hash |= 0; }
   return "h_" + hash;
+}
+
+// 3-hour temporal block in Madrid time, so time-sensitive answers (open now?,
+// etc.) don't get cached across very different moments of the day.
+function getMadridHourBlock() {
+  var h = parseInt(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", hourCycle: "h23" }).format(new Date()), 10);
+  if (isNaN(h)) h = 0;
+  return Math.floor(h / 3);
+}
+
+// Single source of truth for the cache key (used by both reads and writes).
+function cacheKeyFor(text) {
+  return getCacheKey(text + "_h" + getMadridHourBlock());
 }
 
 function getCachedResponse(key) {
@@ -882,15 +896,25 @@ module.exports = async function handler(req, res) {
   // A/B test: assign prompt version
   const promptVersion = getPromptVersion(sid);
 
-  // Check response cache (only for single-turn, first message)
+  // Check response cache (single-turn, first message) — works for both
+  // streaming and non-streaming so the (streaming) widget benefits too.
   var useStream = req.body.stream === true;
-  if (cleanMessages.length === 1 && !useStream) {
-    var hourBlock = Math.floor(new Date().getHours() / 3); // 3-hour blocks for temporal context
-    var cacheKey = getCacheKey(lastUserMsg + "_h" + hourBlock);
-    var cached = getCachedResponse(cacheKey);
+  var sessTok = sessionToken(sid);
+  if (cleanMessages.length === 1) {
+    var cached = getCachedResponse(cacheKeyFor(lastUserMsg));
     if (cached) {
-      await logChat(sid, lastUserMsg, cached.reply, cached.category || category, { input: 0, output: 0 }, promptVersion);
-      return res.status(200).json({ reply: cached.reply, category: cached.category || category, quickReplies: cached.quickReplies || [], cached: true });
+      var cCat = cached.category || category;
+      var cQuick = cached.quickReplies || [];
+      var cId = await logChat(sid, lastUserMsg, cached.reply, cCat, { input: 0, output: 0 }, promptVersion);
+      if (useStream) {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.write("data: " + JSON.stringify({ type: "text", text: cached.reply }) + "\n\n");
+        res.write("data: " + JSON.stringify({ type: "done", category: cCat, quickReplies: cQuick, chatId: cId, token: sessTok, cached: true }) + "\n\n");
+        return res.end();
+      }
+      return res.status(200).json({ reply: cached.reply, category: cCat, quickReplies: cQuick, chatId: cId, token: sessTok, cached: true });
     }
   }
 
@@ -934,14 +958,14 @@ module.exports = async function handler(req, res) {
 
         // Cache if single turn + notify new conversation
         if (cleanMessages.length === 1) {
-          setCachedResponse(getCacheKey(lastUserMsg), fullText, streamCategory, streamQuickReplies);
+          setCachedResponse(cacheKeyFor(lastUserMsg), fullText, streamCategory, streamQuickReplies);
           notifyNewChat(lastUserMsg);
         }
 
         // Escalation check (same logic as non-streaming)
         await handleEscalation(fullText, streamCategory, lastUserMsg, sid, req, trimmed);
 
-        res.write("data: " + JSON.stringify({ type: "done", category: streamCategory, quickReplies: streamQuickReplies, chatId: chatId }) + "\n\n");
+        res.write("data: " + JSON.stringify({ type: "done", category: streamCategory, quickReplies: streamQuickReplies, chatId: chatId, token: sessTok }) + "\n\n");
         return res.end();
       } catch (streamErr) {
         console.error("Stream error:", streamErr);
@@ -978,7 +1002,7 @@ module.exports = async function handler(req, res) {
     // Cache single-turn responses + notify new conversation
     if (cleanMessages.length === 1) {
       var quickForCache = getSuggestedReplies(category, text);
-      setCachedResponse(getCacheKey(lastUserMsg), text, category, quickForCache);
+      setCachedResponse(cacheKeyFor(lastUserMsg), text, category, quickForCache);
       notifyNewChat(lastUserMsg);
     }
 
@@ -986,7 +1010,7 @@ module.exports = async function handler(req, res) {
     await handleEscalation(text, category, lastUserMsg, sid, req, trimmed);
 
     var quickReplies = getSuggestedReplies(category, text);
-    return res.status(200).json({ reply: text, category: category, quickReplies: quickReplies, chatId: chatId });
+    return res.status(200).json({ reply: text, category: category, quickReplies: quickReplies, chatId: chatId, token: sessTok });
   } catch (err) {
     console.error("Anthropic API error:", err);
     var isCredit = err && err.message && err.message.includes("credit");

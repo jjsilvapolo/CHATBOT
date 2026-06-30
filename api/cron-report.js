@@ -3,15 +3,18 @@
 
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, getRecentConversations, getRatings, getSQLInstance, getFeedbackStats, getRatingsTrend, getSessionResolutionStats } = require("./_db");
+const { isAuthorizedCron } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
 
+// Format a date as YYYY-MM-DD in Madrid local time
+function madridYMD(d) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+
 module.exports = async function handler(req, res) {
-  var isCron = req.headers["x-vercel-cron"] === "true";
-  var authKey = process.env.LEARN_KEY;
-  var providedKey = req.query?.key || req.headers["x-learn-key"];
-  if (!isCron && (!authKey || providedKey !== authKey)) {
+  if (!isAuthorizedCron(req)) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
@@ -104,11 +107,14 @@ module.exports = async function handler(req, res) {
     });
 
     var reportHtml = response.content?.[0]?.text || "Error generando informe";
+    // Strip markdown code fences that Claude may wrap around HTML
+    reportHtml = reportHtml.replace(/^```html?\n?/i, "").replace(/\n?```\s*$/, "");
 
-    // === DATE INFO ===
+    // === DATE INFO (Madrid local time) ===
     var now = new Date();
-    var weekStart = new Date(now); weekStart.setDate(now.getDate() - 7);
-    var dateRange = weekStart.toISOString().slice(0, 10) + " al " + new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+    var weekStart = new Date(now.getTime() - 7 * 86400000);
+    var yesterday = new Date(now.getTime() - 86400000);
+    var dateRange = madridYMD(weekStart) + " al " + madridYMD(yesterday);
 
     // === SEND EMAIL ===
     var resendKey = (process.env.RESEND_API_KEY || "").replace(/^"|"$/g, "");

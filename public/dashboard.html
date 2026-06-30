@@ -8,6 +8,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/favicon.png">
 <title>BurgerJazz - Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -436,7 +437,7 @@ function startAutoRefresh(){
   stopAutoRefresh();
   if(!autoRefresh)return;
   refreshTimer=setInterval(function(){
-    fetch("/api/stats?key="+encodeURIComponent(KEY))
+    fetch("/api/stats",{headers:{"x-dashboard-key":KEY}})
     .then(function(r){if(r.status===401)return null;return r.json()})
     .then(function(data){
       if(!data)return;
@@ -499,7 +500,7 @@ function openSession(sid){
   modal.onclick=function(e){if(e.target===modal){if(_liveInterval)clearInterval(_liveInterval);modal.remove()}};
 
   function loadAndRender(isInitial){
-    fetch("/api/stats?key="+encodeURIComponent(KEY)+"&session="+encodeURIComponent(sid))
+    fetch("/api/stats?session="+encodeURIComponent(sid),{headers:{"x-dashboard-key":KEY}})
     .then(function(r){return r.json()})
     .then(function(data){
       var body=document.getElementById("live_chat_body");if(!body)return;
@@ -538,7 +539,7 @@ function openSession(sid){
 
 // === LOAD STATS ===
 function loadStats(){
-  fetch("/api/stats?key="+encodeURIComponent(KEY))
+  fetch("/api/stats",{headers:{"x-dashboard-key":KEY}})
   .then(function(r){if(r.status===401){KEY="";localStorage.removeItem("bj_dash_key");alert("Clave incorrecta");render();return null}return r.json()})
   .then(function(data){if(data){stats=data;lastIncidentCount=(data.incidents_list||[]).filter(function(i){return i.status!=="resolved"}).length;render()}})
   .catch(function(){alert("Error de conexion")});
@@ -551,13 +552,16 @@ function generateReport(period){
   document.body.appendChild(modal);
   modal.querySelector(".modal-close").onclick=function(){modal.remove()};
   modal.onclick=function(e){if(e.target===modal)modal.remove()};
-  fetch("/api/report?key="+encodeURIComponent(KEY)+"&period="+period)
+  fetch("/api/report?period="+period,{headers:{"x-dashboard-key":KEY}})
   .then(function(r){return r.json()})
   .then(function(data){
     var body=document.getElementById("rpt_body");if(!body)return;
     if(data.error){body.innerHTML='<div class="modal-loading" style="color:var(--red)">Error: '+escHtml(data.error)+'</div>';return}
     var report=data.report||"Sin datos";
-    var reportSafe=report.replace(/<script[\s\S]*?<\/script>/gi,"").replace(/on\w+\s*=/gi,"data-blocked=");
+    // Whitelist-based sanitization (DOMPurify). Fallback: strip all tags if it didn't load.
+    var reportSafe=window.DOMPurify
+      ? DOMPurify.sanitize(report,{ALLOWED_TAGS:["h1","h2","h3","h4","p","table","thead","tbody","tr","th","td","ul","ol","li","strong","b","em","i","span","div","br","hr","small"],ALLOWED_ATTR:["style"]})
+      : report.replace(/<[^>]*>/g,"");
     body.innerHTML='<div style="font-size:12px;line-height:1.7">'+reportSafe+'</div>';
     body.querySelectorAll("table").forEach(function(t){t.style.cssText="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px";t.querySelectorAll("th").forEach(function(th){th.style.cssText="background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase"});t.querySelectorAll("td").forEach(function(td){td.style.cssText="padding:8px 10px;border-bottom:1px solid var(--border)"})});
     body.querySelectorAll("h2").forEach(function(h){h.style.cssText="font-size:14px;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #F5E1A4"});
@@ -623,7 +627,7 @@ function subscribePush(){
   // Toggle ON: subscribe
   var userName=CURRENT_USER||CURRENT_USER_INIT||localStorage.getItem("bj_dash_user")||"";
   if(!userName){alert("Inicia sesion primero");return}
-  fetch("/api/push?key="+encodeURIComponent(KEY)).then(function(r){return r.json()}).then(function(data){
+  fetch("/api/push",{headers:{"x-dashboard-key":KEY}}).then(function(r){return r.json()}).then(function(data){
     if(!data.vapidPublicKey){alert("Error: VAPID no configurado");return}
     navigator.serviceWorker.ready.then(function(reg){
       return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(data.vapidPublicKey)});

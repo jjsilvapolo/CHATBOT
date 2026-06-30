@@ -29,6 +29,7 @@
   var hasConsented = false;
   var userMsgCount = 0;
   var sessionId = "";
+  var sessionTok = ""; // server-issued HMAC token proving session ownership
   var inAgentMode = false;
   var container = null;
   var chatBody = null;
@@ -132,9 +133,9 @@
   // SESSION PERSISTENCE (localStorage)
   // ═══════════════════════════════════════
   function genSessionId() {
-    var arr = new Uint8Array(8);
+    var arr = new Uint8Array(16);
     if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(arr);
-    else for (var i = 0; i < 8; i++) arr[i] = Math.floor(Math.random() * 256);
+    else for (var i = 0; i < 16; i++) arr[i] = Math.floor(Math.random() * 256);
     var hex = "";
     for (var j = 0; j < arr.length; j++) hex += ("0" + arr[j].toString(16)).slice(-2);
     return "s_" + Date.now() + "_" + hex;
@@ -151,6 +152,7 @@
       }
       messages = d.msgs || [];
       sessionId = d.sid || "";
+      sessionTok = d.tok || "";
       userMsgCount = d.uc || 0;
       hasRated = d.hr || false;
       hasConsented = d.consent || false;
@@ -163,6 +165,7 @@
       localStorage.setItem("bj_chat", JSON.stringify({
         msgs: messages.slice(-40),
         sid: sessionId,
+        tok: sessionTok,
         uc: userMsgCount,
         hr: hasRated,
         consent: hasConsented,
@@ -390,7 +393,7 @@
         fetch(BASE_URL + "/api/delete-data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sessionId })
+          body: JSON.stringify({ sessionId: sessionId, deleteToken: sessionTok })
         }).then(function (r) { return r.json(); }).then(function () {
           messages = [];
           userMsgCount = 0;
@@ -398,6 +401,7 @@
           hasConsented = false;
           localStorage.removeItem("bj_chat");
           sessionId = genSessionId();
+          sessionTok = "";
           chatBody.innerHTML = "";
           addBotMessage(t("deleteSuccess"));
           showPrivacyNotice();
@@ -790,6 +794,7 @@
             hideTyping();
             isLoading = false;
             document.getElementById("bj-chat-send").disabled = false;
+            if (data.token) sessionTok = data.token;
             if (data.agentMode) { if (!inAgentMode) { inAgentMode = true; setHeaderStatus("Conectado con agente", false); addBotMessage("Tu mensaje ha sido enviado al agente. En breve te responderá."); } }
             else if (data.reply) addBotMessage(data.reply, data.quickReplies || null, data.chatId);
           });
@@ -843,6 +848,7 @@
                   fullText = data.text;
                   wrapper.innerHTML = parseMarkdown(escapeHTML(fullText));
                 } else if (data.type === "done") {
+                  if (data.token) sessionTok = data.token;
                   // Add timestamp
                   var timeEl = document.createElement("div");
                   timeEl.className = "bj-msg-time";
@@ -932,6 +938,7 @@
         isLoading = false;
         document.getElementById("bj-chat-send").disabled = false;
 
+        if (data.token) sessionTok = data.token;
         if (data.agentMode) {
           if (!inAgentMode) {
             inAgentMode = true;
@@ -1140,7 +1147,7 @@
     var _agentFallbackShown = false;
     setInterval(function () {
       if (!sessionId || !isOpen) return;
-      fetch(BASE_URL + "/api/poll?session=" + encodeURIComponent(sessionId) + "&after=" + encodeURIComponent(lastPollTs))
+      fetch(BASE_URL + "/api/poll?session=" + encodeURIComponent(sessionId) + "&after=" + encodeURIComponent(lastPollTs) + "&token=" + encodeURIComponent(sessionTok))
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.messages && data.messages.length > 0) {

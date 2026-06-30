@@ -1,5 +1,6 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, getRecentConversations, getRatings, getSQLInstance, getFeedbackStats, getRatingsTrend, getSessionResolutionStats, getIncidents } = require("./_db");
+const { validateDashKey, readDashKey } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -11,20 +12,11 @@ module.exports = async function handler(req, res) {
   else if (origin === "https://burgerjazz-chatbot.vercel.app" || /^https:\/\/burgerjazz-chatbot[a-z0-9-]*\.vercel\.app$/.test(origin)) allowed = origin;
   else if (origin === "http://localhost:3000" || origin === "http://localhost:5500") allowed = origin;
   res.setHeader("Access-Control-Allow-Origin", allowed);
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-dashboard-key");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const providedKey = req.query?.key || req.headers.authorization?.replace("Bearer ", "");
-  function validateKey(rawKey) {
-    if (!rawKey) return false;
-    var parts = rawKey.split(":");
-    if (parts.length >= 2) {
-      try { var users = JSON.parse(process.env.DASHBOARD_USERS || "{}"); if (users[parts[0]] && users[parts[0]] === parts.slice(1).join(":")) return true; } catch(e) {}
-    }
-    if (rawKey === process.env.DASHBOARD_KEY) return true;
-    return false;
-  }
-  if (!validateKey(providedKey)) {
+  // Credential via header/body only — never the query string (leaks to logs/Referer)
+  if (!validateDashKey(readDashKey(req))) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -374,7 +366,7 @@ module.exports = async function handler(req, res) {
 
     d += "\n=== SATISFACCION GLOBAL ===\n";
     d += "- Media: " + (ratings.average || "N/A") + "/5 (" + (ratings.total || 0) + " valoraciones)\n";
-    d += "- Distribucion: " + JSON.stringify(ratings.distribution || {}) + "\n";
+    d += "- Distribucion: " + JSON.stringify(ratings.counts || {}) + "\n";
     if (ratingsTrend.length > 0) {
       d += "- Tendencia diaria:\n";
       ratingsTrend.forEach(function(r) { d += "  " + r.day + ": " + r.avg + "/5 (" + r.count + " val)\n"; });
@@ -544,7 +536,9 @@ REGLAS:
       messages: [{ role: "user", content: d }],
     });
 
-    const reportText = response.content?.[0]?.text || "Error generando informe";
+    var reportText = response.content?.[0]?.text || "Error generando informe";
+    // Strip markdown code fences Claude may wrap around the HTML
+    reportText = reportText.replace(/^```html?\s*\n?/i, "").replace(/\n?```\s*$/, "");
 
     return res.status(200).json({
       status: "ok",
@@ -560,7 +554,7 @@ REGLAS:
         agent_sessions: agentCount,
         incidents: { total: incTotal, resolved: incResolved, pending: incPending },
         satisfaction: ratings.average || 0,
-        satisfaction_distribution: ratings.distribution || {},
+        satisfaction_distribution: ratings.counts || {},
         satisfaction_total: ratings.total || 0,
         feedback: feedback.counts || {},
         feedback_by_category: feedback.byCategory || {},

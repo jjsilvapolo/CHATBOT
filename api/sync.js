@@ -1,5 +1,6 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const { initDB, saveSourceUpdate, getKnowledgeSections, upsertKnowledgeSection } = require("./_db");
+const { isAuthorizedCron } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -58,11 +59,7 @@ async function fetchPage(url) {
 }
 
 module.exports = async function handler(req, res) {
-  const isCron = req.headers["x-vercel-cron"] === "true";
-  const authKey = process.env.LEARN_KEY;
-  const providedKey = req.query?.key || req.headers["x-learn-key"];
-
-  if (!isCron && (!authKey || providedKey !== authKey)) {
+  if (!isAuthorizedCron(req)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -113,7 +110,9 @@ module.exports = async function handler(req, res) {
       messages: [{ role: "user", content: "Contenido actual de la web de BurgerJazz:\n\n" + webContent }],
     });
 
-    const result = response.content?.[0]?.text || "";
+    var result = response.content?.[0]?.text || "";
+    // Strip markdown code fences Claude may wrap around the JSON
+    result = result.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/, "").trim();
     var changesApplied = 0;
 
     try {

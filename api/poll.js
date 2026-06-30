@@ -1,4 +1,5 @@
 const { initDB, getSession } = require("./_db");
+const { verifySessionToken } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -15,8 +16,17 @@ module.exports = async function handler(req, res) {
 
   var sid = req.query.session;
   var after = req.query.after; // ISO timestamp: only return msgs after this
+  var token = req.query.token;
   if (!sid || typeof sid !== "string" || sid.length > 60) {
     return res.status(400).json({ error: "Invalid session" });
+  }
+
+  // Require a valid session token when SESSION_SECRET is configured, so a
+  // conversation history can't be read by guessing/enumerating session IDs.
+  // Fail safe: missing/invalid token → return no messages (no leak, no error
+  // loop). Returns null (skip) while tokens aren't enforced yet.
+  if (verifySessionToken(sid, token) === false) {
+    return res.status(200).json({ messages: [] });
   }
 
   try {

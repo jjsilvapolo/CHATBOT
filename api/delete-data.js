@@ -1,4 +1,5 @@
 const { initDB, getSQLInstance } = require("./_db");
+const { validateDashKey, verifySessionToken } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -34,7 +35,7 @@ module.exports = async function handler(req, res) {
   var corsOrigin = getCorsOrigin(req);
   res.setHeader("Access-Control-Allow-Origin", corsOrigin);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-dashboard-key");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -50,20 +51,18 @@ module.exports = async function handler(req, res) {
   if (!sessionId || typeof sessionId !== "string" || sessionId.length > 60) {
     return res.status(400).json({ error: "Invalid sessionId" });
   }
-  // Validate origin matches and token is present (basic ownership check)
-  var origin = req.headers.origin || "";
-  if (!origin || origin === ALLOWED_ORIGINS[ALLOWED_ORIGINS.length - 1] || origin === ALLOWED_ORIGINS[ALLOWED_ORIGINS.length - 2]) {
-    // localhost — only allow with dashboard key
-    var dashKey = req.body?.key;
-    if (!dashKey || (dashKey !== process.env.DASHBOARD_KEY)) {
-      try {
-        var parts = (dashKey || "").split(":");
-        var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
-        if (!users[parts[0]] || users[parts[0]] !== parts.slice(1).join(":")) {
-          return res.status(401).json({ error: "Unauthorized" });
-        }
-      } catch(e) { return res.status(401).json({ error: "Unauthorized" }); }
-    }
+
+  // Authorization (NOT based on Origin, which is trivially spoofable):
+  //  - admin dashboard key  → may delete any session, OR
+  //  - valid session token  → user deleting their OWN session (self-service RGPD)
+  // verifySessionToken returns null when SESSION_SECRET is not configured yet;
+  // in that legacy mode we fall back to allowing self-service by sessionId so
+  // the live widget keeps working until the secret is set + widget redeployed.
+  var dashKey = req.body?.key || req.headers["x-dashboard-key"];
+  var tokenOk = verifySessionToken(sessionId, deleteToken);
+  var authorized = validateDashKey(dashKey) || tokenOk === true || tokenOk === null;
+  if (!authorized) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   // Rate limit

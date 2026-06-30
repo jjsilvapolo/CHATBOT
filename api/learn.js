@@ -1,5 +1,6 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, getRecentConversations, saveInsight, deactivateOldInsights, cleanupOldChats } = require("./_db");
+const { initDB, getRecentConversations, saveInsight, deactivateOldInsights, cleanupOldChats, cleanupOldIncidents } = require("./_db");
+const { isAuthorizedCron } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -26,12 +27,8 @@ REGLAS:
 - Maximo 500 palabras total.`;
 
 module.exports = async function handler(req, res) {
-  // Auth: Vercel cron header or manual trigger with key (env var required)
-  const isCron = req.headers["x-vercel-cron"] === "true";
-  const authKey = process.env.LEARN_KEY;
-  const providedKey = req.query?.key || req.headers["x-learn-key"];
-
-  if (!isCron && (!authKey || providedKey !== authKey)) {
+  // Auth: Vercel cron (CRON_SECRET) or manual trigger with LEARN_KEY
+  if (!isAuthorizedCron(req)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -52,21 +49,22 @@ module.exports = async function handler(req, res) {
     // Group by session
     const sessions = {};
     rows.forEach(function (r) {
-      if (!sessions[r.session]) sessions[r.session] = { messages: [], rating: r.rating, categories: [] };
+      if (!sessions[r.session]) sessions[r.session] = { messages: [], rating: r.rating, categories: [], lastTs: 0 };
       sessions[r.session].messages.push({ role: "user", content: r.user_msg });
       sessions[r.session].messages.push({ role: "bot", content: r.bot_msg });
       if (r.category) sessions[r.session].categories.push(r.category);
       if (r.rating) sessions[r.session].rating = r.rating;
+      if (r.ts) { var t = new Date(r.ts).getTime(); if (t > sessions[r.session].lastTs) sessions[r.session].lastTs = t; }
     });
 
     // Build analysis text - prioritize low-rated and recent
     const sessionKeys = Object.keys(sessions);
-    // Sort: low ratings first, then by recency
+    // Sort: low ratings first, then most recent first
     sessionKeys.sort(function (a, b) {
       var ra = sessions[a].rating || 3;
       var rb = sessions[b].rating || 3;
       if (ra !== rb) return ra - rb;
-      return 0;
+      return (sessions[b].lastTs || 0) - (sessions[a].lastTs || 0);
     });
 
     // Take max 40 sessions to fit in context
@@ -101,8 +99,9 @@ module.exports = async function handler(req, res) {
       await saveInsight("weekly_analysis", insightText, sessionKeys.slice(0, count).join(","));
     }
 
-    // Weekly cleanup: remove chats older than 1 year
+    // Weekly cleanup: remove old chats + anonymize stale incidents (RGPD)
     await cleanupOldChats();
+    await cleanupOldIncidents();
 
     return res.status(200).json({
       status: "ok",

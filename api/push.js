@@ -1,21 +1,9 @@
 const webpush = require("web-push");
 const { initDB, getSQLInstance } = require("./_db");
+const { validateDashKey, readDashKey } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
-
-function validatePushKey(rawKey) {
-  if (!rawKey) return false;
-  var parts = rawKey.split(":");
-  if (parts.length >= 2) {
-    try {
-      var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
-      if (users[parts[0]] && users[parts[0]] === parts.slice(1).join(":")) return true;
-    } catch(e) {}
-  }
-  if (rawKey === process.env.DASHBOARD_KEY) return true;
-  return false;
-}
 
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
@@ -26,7 +14,7 @@ module.exports = async function handler(req, res) {
   if (origin === "https://bot.burgerjazz.com" || origin === "https://burgerjazz-chatbot.vercel.app" || /^https:\/\/burgerjazz-chatbot[a-z0-9-]*\.vercel\.app$/.test(origin) || origin === "http://localhost:3000" || origin === "http://localhost:5500") allowed = origin;
   res.setHeader("Access-Control-Allow-Origin", allowed);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-dashboard-key");
   if (req.method === "OPTIONS") return res.status(200).end();
 
   if (!dbReady) {
@@ -46,8 +34,7 @@ module.exports = async function handler(req, res) {
     dbReady = true;
   }
 
-  var key = req.body?.key || req.query?.key;
-  if (!validatePushKey(key)) {
+  if (!validateDashKey(readDashKey(req))) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 

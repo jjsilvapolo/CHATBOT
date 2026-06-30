@@ -1,26 +1,8 @@
 const { initDB, getStats, getSession, getRatings, getIncidents, resolveIncident, updateIncidentNotes, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, getSQLInstance } = require("./_db");
+const { validateDashKey, readDashKey } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
-
-// Multi-user auth: DASHBOARD_USERS env var is JSON like {"Marta":"pass1","Nacho":"pass2","Manuel":"pass3"}
-// Falls back to DASHBOARD_KEY for backwards compatibility
-function validateDashKey(rawKey) {
-  if (!rawKey) return false;
-  // New format: "user:password"
-  var parts = rawKey.split(":");
-  if (parts.length >= 2) {
-    var user = parts[0];
-    var pass = parts.slice(1).join(":");
-    try {
-      var users = JSON.parse(process.env.DASHBOARD_USERS || "{}");
-      if (users[user] && users[user] === pass) return true;
-    } catch(e) {}
-  }
-  // Fallback: single shared key
-  if (rawKey === process.env.DASHBOARD_KEY) return true;
-  return false;
-}
 
 // Credit status: inferred from recent chat errors instead of wasting tokens
 function checkCredit() {
@@ -70,7 +52,7 @@ module.exports = async function handler(req, res) {
   var corsOrigin = getDashboardCors(req);
   res.setHeader("Access-Control-Allow-Origin", corsOrigin);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-dashboard-key");
 
   if (req.method === "OPTIONS") return res.status(200).end();
 
@@ -78,7 +60,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "POST") {
     var clientIPP = getClientIP(req);
     if (!checkBruteForce(clientIPP)) return res.status(429).json({ error: "Too many attempts" });
-    const postAuthKey = req.body?.key || req.headers.authorization?.replace("Bearer ", "");
+    const postAuthKey = readDashKey(req);
     if (!validateDashKey(postAuthKey)) { recordFailedAttempt(clientIPP); return res.status(401).json({ error: "Unauthorized" }); }
     clearAttempts(clientIPP);
 
@@ -133,7 +115,7 @@ module.exports = async function handler(req, res) {
     }
     if (req.body?.action === "update_knowledge" && req.body?.section_key && req.body?.content) {
       if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
-      var userName = (req.body.key || "").split(":")[0] || "admin";
+      var userName = readDashKey(req).split(":")[0] || "admin";
       await upsertKnowledgeSection(req.body.section_key, req.body.title || req.body.section_key, req.body.content, userName);
       return res.status(200).json({ ok: true });
     }
@@ -150,7 +132,7 @@ module.exports = async function handler(req, res) {
     return res.status(429).json({ error: "Too many failed attempts. Try again in 15 minutes." });
   }
 
-  const authKey = req.query.key || req.headers.authorization?.replace("Bearer ", "") || req.headers["x-dashboard-key"];
+  const authKey = readDashKey(req);
   if (!validateDashKey(authKey)) {
     recordFailedAttempt(clientIP);
     return res.status(401).json({ error: "Unauthorized" });

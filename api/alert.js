@@ -1,16 +1,13 @@
 const { initDB, getAlertData } = require("./_db");
+const { isAuthorizedCron } = require("./_auth");
 
 let dbReady = false;
 let _dbInitPromise = null;
 
-function escHTML(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function escHTML(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 module.exports = async function handler(req, res) {
-  const isCron = req.headers["x-vercel-cron"] === "true";
-  const authKey = process.env.LEARN_KEY;
-  const providedKey = req.query?.key || req.headers["x-learn-key"];
-
-  if (!isCron && (!authKey || providedKey !== authKey)) {
+  if (!isAuthorizedCron(req)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -25,11 +22,13 @@ module.exports = async function handler(req, res) {
     var alerts = [];
 
     // Check for anomalies
-    // 1. Error spike: >5 errors in 24h or >3x previous
+    // 1. Error spike: >5 errors in 24h, >3x previous, or a jump from 0 to 3+
     if (data.current.errors > 5) {
       alerts.push({ type: "error", msg: "Errores API: " + data.current.errors + " en las ultimas 24h (anterior: " + data.previous.errors + ")" });
-    } else if (data.current.errors > 0 && data.previous.errors > 0 && data.current.errors > data.previous.errors * 3) {
+    } else if (data.previous.errors > 0 && data.current.errors > data.previous.errors * 3) {
       alerts.push({ type: "error", msg: "Pico de errores: " + data.current.errors + " vs " + data.previous.errors + " del dia anterior" });
+    } else if (data.previous.errors === 0 && data.current.errors >= 3) {
+      alerts.push({ type: "error", msg: "Errores nuevos: " + data.current.errors + " en las ultimas 24h (ayer: 0)" });
     }
 
     // 2. Satisfaction drop: avg rating < 3 or dropped >1 point
