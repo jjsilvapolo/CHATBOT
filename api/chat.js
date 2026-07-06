@@ -191,12 +191,12 @@ CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), A
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (fuente: web oficial, Centro de Ayuda):
 - Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-16:30 y 19:30-0:30
+- Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
 - Pozuelo: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Mirasierra (Fermin Caballero): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
-- Moraleja Green: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00
+- Moraleja Green: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
