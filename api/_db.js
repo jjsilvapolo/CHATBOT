@@ -101,6 +101,26 @@ async function initDB() {
   // Escalated sessions (agent takeover)
   await sql`CREATE TABLE IF NOT EXISTS escalated_sessions (session_id TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT NOW())`;
 
+  // Google reviews inbox: one row per review pulled from Google Business Profile.
+  // status: 'draft' (reply drafted, awaiting approval) | 'published' | 'skipped'
+  await sql`
+    CREATE TABLE IF NOT EXISTS reviews (
+      review_id TEXT PRIMARY KEY,       -- full GBP review resource name (stable, unique)
+      location_id TEXT,                 -- GBP location id
+      location_name TEXT,               -- human label (e.g. "Chamberí")
+      author TEXT,
+      rating INTEGER,                   -- 1..5
+      comment TEXT,                     -- review body (may be empty for star-only)
+      review_ts TIMESTAMPTZ,            -- when the customer posted it
+      draft_reply TEXT,                 -- Claude-generated reply, editable before publishing
+      status TEXT DEFAULT 'draft',
+      published_reply TEXT,             -- what was actually sent to Google
+      published_at TIMESTAMPTZ,
+      published_by TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
   // Indexes for performance
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_session ON chats(session)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_chats_ts ON chats(ts)`;
@@ -110,6 +130,8 @@ async function initDB() {
   await sql`CREATE INDEX IF NOT EXISTS idx_insights_active ON insights(active, insight_type)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_feedback_session ON feedback(session)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_reviews_ts ON reviews(review_ts)`;
 }
 
 // Mask personal data (emails + phones) in stored messages for privacy
@@ -560,4 +582,59 @@ async function seedKnowledge(sections) {
   }
 }
 
-module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, cleanupOldIncidents, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, seedKnowledge };
+// === GOOGLE REVIEWS ===
+
+// Insert a review if we haven't seen it yet. Returns true if it was new (so the
+// cron only drafts/emails for genuinely new reviews). Existing rows are left
+// untouched — we never overwrite a reply that is already being reviewed/published.
+async function insertReviewIfNew(r) {
+  const sql = getSQL();
+  var inserted = await sql`
+    INSERT INTO reviews (review_id, location_id, location_name, author, rating, comment, review_ts, draft_reply, status)
+    VALUES (${r.review_id}, ${r.location_id}, ${r.location_name}, ${r.author}, ${r.rating}, ${r.comment}, ${r.review_ts}, ${r.draft_reply || null}, 'draft')
+    ON CONFLICT (review_id) DO NOTHING
+    RETURNING review_id
+  `;
+  return inserted.length > 0;
+}
+
+// Reviews awaiting approval, newest first.
+async function getPendingReviews() {
+  const sql = getSQL();
+  return await sql`
+    SELECT review_id, location_id, location_name, author, rating, comment, review_ts, draft_reply, status
+    FROM reviews WHERE status = 'draft' ORDER BY review_ts DESC NULLS LAST
+  `;
+}
+
+async function getReview(reviewId) {
+  const sql = getSQL();
+  var rows = await sql`SELECT * FROM reviews WHERE review_id = ${reviewId}`;
+  return rows[0] || null;
+}
+
+// Save an edited draft without publishing (panel "guardar" button).
+async function updateReviewDraft(reviewId, draftReply) {
+  const sql = getSQL();
+  await sql`UPDATE reviews SET draft_reply = ${draftReply} WHERE review_id = ${reviewId} AND status = 'draft'`;
+}
+
+// Mark as published after Google accepted the reply.
+async function markReviewPublished(reviewId, publishedReply, publishedBy) {
+  const sql = getSQL();
+  await sql`UPDATE reviews SET status = 'published', published_reply = ${publishedReply},
+    published_at = NOW(), published_by = ${publishedBy || 'panel'} WHERE review_id = ${reviewId}`;
+}
+
+async function markReviewSkipped(reviewId) {
+  const sql = getSQL();
+  await sql`UPDATE reviews SET status = 'skipped' WHERE review_id = ${reviewId} AND status = 'draft'`;
+}
+
+async function countPendingReviews() {
+  const sql = getSQL();
+  var rows = await sql`SELECT COUNT(*) as n FROM reviews WHERE status = 'draft'`;
+  return parseInt(rows[0]?.n || 0);
+}
+
+module.exports = { initDB, logChat, getStats, getSession, saveRating, getRatings, logIncident, getRecentConversations, saveInsight, getActiveInsights, deactivateOldInsights, saveSourceUpdate, getActiveSourceUpdate, getSQLInstance, cleanupOldChats, cleanupOldIncidents, logFeedback, getFeedbackStats, resolveIncident, getIncidents, getABStats, getAlertData, updateIncidentNotes, getRatingsTrend, getSessionResolutionStats, getKnowledgeSections, upsertKnowledgeSection, getKnowledgeHistory, seedKnowledge, insertReviewIfNew, getPendingReviews, getReview, updateReviewDraft, markReviewPublished, markReviewSkipped, countPendingReviews };

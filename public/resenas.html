@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Reseñas · BurgerJazz</title>
+<style>
+  :root{--navy:#002855;--yellow:#F5E1A4;--border:#e5e7eb;--text:#1a1a2e;--muted:#8893a4;--green:#16a34a;--red:#dc2626;--orange:#d97706}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f4f5f7;color:var(--text)}
+  header{background:var(--navy);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+  header h1{font-size:16px;margin:0}
+  header .count{font-size:12px;opacity:.85}
+  .wrap{max-width:720px;margin:0 auto;padding:18px}
+  .login{max-width:340px;margin:80px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+  .login h2{margin:0 0 14px;font-size:16px}
+  input,textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--border);border-radius:8px}
+  textarea{min-height:84px;resize:vertical;line-height:1.5}
+  button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:10px 16px;cursor:pointer}
+  .btn-primary{background:var(--navy);color:#fff}
+  .btn-ghost{background:var(--border);color:var(--text)}
+  .btn-danger{background:#fee2e2;color:var(--red)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+  .meta{font-size:12px;color:var(--muted)}
+  .stars{font-size:16px;margin:2px 0}
+  .review{font-size:14px;color:#374151;margin:8px 0;padding:8px 10px;background:#f9fafb;border-radius:8px}
+  .lbl{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin:10px 0 4px}
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .empty{text-align:center;color:var(--muted);padding:60px 20px}
+  .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;display:none}
+  .msg.ok{background:#dcfce7;color:#166534;display:block}
+  .msg.err{background:#fee2e2;color:#991b1b;display:block}
+  .banner{background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div id="loginView" class="login">
+  <h2>Panel de reseñas</h2>
+  <input id="key" type="password" placeholder="usuario:clave" autocomplete="current-password">
+  <div style="height:10px"></div>
+  <button class="btn-primary" style="width:100%" onclick="login()">Entrar</button>
+  <div id="loginErr" style="color:var(--red);font-size:13px;margin-top:10px"></div>
+</div>
+
+<div id="appView" style="display:none">
+  <header>
+    <h1>Reseñas de Google — BurgerJazz</h1>
+    <span class="count" id="count"></span>
+  </header>
+  <div class="wrap">
+    <div id="msg" class="msg"></div>
+    <div id="notConfigured" class="banner" style="display:none">Google Business Profile aún no está configurado. Cuando pongas las credenciales, aquí aparecerán las reseñas pendientes.</div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+var KEY = "";
+
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function showMsg(t,ok){var m=document.getElementById("msg");m.textContent=t;m.className="msg "+(ok?"ok":"err");setTimeout(function(){m.className="msg";},4000);}
+
+function login(){
+  var k=document.getElementById("key").value.trim();
+  if(!k){document.getElementById("loginErr").textContent="Introduce la clave.";return;}
+  KEY=k;
+  fetch("/api/reviews",{headers:{"x-dashboard-key":KEY}}).then(function(r){
+    if(r.status===401){document.getElementById("loginErr").textContent="Clave incorrecta.";return null;}
+    return r.json();
+  }).then(function(data){
+    if(!data)return;
+    try{sessionStorage.setItem("bj_rev_key",KEY);}catch(e){}
+    document.getElementById("loginView").style.display="none";
+    document.getElementById("appView").style.display="block";
+    render(data);
+  }).catch(function(){document.getElementById("loginErr").textContent="Error de conexión.";});
+}
+
+function load(){
+  fetch("/api/reviews",{headers:{"x-dashboard-key":KEY}}).then(function(r){return r.json();}).then(render);
+}
+
+function render(data){
+  var list=document.getElementById("list");
+  document.getElementById("notConfigured").style.display=data.configured?"none":"block";
+  var revs=data.reviews||[];
+  document.getElementById("count").textContent=revs.length+" pendiente(s)";
+  if(revs.length===0){list.innerHTML='<div class="empty">🎉 No hay reseñas pendientes de responder.</div>';return;}
+  list.innerHTML=revs.map(function(rv){
+    var n=parseInt(rv.rating||0);
+    var stars="★".repeat(n)+"☆".repeat(5-n);
+    var col=n>=4?"var(--green)":n===3?"var(--orange)":"var(--red)";
+    var id=esc(rv.review_id);
+    var date=rv.review_ts?new Date(rv.review_ts).toLocaleDateString("es-ES"):"";
+    return '<div class="card" data-id="'+id+'">'+
+      '<div class="meta">'+esc(rv.location_name)+' · '+esc(rv.author||"(anónimo)")+(date?' · '+date:'')+'</div>'+
+      '<div class="stars" style="color:'+col+'">'+stars+'</div>'+
+      (rv.comment?'<div class="review">'+esc(rv.comment)+'</div>':'<div class="meta" style="margin:6px 0">(sin texto, solo valoración)</div>')+
+      '<div class="lbl">Respuesta (editable)</div>'+
+      '<textarea class="reply">'+esc(rv.draft_reply||"")+'</textarea>'+
+      '<div class="actions">'+
+        '<button class="btn-primary" onclick="act(this,\'publish\')">Publicar en Google</button>'+
+        '<button class="btn-ghost" onclick="act(this,\'save\')">Guardar borrador</button>'+
+        '<button class="btn-danger" onclick="act(this,\'skip\')">No responder</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+function act(btn,action){
+  var card=btn.closest(".card");
+  var id=card.getAttribute("data-id");
+  var reply=card.querySelector(".reply").value.trim();
+  if(action!=="skip"&&!reply){showMsg("La respuesta está vacía.",false);return;}
+  if(action==="publish"&&!confirm("¿Publicar esta respuesta en Google? Será pública."))return;
+  if(action==="skip"&&!confirm("¿Marcar como no respondida y quitarla de la lista?"))return;
+  var buttons=card.querySelectorAll("button");buttons.forEach(function(b){b.disabled=true;});
+  fetch("/api/reviews",{method:"POST",headers:{"x-dashboard-key":KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({action:action,id:id,reply:reply})})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(res){
+      if(!res.ok){showMsg(res.j.error||"Error",false);buttons.forEach(function(b){b.disabled=false;});return;}
+      if(action==="save"){showMsg("Borrador guardado.",true);buttons.forEach(function(b){b.disabled=false;});return;}
+      showMsg(action==="publish"?"Publicado en Google ✓":"Quitada de la lista.",true);
+      card.style.transition="opacity .3s";card.style.opacity="0";
+      setTimeout(load,400);
+    })
+    .catch(function(){showMsg("Error de conexión.",false);buttons.forEach(function(b){b.disabled=false;});});
+}
+
+// Auto-login if we already have a key this session.
+(function(){
+  try{var saved=sessionStorage.getItem("bj_rev_key");if(saved){document.getElementById("key").value=saved;login();}}catch(e){}
+})();
+</script>
+</body>
+</html>
