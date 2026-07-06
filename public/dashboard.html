@@ -119,6 +119,24 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .conv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .conv-header h2{font-size:15px;font-weight:800;color:var(--text)}
 .conv-header .count{font-size:11px;color:var(--muted);font-weight:500;margin-left:8px}
+/* --- Reseñas (vista integrada) --- */
+.rev-wrap{max-width:860px;margin:0 auto;padding:20px 16px}
+.rev-card{background:var(--card,#fff);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.rev-card .meta{font-size:11px;color:var(--muted)}
+.rev-card .stars{font-size:16px;margin:4px 0}
+.rev-card .review{font-size:13px;color:var(--text);background:var(--bg);border-radius:8px;padding:10px 12px;margin:8px 0;white-space:pre-wrap}
+.rev-card .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:10px 0 4px}
+.rev-card textarea{width:100%;min-height:84px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:Inter,sans-serif;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box}
+.rev-card .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.rev-card .actions button{border:none;border-radius:10px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer}
+.rev-btn-primary{background:var(--navy);color:#fff}
+.rev-btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--border)!important}
+.rev-btn-danger{background:transparent;color:#dc2626;border:1.5px solid #dc262640!important}
+.rev-empty{text-align:center;padding:48px 16px;color:var(--muted);font-size:14px}
+.rev-msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
+.rev-msg.show{opacity:1}
+.rev-msg.ok{background:#10b981;color:#fff}
+.rev-msg.err{background:#dc2626;color:#fff}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .tab{
   padding:7px 16px;border-radius:20px;
@@ -234,6 +252,8 @@ var autoRefresh=true;
 var refreshTimer=null;
 var lastIncidentCount=0;
 var chatViewFilter="all";
+var mainView=(location.hash==="#resenas")?"resenas":"chats";
+var reviewsData=null;
 
 if(darkMode)document.body.classList.add("dark");
 
@@ -262,6 +282,13 @@ function getFilteredChats(){
 function render(){
   var app=document.getElementById("app");
   if(!KEY){app.innerHTML=loginHTML();bindLogin();return}
+  if(mainView==="resenas"){
+    app.innerHTML=headerHTML()+resenasHTML();
+    bindEvents();
+    stopAutoRefresh();
+    if(!reviewsData)loadResenas();
+    return;
+  }
   if(!stats){app.innerHTML='<div class="login"><div class="login-box"><h2>Cargando...</h2><div class="sub">Conectando con el servidor</div></div></div>';loadStats();return}
   app.innerHTML=headerHTML()+searchHTML()+kpiHTML()+chatsHTML();
   bindEvents();
@@ -295,7 +322,7 @@ function headerHTML(){
   var pushLabel=window._pushSubscribed?'Notif ON':'Notif OFF';
   var pushClass=window._pushSubscribed?'hbtn green':'hbtn';
   return '<div class="header"><h1>BURGERJAZZ</h1><div class="right">'
-    +'<a class="hbtn" href="/resenas.html" style="text-decoration:none">Reseñas</a>'
+    +'<button class="hbtn'+(mainView==="resenas"?' green':'')+'" id="btn_resenas">'+(mainView==="resenas"?'Conversaciones':'Reseñas')+'</button>'
     +'<button class="'+pushClass+'" id="btn_push">'+pushLabel+'</button>'
     +'<button class="hbtn" id="btn_report">Informe</button>'
     +'<button class="hbtn" id="btn_dark">'+(darkMode?'Claro':'Oscuro')+'</button>'
@@ -415,7 +442,8 @@ function chatsHTML(){
 // === EVENTS ===
 function bindEvents(){
   setTimeout(function(){
-    var r=document.getElementById("btn_refresh");if(r)r.onclick=function(){stats=null;render()};
+    var r=document.getElementById("btn_refresh");if(r)r.onclick=function(){if(mainView==="resenas"){reviewsData=null;render()}else{stats=null;render()}};
+    var rv=document.getElementById("btn_resenas");if(rv)rv.onclick=function(){mainView=(mainView==="resenas")?"chats":"resenas";try{history.replaceState(null,"",mainView==="resenas"?"#resenas":"#")}catch(e){}render()};
     var l=document.getElementById("btn_logout");if(l)l.onclick=function(){KEY="";CURRENT_USER="";localStorage.removeItem("bj_dash_key");localStorage.removeItem("bj_dash_user");stats=null;render()};
     var dm=document.getElementById("btn_dark");if(dm)dm.onclick=function(){darkMode=!darkMode;document.body.classList.toggle("dark",darkMode);localStorage.setItem("bj_dark",darkMode?"1":"0");render()};
     var pb=document.getElementById("btn_push");if(pb)pb.onclick=function(){subscribePush()};
@@ -451,6 +479,68 @@ function startAutoRefresh(){
   },60000);
 }
 function stopAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
+
+// === RESEÑAS (integrado; el agente publica solo — aquí se corrigen/reintentan) ===
+function resenasHTML(){
+  var n=reviewsData?(reviewsData.reviews||[]).length:null;
+  return '<div class="rev-wrap">'
+    +'<div class="conv-header"><h2>Reseñas de Google'+(n!==null?' <span class="count">'+n+' pendiente(s)</span>':'')+'</h2></div>'
+    +'<p style="font-size:12px;color:var(--muted);margin:0 0 14px">El agente responde solo cada mañana (te llega el resumen por email). Aquí aparecen únicamente las que fallaron al publicarse o quedaron como borrador — puedes editarlas y publicarlas, o descartarlas. Las ya publicadas se corrigen desde la ficha de Google o pidiéndoselo a Claude.</p>'
+    +(reviewsData&&reviewsData.configured===false?'<div class="rev-empty">⚠️ Falta configurar el acceso a Google (GBP_*).</div>':'')
+    +'<div id="rev_list">'+(reviewsData?'':'<div class="rev-empty">Cargando…</div>')+'</div>'
+    +'<div class="rev-msg" id="rev_msg"></div>'
+    +'</div>';
+}
+function loadResenas(){
+  fetch("/api/reviews",{headers:{"x-dashboard-key":KEY}})
+    .then(function(r){if(r.status===401){KEY="";localStorage.removeItem("bj_dash_key");render();return null}return r.json()})
+    .then(function(data){if(!data)return;reviewsData=data;if(mainView==="resenas")render();renderRevList();})
+    .catch(function(){var l=document.getElementById("rev_list");if(l)l.innerHTML='<div class="rev-empty">Error de conexión.</div>';});
+}
+function renderRevList(){
+  var list=document.getElementById("rev_list");
+  if(!list||!reviewsData)return;
+  var revs=reviewsData.reviews||[];
+  if(revs.length===0){list.innerHTML='<div class="rev-empty">🎉 Nada pendiente: el agente está al día.</div>';return;}
+  list.innerHTML=revs.map(function(rv){
+    var n=parseInt(rv.rating||0);
+    var stars="★".repeat(n)+"☆".repeat(5-n);
+    var col=n>=4?"#16a34a":n===3?"#d97706":"#dc2626";
+    var date=rv.review_ts?new Date(rv.review_ts).toLocaleDateString("es-ES"):"";
+    return '<div class="rev-card" data-id="'+escHtml(rv.review_id)+'">'
+      +'<div class="meta">'+escHtml(rv.location_name)+' · '+escHtml(rv.author||"(anónimo)")+(date?' · '+date:'')+'</div>'
+      +'<div class="stars" style="color:'+col+'">'+stars+'</div>'
+      +(rv.comment?'<div class="review">'+escHtml(rv.comment)+'</div>':'<div class="meta" style="margin:6px 0">(sin texto, solo valoración)</div>')
+      +'<div class="lbl">Respuesta (editable)</div>'
+      +'<textarea class="reply">'+escHtml(rv.draft_reply||"")+'</textarea>'
+      +'<div class="actions">'
+      +'<button class="rev-btn-primary" onclick="actResena(this,\'publish\')">Publicar en Google</button>'
+      +'<button class="rev-btn-ghost" onclick="actResena(this,\'save\')">Guardar</button>'
+      +'<button class="rev-btn-danger" onclick="actResena(this,\'skip\')">No responder</button>'
+      +'</div></div>';
+  }).join("");
+}
+function showRevMsg(t,ok){var m=document.getElementById("rev_msg");if(!m)return;m.textContent=t;m.className="rev-msg show "+(ok?"ok":"err");setTimeout(function(){m.className="rev-msg"},4000);}
+function actResena(btn,action){
+  var card=btn.closest(".rev-card");
+  var id=card.getAttribute("data-id");
+  var reply=card.querySelector(".reply").value.trim();
+  if(action!=="skip"&&!reply){showRevMsg("La respuesta está vacía.",false);return;}
+  if(action==="publish"&&!confirm("¿Publicar esta respuesta en Google? Será pública."))return;
+  if(action==="skip"&&!confirm("¿Descartarla y quitarla de la lista?"))return;
+  var buttons=card.querySelectorAll("button");buttons.forEach(function(b){b.disabled=true;});
+  fetch("/api/reviews",{method:"POST",headers:{"x-dashboard-key":KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({action:action,id:id,reply:reply})})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(res){
+      if(!res.ok){showRevMsg(res.j.error||"Error",false);buttons.forEach(function(b){b.disabled=false;});return;}
+      if(action==="save"){showRevMsg("Borrador guardado.",true);buttons.forEach(function(b){b.disabled=false;});return;}
+      showRevMsg(action==="publish"?"Publicado en Google ✓":"Quitada de la lista.",true);
+      card.style.transition="opacity .3s";card.style.opacity="0";
+      setTimeout(function(){reviewsData=null;loadResenas();},400);
+    })
+    .catch(function(){showRevMsg("Error de conexión.",false);buttons.forEach(function(b){b.disabled=false;});});
+}
 
 // === SESSION MODAL ===
 function adminReplyBar(sid){

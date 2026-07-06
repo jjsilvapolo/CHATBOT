@@ -206,7 +206,7 @@ module.exports = async function handler(req, res) {
         '<div style="background:#fff;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">' +
         rows + errHtml +
         '<div style="text-align:center;margin-top:16px">' +
-        '<a href="https://bot.burgerjazz.com/resenas.html" style="display:inline-block;background:#002855;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px">Ver / corregir en el panel →</a>' +
+        '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;background:#002855;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px">Ver / corregir en el panel →</a>' +
         '</div>' +
         '<p style="margin-top:14px;font-size:11px;color:#9ca3af">Modo automático: las respuestas ya están en Google. Si alguna no te convence, edítala en el panel y se sobrescribe. Pendientes de reintento: ' + totalPending + '.</p>' +
         '</div></div>';
