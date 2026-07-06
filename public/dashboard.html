@@ -236,6 +236,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   .header .right{gap:4px}
   .hbtn{padding:5px 7px;font-size:9px;border-radius:6px}
 }
+/* --- modo embebido en la app de trabajadores --- */
+.embed body{background:#fff}
+.embed .rev-wrap{padding:4px 2px}
+.embed .search-wrap{padding:10px 2px 0}
 </style>
 </head>
 <body>
@@ -244,6 +248,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 (function(){
 
 var KEY=localStorage.getItem("bj_dash_key")||"";
+// MODO EMBEBIDO (?embed=1): el dashboard vive dentro de la app de trabajadores.
+// Sin cabecera propia ni login visible — la app manda credencial y navegacion por postMessage.
+var EMBED=/[?&]embed=1/.test(location.search);
+if(EMBED){document.documentElement.classList.add("embed");}
 // SSO desde la app de trabajadores (iframe): la app manda la credencial por postMessage
 // con origen verificado — asi el super_admin no tiene que teclear la clave dentro del iframe.
 window.addEventListener("message",function(ev){
@@ -255,6 +263,9 @@ window.addEventListener("message",function(ev){
     try{localStorage.setItem("bj_dash_key",KEY);localStorage.setItem("bj_dash_user",CURRENT_USER)}catch(e){}
     if(!stats)render();
   }
+  if(d.type==="bj_nav"&&(d.view==="chats"||d.view==="resenas")){mainView=d.view;if(KEY)render()}
+  if(d.type==="bj_action"&&d.action==="refresh"){if(mainView==="resenas")reviewsData=null;else stats=null;if(KEY)render()}
+  if(d.type==="bj_action"&&d.action==="report"&&KEY){generateReport("weekly")}
 });
 var CURRENT_USER_INIT=localStorage.getItem("bj_dash_user")||"";
 var stats=null;
@@ -293,7 +304,9 @@ function getFilteredChats(){
 // === RENDER ===
 function render(){
   var app=document.getElementById("app");
-  if(!KEY){app.innerHTML=loginHTML();bindLogin();return}
+  if(!KEY){
+    if(EMBED){app.innerHTML='<div class="login" style="background:transparent"><div class="login-box" style="box-shadow:none"><h2>BURGERJAZZ</h2><div class="sub">Conectando con la app\u2026</div></div></div>';return}
+    app.innerHTML=loginHTML();bindLogin();return}
   if(mainView==="resenas"){
     app.innerHTML=headerHTML()+resenasHTML();
     bindEvents();
@@ -331,6 +344,7 @@ function bindLogin(){
 }
 
 function headerHTML(){
+  if(EMBED)return"";
   var pushLabel=window._pushSubscribed?'Notif ON':'Notif OFF';
   var pushClass=window._pushSubscribed?'hbtn green':'hbtn';
   return '<div class="header"><h1>BURGERJAZZ</h1><div class="right">'
