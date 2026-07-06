@@ -114,7 +114,7 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - Si no especifica local, pregunta cual le interesa.
 - IMPORTANTE: Varios locales cierran lunes y martes. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque cierran dias distintos. Cierran lunes y martes: Plaza Espana, Majadahonda, Moraleja Green y Valladolid. Delicias, Pozuelo y Mirasierra abren lunes y martes solo a mediodia (comida). Chamberi abre de lunes a jueves. Ejemplo: si es martes y dice Plaza Espana → "Plaza Espana cierra los martes, pero Chamberi esta abierto y tiene menu del dia."
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque los horarios de lunes y martes varian por local. El menu del dia es SOLO en horario de comida (hasta ~16:00): lunes y martes lo tienen Chamberi y Mirasierra (abren a mediodia); Delicias, Pozuelo y Majadahonda abren lunes y martes SOLO de cena (19:30-23:30, sin menu del dia esos mediodias); Plaza Espana, Moraleja Green y Valladolid cierran lunes y martes. Ejemplo: si es martes y dice Plaza Espana → "Plaza Espana cierra los martes, pero Chamberi y Mirasierra estan abiertos a mediodia y tienen menu del dia."
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -192,10 +192,10 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (fuente: web oficial, Centro de Ayuda):
 - Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
 - Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-16:30 y 19:30-0:00
-- Delicias: L-M 12:30-16:00 (solo comida) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Pozuelo: L-M 12:30-16:00 (solo comida) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Majadahonda: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Mirasierra (Fermin Caballero): L-M 12:30-16:00 (solo comida) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
+- Pozuelo: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
+- Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
+- Mirasierra (Fermin Caballero): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Moraleja Green: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00
 - Valladolid: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
