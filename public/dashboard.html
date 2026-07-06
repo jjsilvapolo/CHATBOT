@@ -244,6 +244,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 (function(){
 
 var KEY=localStorage.getItem("bj_dash_key")||"";
+// SSO desde la app de trabajadores (iframe): la app manda la credencial por postMessage
+// con origen verificado — asi el super_admin no tiene que teclear la clave dentro del iframe.
+window.addEventListener("message",function(ev){
+  var ok=["https://burgerjazz-app-2026.vercel.app","https://burgerjazz-app-beta.vercel.app","https://app.burgerjazz.com"];
+  if(ok.indexOf(ev.origin)<0)return;
+  var d=ev.data||{};
+  if(d.type==="bj_sso"&&d.key&&String(d.key).indexOf(":")>0){
+    KEY=String(d.key);CURRENT_USER=KEY.split(":")[0];
+    try{localStorage.setItem("bj_dash_key",KEY);localStorage.setItem("bj_dash_user",CURRENT_USER)}catch(e){}
+    if(!stats)render();
+  }
+});
 var CURRENT_USER_INIT=localStorage.getItem("bj_dash_user")||"";
 var stats=null;
 var searchQuery="";
