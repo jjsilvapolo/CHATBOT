@@ -191,7 +191,7 @@ CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), A
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (fuente: web oficial, Centro de Ayuda):
 - Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-16:30 y 19:30-0:00
+- Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-0:00 | V-D 12:30-16:30 y 19:30-0:30
 - Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
 - Pozuelo: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
