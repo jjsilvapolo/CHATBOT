@@ -525,6 +525,7 @@ function stopAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshT
 // Google, respuesta editable siempre (sobrescribe en Google), sentimiento por tienda e insights.
 var revStats=null,revLoc=null,revList=null,revFilter="all",revQ="",revTab="stores",revPend=null;
 function starsHtml(n){n=parseInt(n||0);var col=n>=4?"#16a34a":n===3?"#d97706":"#dc2626";return '<span style="color:'+col+'">'+"★".repeat(n)+"☆".repeat(5-n)+'</span>'}
+window.revBack=function(){revLoc=null;revList=null;revTab="stores";render();if(!revStats)loadResenas()};
 function resenasHTML(){
   if(revLoc)return resenasListHTML();
   var nP=revPend?(revPend.reviews||[]).length:null;
@@ -575,7 +576,9 @@ function resenasHTML(){
   return h;
 }
 function resenasListHTML(){
-  var h='<div class="rev-wrap"><div class="conv-header"><h2>'+escHtml(revLoc.name)+'</h2><button class="hbtn" id="rev_back">← Tiendas</button></div>';
+  var nP=revPend?(revPend.reviews||[]).length:null;
+  var h='<div class="rev-wrap"><div class="conv-header"><h2>'+escHtml(revLoc.name)+'</h2><button class="hbtn" onclick="revBack()">← Todos los locales</button></div>'
+    +'<div class="rev-filters" style="margin-bottom:10px"><button class="rf" onclick="revBack()">🏪 Locales</button><button class="rf" id="rtab_p">⏳ Pendientes'+(nP!==null?' ('+nP+')':'')+'</button></div>';
   if(!revList){h+='<div class="rev-empty">Cargando reseñas…</div></div>';return h}
   var meta=revList.meta||{};
   h+='<p style="font-size:12px;color:var(--muted);margin:0 0 10px">'+(meta.avg!=null?meta.avg.toFixed(2)+'★ de media · ':'')+(meta.total!=null?meta.total+' reseñas en total · ':'')+'mostrando las '+revList.items.length+' más recientes. Edita cualquier respuesta y se sobrescribe en Google.</p>';
@@ -622,9 +625,9 @@ function renderRevList(){
 }
 function bindResenas(){
   var ts=document.getElementById("rtab_s");if(ts)ts.onclick=function(){revTab="stores";render();if(!revStats)loadResenas()};
-  var tp=document.getElementById("rtab_p");if(tp)tp.onclick=function(){revTab="pend";render();loadPendientes()};
+  var tp=document.getElementById("rtab_p");if(tp)tp.onclick=function(){revLoc=null;revList=null;revTab="pend";render();loadPendientes()};
   document.querySelectorAll(".rev-store[data-key]").forEach(function(el){el.onclick=function(){revLoc={key:el.getAttribute("data-key"),name:el.getAttribute("data-name")};revList=null;render();loadResenas()}});
-  var bk=document.getElementById("rev_back");if(bk)bk.onclick=function(){revLoc=null;revList=null;revTab="stores";render();if(!revStats)loadResenas()};
+  
   document.querySelectorAll(".rev-filters .rf").forEach(function(el){el.onclick=function(){revFilter=el.getAttribute("data-f");render()}});
   var q=document.getElementById("rev_q");if(q){q.oninput=function(){revQ=q.value;renderRevList()}}
   renderRevList();
