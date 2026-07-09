@@ -60,7 +60,79 @@ DEVUELVE ÚNICAMENTE EL TEXTO DE LA RESPUESTA, sin comillas, sin encabezados, si
 
 EJEMPLOS REALES APROBADOS POR EL DUEÑO (imita este estilo, tono y estructura; NO los copies literalmente):
 
-`;
+EJEMPLO (5★ con nombre y detalle) — 5★ de Mathias Benitez en Chamberí:
+RESEÑA: Muy buenas hamburguesas , exelentes servicios de parte de Fanny e Yomalvi mas que recomendado
+
+(Translated by Google)
+Very good hamburgers, excellent service from Fanny and Yomalvi, highly recommended
+RESPUESTA APROBADA:
+¡Mil gracias, Mathias! Nos alegra un montón que disfrutaras de las burgers, y le pasamos tu felicitación a Fanny y Yomalvi: se les va a alegrar el día. ¡Te esperamos de vuelta en Chamberí! — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (5★ sin texto) — 5★ de Carlos Redondo Cornejo en Delicias:
+RESEÑA: (sin texto)
+RESPUESTA APROBADA:
+¡Gracias por las cinco estrellas, Carlos! Te esperamos de vuelta en Delicias. — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (4★) — 4★ de maria gonzalez en Chamberí:
+RESEÑA: (sin texto)
+RESPUESTA APROBADA:
+¡Gracias por tu valoración, María! Nos alegra que disfrutaras de tu visita. Si hay algo que podamos hacer para ganarnos esa quinta estrella, nos encantará saberlo. ¡Te esperamos pronto en Chamberí! — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (3★) — 3★ de Alberto Caballero en Majadahonda:
+RESEÑA: Muy bien ambiente, pero no se puede comer por falta de calefacción y con este calor dentro del local es un horno, espero puedan mejorarlo, saludos
+
+(Translated by Google)
+The atmosphere is great, but it's impossible to eat because there's no heating, and with this heat inside, it's like an oven. I h
+RESPUESTA APROBADA:
+Hola, Alberto. Gracias por avisarnos: tienes razón en que con esta ola de calor el local se resiente, y estamos viendo cómo mejorar la climatización de Majadahonda. Nos alegra que el ambiente te gustara; esperamos que la próxima visita sea redonda. — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (1-2★ queja) — 2★ de diana ruiz barrionuevo en Chamberí:
+RESEÑA: Paramos allí a comer, el sitio es bastante pequeñito, pero la chica bastante maja
+Ahora la comida.... Un poco cara para una hamburguesa sin más (la carne bastante fina)
+
+(Translated by Google)
+We stopped there for lunch; the place is quite small, but the girl was very nice.
+Now for the food... A bit
+RESPUESTA APROBADA:
+Hola, Diana. Gracias por darnos tu opinión y por tus palabras hacia nuestra compañera. Sentimos que la burger no te convenciera: nuestro estilo smash lleva carne fina a la plancha para conseguir ese punto crujiente, pero entendemos que no encaje con lo que esperabas. Si quieres contarnos más, escríbenos a info@burgerjazz.com; nos ayuda a mejorar. — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (inglés) — 5★ de Max Muslera Álvarez en Chamberí:
+RESEÑA: Fuimos a cenar al Jazzburguer de chamberi. Recibimos un trato súper amable por parte de Fanny. Que pese a las horas que nos recibió a falta de 20 minutos al cierre. Fue eficaz en la preparación y cenamos muy muy rico. Salimos muy contentas con la cena y el trato.
+Abrazos a Fanny!
+
+(Translated by Goo
+RESPUESTA APROBADA:
+¡Muchísimas gracias, Max! Nos encanta saber que Fanny os cuidó tan bien incluso a punto de cerrar; le haremos llegar vuestros abrazos. Nos alegra que la cena estuviera tan rica. ¡Volved pronto! — El equipo de BURGERJAZZ™ Chamberí
+
+---
+
+EJEMPLO (5★ extra) — 5★ de Lisandy Garcia Cruz en Chamberí:
+RESEÑA: He ido a cenar , yoma y Fanny me ha tratado estupendo
+
+(Translated by Google)
+I went to dinner, and Fanny treated me wonderfully.
+RESPUESTA APROBADA:
+¡Gracias, Lisandy! Fanny y Yoma se alegrarán muchísimo de leer esto. Un placer tenerte en Chamberí, ¡vuelve cuando quieras! — El equipo de BURGERJAZZ™
+
+---
+
+EJEMPLO (negativa extra) — 2★ de Baz Artz (BazArtz) en Delicias:
+RESEÑA: ridiculamente caro para lo que es. esta bueno pero no merece la pena casi 20e.
+
+(Translated by Google)
+Ridiculously expensive for what it is. It's okay, but not worth almost €20.
+RESPUESTA APROBADA:
+Hola, gracias por tu opinión; nos alegra al menos que la burger estuviera buena. Sentimos que el precio no te pareciera acorde: trabajamos con carne fresca y producto de calidad e intentamos ajustarlo al máximo. Tomamos nota, y si quieres darnos más detalle te leemos en info@burgerjazz.com. — El equipo de BURGERJAZZ™`;
 
 function daysAgo(iso) {
   var t = new Date(iso).getTime();
