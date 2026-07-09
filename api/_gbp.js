@@ -125,4 +125,28 @@ function starToNumber(starRating) {
   return STAR_MAP[starRating] || 0;
 }
 
-module.exports = { isConfigured, getLocations, getAccessToken, listReviews, replyToReview, starToNumber };
+// Como listReviews pero devolviendo tambien los agregados que Google incluye en la primera
+// pagina: totalReviewCount y averageRating (all-time, por ficha) — base del sentimiento por tienda.
+async function listReviewsMeta(loc, maxPages) {
+  var token = await getAccessToken();
+  var parent = "accounts/" + loc.account + "/locations/" + loc.id;
+  var reviews = [], pageToken = null, pages = 0, total = null, avg = null;
+  do {
+    var url = V4_BASE + "/" + parent + "/reviews?orderBy=updateTime desc&pageSize=50" +
+      (pageToken ? "&pageToken=" + encodeURIComponent(pageToken) : "");
+    var res = await fetch(url, { headers: { Authorization: "Bearer " + token } });
+    if (!res.ok) {
+      var t = await res.text().catch(function () { return ""; });
+      throw new Error("GBP reviews " + res.status + " (" + loc.name + "): " + t.slice(0, 300));
+    }
+    var json = await res.json();
+    if (total == null && json.totalReviewCount != null) total = json.totalReviewCount;
+    if (avg == null && json.averageRating != null) avg = json.averageRating;
+    if (json.reviews) reviews = reviews.concat(json.reviews);
+    pageToken = json.nextPageToken || null;
+    pages++;
+  } while (pageToken && pages < (maxPages || 3));
+  return { reviews: reviews, totalReviewCount: total, averageRating: avg };
+}
+
+module.exports = { isConfigured, getLocations, getAccessToken, listReviews, listReviewsMeta, replyToReview, starToNumber };
