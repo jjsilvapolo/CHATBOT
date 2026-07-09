@@ -43,11 +43,11 @@ function daysAgo(iso) { var t = new Date(iso).getTime(); return t ? (Date.now() 
 
 async function buildStats() {
   var locations = gbp.getLocations();
-  var stores = [];
-  for (var i = 0; i < locations.length; i++) {
-    var loc = locations[i];
+  // EN PARALELO (09/07: "tarda mucho"): antes 8 tiendas x 3 paginas EN SERIE = ~24 viajes a Google (~12s);
+  // ahora las 8 tiendas a la vez y 2 paginas (100 reseñas recientes bastan para las ventanas de 30/60d) → ~2s.
+  var stores = await Promise.all(locations.map(async function (loc) {
     try {
-      var m = await gbp.listReviewsMeta(loc, 3); // ~150 reseñas recientes por tienda
+      var m = await gbp.listReviewsMeta(loc, 2);
       var n30 = 0, s30 = 0, neg30 = 0, un30 = 0, nP = 0, sP = 0, quejasSrc = [];
       m.reviews.forEach(function (rv) {
         var d = daysAgo(rv.updateTime || rv.createTime);
@@ -56,17 +56,17 @@ async function buildStats() {
         else if (d <= 60) { nP++; sP += r; }
         if (d <= 90 && r <= 3 && rv.comment) quejasSrc.push(rv.comment);
       });
-      stores.push({
+      return {
         key: loc.account + "/" + loc.id, name: loc.name,
         total: m.totalReviewCount, avg: m.averageRating,
         n30: n30, avg30: n30 ? s30 / n30 : null, neg30: neg30, unans30: un30,
         nPrev: nP, avgPrev: nP ? sP / nP : null,
         quejas: topQuejas(quejasSrc),
-      });
+      };
     } catch (e) {
-      stores.push({ key: loc.account + "/" + loc.id, name: loc.name, error: e.message.slice(0, 120) });
+      return { key: loc.account + "/" + loc.id, name: loc.name, error: e.message.slice(0, 120) };
     }
-  }
+  }));
   stores.sort(function (a, b) { return (a.avg30 == null ? 9 : a.avg30) - (b.avg30 == null ? 9 : b.avg30); });
   return { stores: stores, fetchedAt: new Date().toISOString() };
 }
@@ -126,7 +126,7 @@ module.exports = async function handler(req, res) {
         if (!loc) return res.status(404).json({ error: "tienda desconocida" });
         var c = _lists[key];
         if (!c || Date.now() - c.t > 300000) {
-          var m2 = await gbp.listReviewsMeta(loc, 6); // hasta ~300 reseñas por tienda
+          var m2 = await gbp.listReviewsMeta(loc, 4); // ~200 recientes: suficiente y el doble de rápido
           // marca cuales respondio el agente/panel (BD nuestra) para el badge "auto"
           var ids = m2.reviews.map(function (r) { return r.name; });
           var ours = {};
