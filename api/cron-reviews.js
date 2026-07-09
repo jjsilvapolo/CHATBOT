@@ -11,6 +11,7 @@
 // is false it returns {status:"not_configured"} without touching anything.
 
 const Anthropic = require("@anthropic-ai/sdk");
+const crypto = require("crypto");
 const { initDB, insertReviewIfNew, markReviewPublished, getKnowledgeSections, countPendingReviews } = require("./_db");
 const { isAuthorizedCron } = require("./_auth");
 const gbp = require("./_gbp");
@@ -30,7 +31,7 @@ const REPLY_SYSTEM = `Eres el responsable de reputación online de BURGERJAZZ, u
 TONO Y ESTILO:
 - Cercano, humano y agradecido. Nada de plantillas robóticas.
 - Español de España, tuteo, natural. Sin emojis excesivos (máximo uno, y solo si encaja).
-- Breve: 2-4 frases. Firma como "El equipo de BurgerJazz" o menciona el local.
+- Breve: 2-4 frases. TERMINA SIEMPRE con la firma exacta: "El equipo de BURGERJAZZ™" (con el símbolo ™, en mayúsculas). Es la última frase de TODA respuesta, sin excepción.
 - Si la persona da su nombre, salúdala por su nombre.
 - Menciona el local concreto cuando aporte cercanía.
 
@@ -149,15 +150,10 @@ module.exports = async function handler(req, res) {
         }
         if (!draft || draft.length < 5) continue;
 
-        // Publish straight to Google (Rodrigo's auto model). If the PUT fails
-        // we leave it recorded as a draft so the panel can retry it by hand.
-        var posted = true;
-        try {
-          await gbp.replyToReview(rv.name, draft);
-        } catch (e) {
-          posted = false;
-          errors.push("publicar " + loc.name + ": " + e.message);
-        }
+        // MODELO APROBACION (09/07/2026, Rodrigo): el agente YA NO publica solo. Guarda el borrador
+        // y se lo manda por email con boton "Aprobar y publicar" (token firmado) — o se aprueba/edita
+        // en el panel (pestaña Pendientes).
+        var posted = false;
 
         await insertReviewIfNew({
           review_id: rv.name, // full resource name — stable & unique
@@ -169,9 +165,9 @@ module.exports = async function handler(req, res) {
           review_ts: rv.createTime || rv.updateTime || null,
           draft_reply: draft,
         });
-        if (posted) {
-          await markReviewPublished(rv.name, draft, "auto");
+        if (!posted) {
           published.push({
+            id: rv.name,
             local: loc.name,
             author: (rv.reviewer && rv.reviewer.displayName) || "(anónimo)",
             rating: gbp.starToNumber(rv.starRating),
@@ -187,14 +183,19 @@ module.exports = async function handler(req, res) {
     var RESEND_KEY = process.env.RESEND_API_KEY;
     if ((published.length > 0 || errors.length > 0) && RESEND_KEY) {
       var totalPending = await countPendingReviews();
+      var SEC = process.env.CRON_SECRET || "";
       var rows = published.map(function (d) {
         var stars = "★".repeat(d.rating) + "☆".repeat(5 - d.rating);
         var color = d.rating >= 4 ? "#16a34a" : d.rating === 3 ? "#d97706" : "#dc2626";
-        return '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:12px">' +
+        var tok = crypto.createHmac("sha256", SEC).update(d.id).digest("hex").slice(0, 24);
+        var approveUrl = "https://bot.burgerjazz.com/api/reviews?action=approve&id=" + encodeURIComponent(d.id) + "&t=" + tok;
+        return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:14px">' +
           '<div style="font-size:12px;color:#6b7280">' + escHTML(d.local) + ' · ' + escHTML(d.author) + '</div>' +
           '<div style="color:' + color + ';font-size:15px;margin:2px 0">' + stars + '</div>' +
           (d.comment ? '<div style="font-size:13px;color:#374151;margin:6px 0">“' + escHTML(d.comment) + '”</div>' : '<div style="font-size:12px;color:#9ca3af;margin:6px 0">(sin texto)</div>') +
-          '<div style="font-size:13px;background:#f9fafb;border-left:3px solid #16a34a;padding:8px 10px;margin-top:6px"><strong>Respuesta publicada:</strong> ' + escHTML(d.draft) + '</div>' +
+          '<div style="font-size:13px;background:#f9fafb;border-left:3px solid #d97706;padding:10px 12px;margin-top:6px;border-radius:0 8px 8px 0"><strong>Propuesta:</strong> ' + escHTML(d.draft) + '</div>' +
+          '<div style="margin-top:12px"><a href="' + approveUrl + '" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px">✓ Aprobar y publicar</a>' +
+          '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;margin-left:8px;color:#374151;text-decoration:none;padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;font-size:13px">Editar en el panel</a></div>' +
           '</div>';
       }).join("");
 
@@ -202,13 +203,13 @@ module.exports = async function handler(req, res) {
 
       var html = '<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto">' +
         '<div style="background:#002855;color:#fff;padding:16px 24px;border-radius:8px 8px 0 0">' +
-        '<h2 style="margin:0;font-size:16px">Reseñas de Google — ' + published.length + ' respuesta(s) publicada(s) hoy</h2></div>' +
+        '<h2 style="margin:0;font-size:16px">Reseñas — ' + published.length + ' respuesta(s) PENDIENTES DE TU APROBACIÓN</h2></div>' +
         '<div style="background:#fff;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">' +
         rows + errHtml +
         '<div style="text-align:center;margin-top:16px">' +
         '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;background:#002855;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px">Ver / corregir en el panel →</a>' +
         '</div>' +
-        '<p style="margin-top:14px;font-size:11px;color:#9ca3af">Modo automático: las respuestas ya están en Google. Si alguna no te convence, edítala en el panel y se sobrescribe. Pendientes de reintento: ' + totalPending + '.</p>' +
+        '<p style="margin-top:14px;font-size:11px;color:#9ca3af">NADA se publica sin tu aprobación: aprueba con un clic desde aquí, o edita/aprueba en el panel (pestaña Pendientes). Total pendientes: ' + totalPending + '.</p>' +
         '</div></div>';
 
       var emailRes = await fetch("https://api.resend.com/emails", {
@@ -217,7 +218,7 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           from: "BurgerJazz Reseñas <alertas@burgerjazz.com>",
           to: ["rodrigo@burgerjazz.com"],
-          subject: "⭐ " + published.length + " respuesta(s) a reseñas publicadas" + (errors.length ? " · " + errors.length + " incidencia(s)" : ""),
+          subject: "⭐ " + published.length + " respuesta(s) a reseñas para APROBAR" + (errors.length ? " · " + errors.length + " incidencia(s)" : ""),
           html: html,
         }),
       });
@@ -227,7 +228,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       status: "ok",
       scanned: scanned,
-      published: published.length,
+      drafted: published.length,
       errors: errors,
     });
   } catch (err) {

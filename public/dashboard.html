@@ -326,7 +326,7 @@ function render(){
     app.innerHTML=headerHTML()+resenasHTML();
     bindEvents();bindResenas();
     stopAutoRefresh();
-    if((revLoc&&!revList)||(!revLoc&&!revStats))loadResenas();
+    if((revLoc&&!revList)||(!revLoc&&!revStats))loadResenas();if(!revPend)loadPendientes();
     return;
   }
   if(!stats){app.innerHTML='<div class="login"><div class="login-box"><h2>Cargando...</h2><div class="sub">Conectando con el servidor</div></div></div>';loadStats();return}
@@ -523,12 +523,32 @@ function stopAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshT
 
 // === RESEÑAS v2 (09/07/2026): cuadro de mando de reputacion — TODAS las reseñas en vivo desde
 // Google, respuesta editable siempre (sobrescribe en Google), sentimiento por tienda e insights.
-var revStats=null,revLoc=null,revList=null,revFilter="all",revQ="";
+var revStats=null,revLoc=null,revList=null,revFilter="all",revQ="",revTab="stores",revPend=null;
 function starsHtml(n){n=parseInt(n||0);var col=n>=4?"#16a34a":n===3?"#d97706":"#dc2626";return '<span style="color:'+col+'">'+"★".repeat(n)+"☆".repeat(5-n)+'</span>'}
 function resenasHTML(){
   if(revLoc)return resenasListHTML();
+  var nP=revPend?(revPend.reviews||[]).length:null;
   var h='<div class="rev-wrap"><div class="conv-header"><h2>Reputación · Google</h2></div>'
-    +'<p style="font-size:12px;color:var(--muted);margin:0 0 14px">El agente responde solo cada mañana. Aquí ves TODAS las reseñas por tienda, editas cualquier respuesta (se sobrescribe en Google) y sigues el sentimiento de cada local. Toca una tienda para entrar.</p>';
+    +'<div class="rev-filters" style="margin-bottom:14px"><button class="rf'+(revTab==="stores"?' on':'')+'" id="rtab_s">🏪 Locales</button><button class="rf'+(revTab==="pend"?' on':'')+'" id="rtab_p">⏳ Pendientes de aprobar'+(nP!==null?' ('+nP+')':'')+'</button></div>';
+  if(revTab==="pend"){
+    h+='<p style="font-size:12px;color:var(--muted);margin:0 0 12px">Propuestas del agente esperando tu OK (también te llegan por email con botón de aprobar). Edita si hace falta y aprueba — nada se publica sin ti.</p>';
+    if(!revPend)h+='<div class="rev-empty">Cargando pendientes…</div>';
+    else if(!(revPend.reviews||[]).length)h+='<div class="rev-empty">🎉 Nada pendiente de aprobar.</div>';
+    else h+='<div id="pend_list">'+(revPend.reviews||[]).map(function(rv){
+      var date=rv.review_ts?new Date(rv.review_ts).toLocaleDateString("es-ES"):"";
+      return '<div class="rev-card" data-id="'+escHtml(rv.review_id)+'">'
+        +'<div class="meta">'+escHtml(rv.location_name||"")+' · '+escHtml(rv.author||"(anónimo)")+(date?' · '+date:'')+'</div>'
+        +'<div class="stars">'+starsHtml(rv.rating)+'</div>'
+        +(rv.comment?'<div class="review">'+escHtml(rv.comment)+'</div>':'<div class="meta" style="margin:6px 0">(sin texto, solo valoración)</div>')
+        +'<div class="lbl">Propuesta del agente (editable)</div>'
+        +'<textarea class="reply">'+escHtml(rv.draft_reply||"")+'</textarea>'
+        +'<div class="actions"><button class="rev-btn-primary" onclick="actPend(this,\'publish\')">✓ Aprobar y publicar</button>'
+        +'<button class="rev-btn-ghost" onclick="actPend(this,\'save\')">Guardar</button>'
+        +'<button class="rev-btn-danger" onclick="actPend(this,\'skip\')">Descartar</button></div></div>'}).join("");
+    h+='<div class="rev-msg" id="rev_msg"></div></div>';
+    return h;
+  }
+  h+='<p style="font-size:12px;color:var(--muted);margin:0 0 14px">Sentimiento por tienda y TODAS las reseñas. Toca una tienda para entrar; cualquier respuesta se puede editar (se sobrescribe en Google).</p>';
   if(!revStats){h+='<div class="rev-empty">Cargando sentimiento por tienda…</div></div>';return h}
   if(revStats.configured===false){h+='<div class="rev-empty">⚠️ Falta configurar el acceso a Google (GBP_*).</div></div>';return h}
   var st=revStats.stats.stores||[];
@@ -601,11 +621,35 @@ function renderRevList(){
       +'</div>'}).join("");
 }
 function bindResenas(){
+  var ts=document.getElementById("rtab_s");if(ts)ts.onclick=function(){revTab="stores";render();if(!revStats)loadResenas()};
+  var tp=document.getElementById("rtab_p");if(tp)tp.onclick=function(){revTab="pend";render();loadPendientes()};
   document.querySelectorAll(".rev-store[data-key]").forEach(function(el){el.onclick=function(){revLoc={key:el.getAttribute("data-key"),name:el.getAttribute("data-name")};revList=null;render();loadResenas()}});
-  var bk=document.getElementById("rev_back");if(bk)bk.onclick=function(){revLoc=null;revList=null;render();if(!revStats)loadResenas()};
+  var bk=document.getElementById("rev_back");if(bk)bk.onclick=function(){revLoc=null;revList=null;revTab="stores";render();if(!revStats)loadResenas()};
   document.querySelectorAll(".rev-filters .rf").forEach(function(el){el.onclick=function(){revFilter=el.getAttribute("data-f");render()}});
   var q=document.getElementById("rev_q");if(q){q.oninput=function(){revQ=q.value;renderRevList()}}
   renderRevList();
+}
+function loadPendientes(){
+  fetch("/api/reviews",{headers:{"x-dashboard-key":KEY}})
+    .then(function(r){if(r.status===401){KEY="";localStorage.removeItem("bj_dash_key");render();return null}return r.json()})
+    .then(function(d){if(!d)return;revPend=d;if(mainView==="resenas"&&revTab==="pend")render()})
+    .catch(function(){});
+}
+function actPend(btn,action){
+  var card=btn.closest(".rev-card");var id=card.getAttribute("data-id");
+  var reply=card.querySelector(".reply").value.trim();
+  if(action!=="skip"&&!reply){showRevMsg("La respuesta está vacía.",false);return}
+  if(action==="publish"&&!confirm("¿Aprobar y publicar en Google? Será pública."))return;
+  if(action==="skip"&&!confirm("¿Descartar esta propuesta?"))return;
+  var bs=card.querySelectorAll("button");bs.forEach(function(b){b.disabled=true});
+  fetch("/api/reviews",{method:"POST",headers:{"x-dashboard-key":KEY,"Content-Type":"application/json"},body:JSON.stringify({action:action,id:id,reply:reply})})
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})})
+    .then(function(res){
+      if(!res.ok){showRevMsg(res.j.error||"Error",false);bs.forEach(function(b){b.disabled=false});return}
+      if(action==="save"){showRevMsg("Guardado.",true);bs.forEach(function(b){b.disabled=false});return}
+      showRevMsg(action==="publish"?"Publicado en Google ✓":"Descartada.",true);
+      card.style.opacity="0";setTimeout(function(){revPend=null;loadPendientes()},400)})
+    .catch(function(){showRevMsg("Error de conexión.",false);bs.forEach(function(b){b.disabled=false})});
 }
 function showRevMsg(t,ok){var m=document.getElementById("rev_msg");if(!m)return;m.textContent=t;m.className="rev-msg show "+(ok?"ok":"err");setTimeout(function(){m.className="rev-msg"},4000);}
 function actResenaV2(btn){

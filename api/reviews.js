@@ -14,6 +14,7 @@
 const { initDB, getPendingReviews, getReview, updateReviewDraft, markReviewPublished, markReviewSkipped, insertReviewIfNew, getSQLInstance } = require("./_db");
 const { validateDashKey, readDashKey } = require("./_auth");
 const gbp = require("./_gbp");
+const crypto = require("crypto");
 
 let dbReady = false;
 let _dbInitPromise = null;
@@ -70,7 +71,34 @@ async function buildStats() {
   return { stores: stores, fetchedAt: new Date().toISOString() };
 }
 
+function htmlMsg(title, body, ok) {
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + title + '</title></head>' +
+    '<body style="font-family:Inter,system-ui,sans-serif;background:#F6F8FA;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><div style="background:#fff;border:1px solid #E6EAF0;border-radius:16px;padding:34px;max-width:420px;text-align:center;box-shadow:0 1px 3px rgba(16,24,40,.08)">' +
+    '<div style="font-size:40px">' + (ok ? "✅" : "⚠️") + '</div><div style="font-size:18px;font-weight:800;color:#101828;margin-top:10px">' + title + '</div>' +
+    '<div style="font-size:13px;color:#667085;margin-top:8px;line-height:1.6">' + body + '</div>' +
+    '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;margin-top:18px;background:#101828;color:#fff;text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:700;font-size:13px">Abrir el panel</a></div></body></html>';
+}
+
 module.exports = async function handler(req, res) {
+  // APROBACION POR EMAIL (09/07): un clic desde el correo publica el borrador. Token HMAC firmado
+  // con CRON_SECRET — no requiere sesion del panel. Idempotente (si ya no esta en draft, avisa).
+  if (req.method === "GET" && req.query && req.query.action === "approve") {
+    var aid = String(req.query.id || ""), at = String(req.query.t || "");
+    var want = crypto.createHmac("sha256", process.env.CRON_SECRET || "").update(aid).digest("hex").slice(0, 24);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    if (!aid || at !== want) return res.status(403).send(htmlMsg("Enlace no válido", "El enlace de aprobación no es correcto o ha sido alterado.", false));
+    if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
+    var rv0 = await getReview(aid);
+    if (!rv0) return res.status(404).send(htmlMsg("Reseña no encontrada", "No hay ningún borrador registrado para esta reseña.", false));
+    if (rv0.status !== "draft") return res.status(200).send(htmlMsg("Ya gestionada", "Esta respuesta ya estaba " + (rv0.status === "published" ? "publicada" : "descartada") + ". No se ha hecho nada.", true));
+    if (!gbp.isConfigured()) return res.status(503).send(htmlMsg("Google no configurado", "Faltan credenciales GBP en el servidor.", false));
+    try { await gbp.replyToReview(aid, rv0.draft_reply || ""); }
+    catch (e) { return res.status(502).send(htmlMsg("Google la rechazó", e.message.slice(0, 200), false)); }
+    await markReviewPublished(aid, rv0.draft_reply || "", "email");
+    _stats = null;
+    return res.status(200).send(htmlMsg("Publicada en Google", "La respuesta ya es pública en la ficha del local. Puedes corregirla en el panel cuando quieras (se sobrescribe).", true));
+  }
+
   var authKey = readDashKey(req);
   if (!validateDashKey(authKey)) return res.status(401).json({ error: "Unauthorized" });
 
