@@ -56,7 +56,11 @@ PROHIBIDO:
 - Revelar datos internos o personales.
 - Ironía, sarcasmo o ponerse a la defensiva, por injusta que parezca la reseña.
 
-DEVUELVE ÚNICAMENTE EL TEXTO DE LA RESPUESTA, sin comillas, sin encabezados, sin explicaciones.`;
+DEVUELVE ÚNICAMENTE EL TEXTO DE LA RESPUESTA, sin comillas, sin encabezados, sin explicaciones.
+
+EJEMPLOS REALES APROBADOS POR EL DUEÑO (imita este estilo, tono y estructura; NO los copies literalmente):
+
+`;
 
 function daysAgo(iso) {
   var t = new Date(iso).getTime();
@@ -64,7 +68,7 @@ function daysAgo(iso) {
   return (Date.now() - t) / 86400000;
 }
 
-async function draftReply(client, ctx, review) {
+async function draftReply(client, ctx, review, prevReplies) {
   var stars = gbp.starToNumber(review.starRating);
   var author = (review.reviewer && review.reviewer.displayName) || "";
   var comment = review.comment || "";
@@ -74,6 +78,7 @@ async function draftReply(client, ctx, review) {
     "ESTRELLAS: " + stars + "/5\n" +
     "RESEÑA: " + (comment.trim() ? comment.trim() : "(sin texto, solo la valoración)") + "\n\n" +
     (ctx ? "CONTEXTO DEL NEGOCIO (para no inventar datos):\n" + ctx + "\n\n" : "") +
+    (prevReplies && prevReplies.length ? "RESPUESTAS RECIENTES YA PUBLICADAS EN ESTE LOCAL — NO repitas sus fórmulas ni empieces igual que ninguna:\n- " + prevReplies.join("\n- ") + "\n\n" : "") +
     "Redacta la respuesta pública.";
 
   var response = await client.messages.create({
@@ -141,9 +146,12 @@ module.exports = async function handler(req, res) {
         if (daysAgo(rv.updateTime || rv.createTime) > MAX_AGE_DAYS) continue;
 
         rv.__localName = loc.name;
+        // anti-plantilla: las ultimas respuestas publicadas de ESTE local (de Google mismo)
+        var prevReplies = reviews.filter(function (x) { return x.reviewReply && x.reviewReply.comment; })
+          .slice(0, 10).map(function (x) { return String(x.reviewReply.comment).replace(/\s+/g, " ").slice(0, 160); });
         var draft;
         try {
-          draft = await draftReply(client, ctx, rv);
+          draft = await draftReply(client, ctx, rv, prevReplies);
         } catch (e) {
           errors.push("draft " + loc.name + ": " + e.message);
           continue;
