@@ -289,7 +289,7 @@ module.exports = async function handler(req, res) {
         '<div style="text-align:center;margin-top:16px">' +
         '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;background:#002855;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px">Ver / corregir en el panel →</a>' +
         '</div>' +
-        '<p style="margin-top:14px;font-size:11px;color:#9ca3af">NADA se publica sin tu aprobación: aprueba con un clic desde aquí, o edita/aprueba en el panel (pestaña Pendientes). Total pendientes: ' + totalPending + '.</p>' +
+        '<p style="margin-top:14px;font-size:11px;color:#9ca3af">NADA se publica sin tu aprobación: aprueba con un clic desde aquí, o edita/aprueba en el panel (pestaña Pendientes). Total pendientes: ' + totalPending + '. El botón es seguro: si esa reseña ya estaba gestionada te lo dice (no duplica), y tras cada clic verás la lista de las que aún quedan por aprobar.</p>' +
         '</div></div>';
 
       var emailRes = await fetch("https://api.resend.com/emails", {

@@ -71,12 +71,43 @@ async function buildStats() {
   return { stores: stores, fetchedAt: new Date().toISOString() };
 }
 
-function htmlMsg(title, body, ok) {
+function htmlMsg(title, body, ok, extra) {
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + title + '</title></head>' +
-    '<body style="font-family:Inter,system-ui,sans-serif;background:#F6F8FA;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><div style="background:#fff;border:1px solid #E6EAF0;border-radius:16px;padding:34px;max-width:420px;text-align:center;box-shadow:0 1px 3px rgba(16,24,40,.08)">' +
+    '<body style="font-family:Inter,system-ui,sans-serif;background:#F6F8FA;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:16px"><div style="background:#fff;border:1px solid #E6EAF0;border-radius:16px;padding:34px;max-width:440px;width:100%;text-align:center;box-shadow:0 1px 3px rgba(16,24,40,.08)">' +
     '<div style="font-size:40px">' + (ok ? "✅" : "⚠️") + '</div><div style="font-size:18px;font-weight:800;color:#101828;margin-top:10px">' + title + '</div>' +
     '<div style="font-size:13px;color:#667085;margin-top:8px;line-height:1.6">' + body + '</div>' +
+    (extra || '') +
     '<a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="display:inline-block;margin-top:18px;background:#101828;color:#fff;text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:700;font-size:13px">Abrir el panel</a></div></body></html>';
+}
+
+function escP(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+// Estado del lote tras un clic del email (10/07, Rodrigo: "no sabes cuáles están aprobadas o no en el
+// correo"): la página de confirmación lista EN VIVO lo que sigue pendiente, cada una con su botón de
+// aprobar (mismo token firmado) — puedes encadenar aprobaciones sin volver al email. Lo que no salga
+// aquí ya está gestionado (aprobado o descartado).
+async function htmlEstado(title, body, ok) {
+  var extra = "";
+  try {
+    var pend = await getPendingReviews();
+    var SEC = process.env.CRON_SECRET || "";
+    if (!pend.length) {
+      extra = '<div style="margin-top:20px;font-size:13px;color:#16a34a;font-weight:700">🎉 No queda ninguna reseña pendiente de aprobar.</div>';
+    } else {
+      extra = '<div style="margin-top:22px;text-align:left"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#667085">Siguen pendientes (' + pend.length + ')</div>' +
+        pend.slice(0, 10).map(function (p) {
+          var tok = crypto.createHmac("sha256", SEC).update(p.review_id).digest("hex").slice(0, 24);
+          var r = parseInt(p.rating || 0, 10) || 0;
+          var stars = "★".repeat(r) + "☆".repeat(Math.max(0, 5 - r));
+          return '<div style="border:1px solid #E6EAF0;border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+            '<div style="min-width:0"><div style="font-size:12px;color:#101828;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escP(p.location_name) + ' · ' + escP(p.author || "(anónimo)") + '</div>' +
+            '<div style="font-size:11px;color:#d97706">' + stars + '</div></div>' +
+            '<a href="/api/reviews?action=approve&id=' + encodeURIComponent(p.review_id) + '&t=' + tok + '" style="flex-shrink:0;background:#16a34a;color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;font-weight:700;font-size:12px">✓ Aprobar</a></div>';
+        }).join("") +
+        (pend.length > 10 ? '<div style="font-size:11px;color:#667085;margin-top:8px">…y ' + (pend.length - 10) + ' más en el panel.</div>' : '') + '</div>';
+    }
+  } catch (e) { /* best effort: sin lista, la página base sigue valiendo */ }
+  return htmlMsg(title, body, ok, extra);
 }
 
 module.exports = async function handler(req, res) {
@@ -90,13 +121,13 @@ module.exports = async function handler(req, res) {
     if (!dbReady) { if (!_dbInitPromise) _dbInitPromise = initDB(); await _dbInitPromise; dbReady = true; }
     var rv0 = await getReview(aid);
     if (!rv0) return res.status(404).send(htmlMsg("Reseña no encontrada", "No hay ningún borrador registrado para esta reseña.", false));
-    if (rv0.status !== "draft") return res.status(200).send(htmlMsg("Ya gestionada", "Esta respuesta ya estaba " + (rv0.status === "published" ? "publicada" : "descartada") + ". No se ha hecho nada.", true));
+    if (rv0.status !== "draft") return res.status(200).send(await htmlEstado("Ya gestionada", "Esta respuesta ya estaba " + (rv0.status === "published" ? "publicada ✓" : "descartada") + ". No se ha hecho nada.", true));
     if (!gbp.isConfigured()) return res.status(503).send(htmlMsg("Google no configurado", "Faltan credenciales GBP en el servidor.", false));
     try { await gbp.replyToReview(aid, rv0.draft_reply || ""); }
-    catch (e) { return res.status(502).send(htmlMsg("Google la rechazó", e.message.slice(0, 200), false)); }
+    catch (e) { return res.status(502).send(await htmlEstado("Google la rechazó", escP(e.message.slice(0, 200)), false)); }
     await markReviewPublished(aid, rv0.draft_reply || "", "email");
     _stats = null;
-    return res.status(200).send(htmlMsg("Publicada en Google", "La respuesta ya es pública en la ficha del local. Puedes corregirla en el panel cuando quieras (se sobrescribe).", true));
+    return res.status(200).send(await htmlEstado("Publicada en Google", escP(rv0.location_name || "") + " · " + escP(rv0.author || "") + " — la respuesta ya es pública en la ficha del local. Puedes corregirla en el panel cuando quieras (se sobrescribe).", true));
   }
 
   var authKey = readDashKey(req);
