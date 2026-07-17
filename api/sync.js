@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
       fetchPage("https://www.burgerjazz.com/alergenos-burgerjazz"),
       fetchPage("https://www.burgerjazz.com/ayuda"),
       fetchPage("https://www.burgerjazz.com/locales"),
-      fetchPage("https://pedidos.burgerjazz.com"),
+      fetchPage("https://pedir.burgerjazz.com"),
     ]);
 
     const webContent = [

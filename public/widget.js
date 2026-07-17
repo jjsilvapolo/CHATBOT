@@ -422,7 +422,7 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email</button>' +
       '<button class="bj-contact-btn" onclick="window.open(\'https://www.instagram.com/burger_jazz/\',\'_blank\')">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>Instagram</button>' +
-      '<button class="bj-contact-btn" style="background:#002855;color:#fff;border-color:#002855" onclick="window.open(\'https://burgerjazz.com/pide-ya\',\'_blank\')">' +
+      '<button class="bj-contact-btn" style="background:#002855;color:#fff;border-color:#002855" onclick="window.open(\'https://pedir.burgerjazz.com\',\'_blank\')">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Pedir Ya!</button>';
   }
 
@@ -725,10 +725,10 @@
   // Detect if bot mentions a burger with link opportunity
   function enhanceBotMessage(wrapper, text) {
     // Add "Pedir" CTA if bot mentions ordering or a specific burger
-    if (/burgerjazz\.com\/pide-ya|puedes pedirla|haz tu pedido/i.test(text)) {
+    if (/pedir\.burgerjazz\.com|burgerjazz\.com\/pide-ya|puedes pedirla|haz tu pedido/i.test(text)) {
       var cta = document.createElement("a");
       cta.className = "bj-order-cta";
-      cta.href = "https://burgerjazz.com/pide-ya";
+      cta.href = "https://pedir.burgerjazz.com";
       cta.target = "_blank";
       cta.rel = "noopener";
       cta.textContent = "\uD83C\uDF54 Pedir ahora";

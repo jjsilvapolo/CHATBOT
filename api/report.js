@@ -201,15 +201,17 @@ module.exports = async function handler(req, res) {
 
     // === 9. CANAL PROPIO: delivery propio, pedidos web, incidencias criticas ===
 
-    // Delivery propio issues (pedidos.burgerjazz.com)
+    // Canal propio issues (pedir.burgerjazz.com; se mantiene pedidos.burgerjazz por chats historicos)
     const deliveryPropio = await sql`
       SELECT COUNT(DISTINCT session) as total FROM chats
       WHERE ts > NOW() - INTERVAL '1 day' * ${days}
-        AND (user_msg ILIKE '%pedidos.burgerjazz%'
+        AND (user_msg ILIKE '%pedir.burgerjazz%'
+          OR user_msg ILIKE '%pedidos.burgerjazz%'
           OR user_msg ILIKE '%delivery propio%'
           OR user_msg ILIKE '%vuestra web%'
           OR user_msg ILIKE '%vuestra pagina%'
           OR user_msg ILIKE '%por la web%'
+          OR bot_msg ILIKE '%pedir.burgerjazz.com%'
           OR bot_msg ILIKE '%pedidos.burgerjazz.com%')
     `;
 
@@ -417,7 +419,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    d += "\n=== CANAL PROPIO (pedidos.burgerjazz.com) — SECCION CRITICA ===\n";
+    d += "\n=== CANAL PROPIO (pedir.burgerjazz.com) — SECCION CRITICA ===\n";
     d += "- Sesiones relacionadas con delivery propio: " + (deliveryPropio[0]?.total || 0) + "\n";
     d += "- Sesiones sobre Glovo/Uber (redirigidas, NO son nuestro problema): " + (deliveryExterno[0]?.total || 0) + "\n";
     d += "- Problemas criticos canal propio:\n";
@@ -455,13 +457,13 @@ module.exports = async function handler(req, res) {
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 5000,
-      system: `Eres un analista de datos experto en experiencia de cliente y operaciones de delivery. Genera un informe ${period === "monthly" ? "mensual" : "semanal"} del chatbot de BURGERJAZZ (cadena de hamburguesas en Madrid, 10+ locales, delivery propio via pedidos.burgerjazz.com).
+      system: `Eres un analista de datos experto en experiencia de cliente y operaciones de restauracion. Genera un informe ${period === "monthly" ? "mensual" : "semanal"} del chatbot de BURGERJAZZ (cadena de hamburguesas, 8 locales en Madrid y Valladolid, canal propio de pedidos online via pedir.burgerjazz.com).
 
 CONTEXTO CLAVE DEL NEGOCIO:
-- BurgerJazz tiene DELIVERY PROPIO (pedidos.burgerjazz.com) en Chamberi, Retiro, Delicias, Plaza Espana y Mirasierra. Este es su CANAL PROPIO donde la experiencia depende 100% de ellos.
-- Tambien venden en Glovo y Uber Eats, pero esos problemas los gestiona la plataforma, NO BurgerJazz.
-- Los PROBLEMAS CRITICOS del canal propio son: pedido no llega, cancelaciones, cambios de direccion, modificaciones, producto faltante, calidad del producto.
-- Cuando un cliente tiene un problema critico con delivery propio, el bot recoge datos (pedido, nombre, telefono) y escala a un agente humano.
+- BurgerJazz NO tiene delivery propio. Su CANAL PROPIO es pedir online y RECOGER en el local (pick-up / take-away) via pedir.burgerjazz.com. Ahi la experiencia depende 100% de ellos.
+- Tambien venden en Glovo y Uber Eats (unica via a domicilio), pero esos problemas los gestiona la plataforma, NO BurgerJazz.
+- Los PROBLEMAS CRITICOS del canal propio son: pedido no listo al recoger, cancelaciones, modificaciones, producto faltante, calidad del producto.
+- Para incidencias del canal propio el bot dirige al QR del ticket/bolsa o a info@burgerjazz.com con el numero de pedido.
 - El objetivo es que el CANAL PROPIO ofrezca una experiencia SUPERIOR a Glovo/Uber para captar clientes.
 
 TU OBJETIVO: Encontrar patrones que ayuden a MEJORAR la experiencia del canal propio, detectar donde se frustran los clientes y proponer mejoras concretas. Las metricas generales importan, pero lo CRITICO son los problemas del canal propio.
@@ -477,7 +479,7 @@ Incluir: mensajes, sesiones, msgs/sesion, resolucion bot, escalaciones, agente h
 
 <h2>3. CANAL PROPIO: RADIOGRAFIA DE PROBLEMAS</h2>
 <p>ESTA ES LA SECCION MAS IMPORTANTE DEL INFORME.</p>
-<p>Analiza los datos del canal propio (pedidos.burgerjazz.com):</p>
+<p>Analiza los datos del canal propio (pedir.burgerjazz.com):</p>
 <ul>
 <li>Desglose de problemas criticos: pedido no llega, cancelaciones, cambios direccion, modificaciones, producto faltante, calidad</li>
 <li>A que horas se concentran los problemas? Correlaciona con horarios de servicio</li>
