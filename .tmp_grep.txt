@@ -1,0 +1,8 @@
+27:try{if(typeof firebase!=='undefined'&&firebase.auth)fbAuth=firebase.auth()}catch(e){}
+37:if(fbAuth&&data.token){try{await fbAuth.signInWithCustomToken(data.token);console.log("Firebase auth OK")}catch(e){console.warn("Firebase auth sign-in failed:",e.code||e.message)}}
+48:if(d&&d.token){await fbAuth.signInWithCustomToken(d.token);if(fbAuth.currentUser)return await fbAuth.currentUser.getIdToken()}
+41:async function getAuthToken(force){
+49:}}catch(e){console.warn("getAuthToken re-auth fail:",e&&e.message)}
+54:var _isRetry=!!opts._retry401;var t=await getAuthToken(_isRetry);if(t)opts.headers["Authorization"]="Bearer "+t;
+95:var notifHeaders={"Content-Type":"application/json"};var nt=await getAuthToken();if(nt)notifHeaders["Authorization"]="Bearer "+nt;try{await fetch(API_BASE+"/api/notify",{method:"POST",headers:notifHeaders,body:JSON.stringify({subscriptions:subs,title:title,body:body})})}catch(e){console.error("sendPush error:",e);if(typeof DB!=="undefined"&&DB.logError)DB.logError("sendPush",e.message)}}
+9556:var chatHeaders={"Content-Type":"application/json"};var chatPin=S.u?S.u.pin:"";getAuthToken().then(function(ct){if(ct)chatHeaders["Authorization"]="Bearer "+ct;fetch(API_BASE+"/api/chat",{method:"POST",headers:chatHeaders,body:JSON.stringify({messages:apiMsgs,mode:"internal",pin:chatPin})}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(d){S._chatMsgs.push({role:"assistant",content:d.reply||"Error al responder"});S._chatLoading=false;X()}).catch(function(e){S._chatMsgs.push({role:"assistant",content:"Error de conexion. Intenta de nuevo."});S._chatLoading=false;X()})})}

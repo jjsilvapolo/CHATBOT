@@ -320,7 +320,7 @@ function getFilteredChats(){
 function render(){
   var app=document.getElementById("app");
   if(!KEY){
-    if(EMBED){app.innerHTML='<div class="login" style="background:transparent"><div class="login-box" style="box-shadow:none"><h2><img src="/logo.png" alt="BURGERJAZZ" style="height:20px;display:inline-block;vertical-align:middle"></h2><div class="sub">Conectando con la app\u2026</div></div></div>';return}
+    if(EMBED){app.innerHTML='<div class="login" style="background:transparent"><div class="login-box" style="box-shadow:none"><h2><img src="/logo.png" alt="BURGERJAZZ™" style="height:20px;display:inline-block;vertical-align:middle"></h2><div class="sub">Conectando con la app\u2026</div></div></div>';return}
     app.innerHTML=loginHTML();bindLogin();return}
   if(mainView==="resenas"){
     app.innerHTML=headerHTML()+resenasHTML();
@@ -338,7 +338,7 @@ function render(){
 var CURRENT_USER="";
 
 function loginHTML(){
-  return '<div class="login"><div class="login-box"><h2><img src="/logo.png" alt="BURGERJAZZ" style="height:20px;display:inline-block;vertical-align:middle"></h2><div class="sub">Panel de agentes</div><input id="user_input" type="text" placeholder="Usuario"><input id="key_input" type="password" placeholder="Clave"><button id="key_btn">Entrar</button></div></div>';
+  return '<div class="login"><div class="login-box"><h2><img src="/logo.png" alt="BURGERJAZZ™" style="height:20px;display:inline-block;vertical-align:middle"></h2><div class="sub">Panel de agentes</div><input id="user_input" type="text" placeholder="Usuario"><input id="key_input" type="password" placeholder="Clave"><button id="key_btn">Entrar</button></div></div>';
 }
 
 function bindLogin(){
@@ -362,7 +362,7 @@ function headerHTML(){
   if(EMBED)return"";
   var pushLabel=window._pushSubscribed?'Notif ON':'Notif OFF';
   var pushClass=window._pushSubscribed?'hbtn green':'hbtn';
-  return '<div class="header"><h1><img src="/logo.png" alt="BURGERJAZZ" style="height:15px;display:block;filter:brightness(0) invert(1)"></h1><div class="right">'
+  return '<div class="header"><h1><img src="/logo.png" alt="BURGERJAZZ™" style="height:15px;display:block;filter:brightness(0) invert(1)"></h1><div class="right">'
     +'<button class="hbtn'+(mainView==="resenas"?' green':'')+'" id="btn_resenas">'+(mainView==="resenas"?'Conversaciones':'Reseñas')+'</button>'
     +'<button class="'+pushClass+'" id="btn_push">'+pushLabel+'</button>'
     +'<button class="hbtn" id="btn_report">Informe</button>'
@@ -796,7 +796,7 @@ function generateReport(period){
       var win=window.open("","_blank");var d=data.data||{};var dateStr=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"long",year:"numeric"});
       var resRate=d.resolution_rate||0;var resColor=resRate>=80?"#10b981":resRate>=50?"#f59e0b":"#ef4444";
       win.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Informe BurgerJazz</title><style>@page{margin:16mm}body{font-family:system-ui,sans-serif;color:#1a1a2e;line-height:1.7;font-size:13px;max-width:750px;margin:0 auto;padding:30px}h2{font-size:15px;margin:20px 0 8px;border-bottom:2px solid #F5E1A4;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}th{background:#002855;color:#fff;padding:8px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #e8eaed}.header-bar{background:linear-gradient(135deg,#002855,#003d7a);color:#fff;padding:28px 32px;border-radius:14px;margin-bottom:24px}.header-bar h1{font-size:22px;margin:0}.header-bar .sub{font-size:13px;opacity:.8;margin-top:4px}.kpi-row{display:flex;gap:12px;margin-bottom:20px}.kpi{flex:1;background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e8eaed}.kpi .val{font-size:26px;font-weight:900}.kpi .label{font-size:9px;color:#8893a4;text-transform:uppercase;margin-top:2px}.footer{margin-top:30px;padding-top:16px;border-top:2px solid #F5E1A4;font-size:10px;color:#8893a4;text-align:center}</style></head><body>'
-        +'<div class="header-bar"><h1><img src="https://bot.burgerjazz.com/logo.png" alt="BURGERJAZZ" style="height:18px;display:block;filter:brightness(0) invert(1)"></h1><div class="sub">Informe '+(period==="monthly"?"Mensual":"Semanal")+'</div><div style="font-size:12px;opacity:.6;margin-top:6px">'+dateStr+'</div></div>'
+        +'<div class="header-bar"><h1><img src="https://bot.burgerjazz.com/logo.png" alt="BURGERJAZZ™" style="height:18px;display:block;filter:brightness(0) invert(1)"></h1><div class="sub">Informe '+(period==="monthly"?"Mensual":"Semanal")+'</div><div style="font-size:12px;opacity:.6;margin-top:6px">'+dateStr+'</div></div>'
         +'<div class="kpi-row"><div class="kpi"><div class="val">'+(d.total_messages||0)+'</div><div class="label">Mensajes</div></div><div class="kpi"><div class="val">'+(d.sessions||0)+'</div><div class="label">Sesiones</div></div><div class="kpi"><div class="val" style="color:'+resColor+'">'+(d.resolution_rate||0)+'%</div><div class="label">Resolucion</div></div><div class="kpi"><div class="val">'+(d.satisfaction?d.satisfaction.toFixed(1):"N/A")+'</div><div class="label">Satisfaccion</div></div></div>'
         +'<div style="font-size:13px;line-height:1.8">'+reportSafe+'</div>'
         +'<div class="footer">JazzBot Analytics | BurgerJazz &copy; '+new Date().getFullYear()+'</div></body></html>');

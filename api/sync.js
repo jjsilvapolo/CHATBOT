@@ -6,7 +6,7 @@ let dbReady = false;
 let _dbInitPromise = null;
 
 function buildSyncPrompt(currentKnowledge) {
-  return `Eres un verificador de datos para el chatbot de BURGERJAZZ. Tu trabajo es comparar la informacion que el chatbot tiene actualmente con la informacion real de la web.
+  return `Eres un verificador de datos para el chatbot de BURGERJAZZ™. Tu trabajo es comparar la informacion que el chatbot tiene actualmente con la informacion real de la web.
 
 DATOS ACTUALES DEL CHATBOT:
 ${currentKnowledge}

@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { initDB, logChat, logIncident, getActiveInsights, getActiveSourceUpdate, getKnowledgeSections, seedKnowledge } = require("./_db");
+const { initDB, logChat, getActiveInsights, getActiveSourceUpdate, getKnowledgeSections, seedKnowledge } = require("./_db");
 const { sessionToken } = require("./_auth");
 const { checkRate: checkRateDB } = require("./_ratelimit");
 var _pushModule;
@@ -10,14 +10,6 @@ function notifyNewChat(userMsg) {
   // Push notifications reserved for escalations and urgent incidents
 }
 
-function notifyEscalation(description) {
-  try {
-    if (_pushModule && _pushModule.sendPushToAll) {
-      var preview = description.length > 80 ? description.substring(0, 80) + "..." : description;
-      _pushModule.sendPushToAll("URGENTE: Cliente necesita agente", preview, true).catch(function(){});
-    }
-  } catch(e) {}
-}
 
 const SYSTEM_PROMPT = `Eres JAZZBOT, el asistente virtual de BURGERJAZZ™, cadena de smash burgers de alta calidad en Madrid (y Valladolid), fundada en 2021. Tu objetivo principal es RESOLVER el problema del cliente en el menor numero de mensajes posible.
 
@@ -289,7 +281,9 @@ async function buildSystemPrompt() {
   if (["lunes", "martes"].includes(dayOfWeek)) {
     timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Plaza Espana, Majadahonda, Moraleja Green y Valladolid. Delicias, Pozuelo y Mirasierra solo abren a mediodia (comida).\n";
   }
-  return SYSTEM_PROMPT + (_knowledgeCache || "") + timeContext;
+  // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
+  // contexto temporal, que cambia cada minuto e invalidaria la cache.
+  return { staticPart: SYSTEM_PROMPT + (_knowledgeCache || ""), timeContext: timeContext };
 }
 
 function detectCategory(text) {
@@ -315,94 +309,6 @@ function detectCategory(text) {
   return "general";
 }
 
-function extractIncidentData(messages, botReply) {
-  const userMsgs = messages.filter(m => m.role === "user").map(m => m.content);
-  const allText = userMsgs.join(" ");
-
-  // Extraer email
-  const emailMatch = allText.match(/[\w.+-]+@[\w.-]+\.\w{2,}/i);
-  const email = emailMatch ? emailMatch[0] : null;
-
-  // Extraer telefono
-  const phoneMatch = allText.match(/(?:\+?34[\s.-]?)?[6-9]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}/);
-  const phone = phoneMatch ? phoneMatch[0].replace(/[\s.-]/g, "") : null;
-
-  // Extraer nombre — buscar patrones comunes
-  let name = null;
-  const namePatterns = [
-    /(?:me llamo|mi nombre es|soy)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/i,
-    /(?:nombre[:\s]+)([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+)*)/i,
-  ];
-  for (const p of namePatterns) {
-    const m = allText.match(p);
-    if (m) { name = m[1].trim(); break; }
-  }
-
-  if (!name) {
-    const botNameMatch = botReply.match(/contactar[áa]\s+a\s+([^.]+?)\s+(?:a|al|lo)/i);
-    if (botNameMatch) name = botNameMatch[1].trim();
-  }
-
-  const description = userMsgs.join("\n");
-
-  return { name: name || "No proporcionado", email: email || "No proporcionado", phone: phone || "No proporcionado", description };
-}
-
-function escHTML(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-async function sendIncidentEmail(data, sessionId) {
-  const RESEND_KEY = process.env.RESEND_API_KEY;
-  if (!RESEND_KEY) {
-    console.error("RESEND_API_KEY not set — incident email not sent");
-    return;
-  }
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-
-  const html = `
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-  <div style="background:#002855;color:#fff;padding:16px 24px;border-radius:8px 8px 0 0">
-    <h2 style="margin:0;font-size:18px">🚨 Nueva incidencia — JazzBot</h2>
-  </div>
-  <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
-    <table style="width:100%;border-collapse:collapse;font-size:14px">
-      <tr><td style="padding:8px 0;color:#6b7280;width:120px"><strong>Fecha:</strong></td><td>${escHTML(dateStr)}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b7280"><strong>Nombre:</strong></td><td>${escHTML(data.name)}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b7280"><strong>Email:</strong></td><td><a href="mailto:${escHTML(data.email)}">${escHTML(data.email)}</a></td></tr>
-      <tr><td style="padding:8px 0;color:#6b7280"><strong>Telefono:</strong></td><td>${data.phone && data.phone !== "No proporcionado" ? '<a href="tel:' + escHTML(data.phone) + '">' + escHTML(data.phone) + '</a>' : 'No proporcionado'}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b7280"><strong>Sesion:</strong></td><td style="font-family:monospace;font-size:12px">${escHTML(sessionId)}</td></tr>
-    </table>
-    <div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:6px;border-left:4px solid #dc2626">
-      <strong style="color:#dc2626;font-size:12px;text-transform:uppercase">Descripcion del cliente:</strong>
-      <p style="margin:8px 0 0;font-size:13px;white-space:pre-wrap;line-height:1.6">${escHTML(data.description)}</p>
-    </div>
-    <p style="margin-top:16px;font-size:11px;color:#9ca3af">Este email se ha generado automaticamente por JazzBot. Puedes ver la conversacion completa en el <a href="https://bot.burgerjazz.com/dashboard.html">dashboard</a>.</p>
-  </div>
-</div>`;
-
-  try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + RESEND_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "JazzBot <incidencias@burgerjazz.com>",
-        to: ["rodrigo@burgerjazz.com"],
-        subject: "🚨 Incidencia JazzBot — " + (data.name !== "No proporcionado" ? data.name : "Cliente") + " — " + dateStr,
-        html: html,
-      }),
-    });
-    if (!resp.ok) {
-      const errBody = await resp.text().catch(function () { return "unknown"; });
-      console.error("Resend API error:", resp.status, errBody);
-    }
-  } catch (fetchErr) {
-    console.error("Resend fetch error:", fetchErr.message);
-  }
-}
 
 // Timeout wrapper for API calls
 function withTimeout(promise, ms) {
@@ -585,32 +491,6 @@ function getOfflineFallback(text, category) {
   return "Disculpa, tengo un problema tecnico temporal. Para ayuda inmediata escribe a info@burgerjazz.com. Vuelve a intentarlo en unos minutos.";
 }
 
-// ═══ SLACK WEBHOOK ═══
-async function sendSlackNotification(data, sessionId) {
-  var webhookUrl = process.env.SLACK_WEBHOOK_URL;
-  if (!webhookUrl) return;
-  try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: ":rotating_light: *Nueva incidencia JazzBot*",
-        blocks: [
-          { type: "header", text: { type: "plain_text", text: "Nueva incidencia — JazzBot" } },
-          { type: "section", fields: [
-            { type: "mrkdwn", text: "*Nombre:*\n" + (data.name || "N/A") },
-            { type: "mrkdwn", text: "*Email:*\n" + (data.email || "N/A") },
-          ]},
-          { type: "section", text: { type: "mrkdwn", text: "*Descripcion:*\n" + (data.description || "").slice(0, 500) } },
-          { type: "context", elements: [{ type: "mrkdwn", text: "Session: `" + sessionId.slice(0, 20) + "` | <https://bot.burgerjazz.com/dashboard.html|Ver en Dashboard>" }] }
-        ]
-      })
-    });
-  } catch (e) {
-    console.error("Slack webhook error:", e.message);
-  }
-}
-
 // Cached ML insights + source updates (refreshed every 30 min per instance)
 let _insightsCache = null;
 let _insightsCacheTs = 0;
@@ -652,24 +532,6 @@ async function getDynamicPrompt() {
 
 // Track escalated sessions to avoid duplicate emails (per serverless instance)
 const _escalatedSessions = new Set();
-
-// Throttle escalation emails per IP: max 3 per hour
-const _escalationsByIP = {};
-const ESCALATION_LIMIT = 3;
-const ESCALATION_WINDOW = 60 * 60 * 1000; // 1 hour
-
-function canEscalateIP(ip) {
-  var now = Date.now();
-  if (!_escalationsByIP[ip] || now - _escalationsByIP[ip].first > ESCALATION_WINDOW) {
-    _escalationsByIP[ip] = { first: now, count: 0 };
-  }
-  return _escalationsByIP[ip].count < ESCALATION_LIMIT;
-}
-
-function recordEscalationIP(ip) {
-  if (!_escalationsByIP[ip]) _escalationsByIP[ip] = { first: Date.now(), count: 0 };
-  _escalationsByIP[ip].count++;
-}
 
 function getClientIP(req) {
   return req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.headers["x-real-ip"] || "unknown";
@@ -874,12 +736,20 @@ module.exports = async function handler(req, res) {
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    // Build prompt from DB knowledge + ML insights
-    var basePrompt = await buildSystemPrompt();
+    // Build prompt from DB knowledge + ML insights.
+    // PROMPT CACHING: el bloque estatico (reglas + base de conocimiento) lleva
+    // cache_control y la API lo sirve de cache (~90% mas barato, menos latencia).
+    // Todo lo volatil (fecha/hora, insights, variante B) va en un segundo bloque
+    // DESPUES del breakpoint para no invalidar la cache en cada peticion.
+    var basePrompt = await buildSystemPrompt(); // { staticPart, timeContext }
     const learnedInsights = await getDynamicPrompt();
-    var fullPrompt = basePrompt + learnedInsights;
+    var dynamicPrompt = basePrompt.timeContext + learnedInsights;
     // Apply B variant if assigned
-    if (promptVersion === "B") fullPrompt += PROMPT_B_PATCH;
+    if (promptVersion === "B") dynamicPrompt += PROMPT_B_PATCH;
+    var systemBlocks = [
+      { type: "text", text: basePrompt.staticPart, cache_control: { type: "ephemeral" } },
+      { type: "text", text: dynamicPrompt },
+    ];
 
     // ═══ STREAMING MODE ═══
     if (useStream) {
@@ -893,7 +763,7 @@ module.exports = async function handler(req, res) {
           model: "claude-haiku-4-5",
           max_tokens: 800,
           temperature: 0.4,
-          system: fullPrompt,
+          system: systemBlocks,
           messages: trimmed,
         });
 
@@ -904,6 +774,7 @@ module.exports = async function handler(req, res) {
 
         var finalMsg = await stream.finalMessage();
         var streamTokens = { input: finalMsg.usage?.input_tokens || 0, output: finalMsg.usage?.output_tokens || 0 };
+        console.log("[cache] read=" + (finalMsg.usage?.cache_read_input_tokens || 0) + " write=" + (finalMsg.usage?.cache_creation_input_tokens || 0) + " uncached=" + streamTokens.input);
         var streamCategory = category;
         var streamQuickReplies = getSuggestedReplies(streamCategory, fullText);
 
@@ -915,8 +786,6 @@ module.exports = async function handler(req, res) {
           notifyNewChat(lastUserMsg);
         }
 
-        // Escalation check (same logic as non-streaming)
-        await handleEscalation(fullText, streamCategory, lastUserMsg, sid, req, trimmed);
 
         res.write("data: " + JSON.stringify({ type: "done", category: streamCategory, quickReplies: streamQuickReplies, chatId: chatId, token: sessTok }) + "\n\n");
         return res.end();
@@ -935,7 +804,7 @@ module.exports = async function handler(req, res) {
         model: "claude-haiku-4-5",
         max_tokens: 800,
         temperature: 0.4,
-        system: fullPrompt,
+        system: systemBlocks,
         messages: trimmed,
       }),
       25000
@@ -949,6 +818,7 @@ module.exports = async function handler(req, res) {
       input: response.usage?.input_tokens || 0,
       output: response.usage?.output_tokens || 0,
     };
+    console.log("[cache] read=" + (response.usage?.cache_read_input_tokens || 0) + " write=" + (response.usage?.cache_creation_input_tokens || 0) + " uncached=" + tokens.input);
 
     var chatId = await logChat(sid, lastUserMsg, text, category, tokens, promptVersion);
 
@@ -958,9 +828,6 @@ module.exports = async function handler(req, res) {
       setCachedResponse(cacheKeyFor(lastUserMsg), text, category, quickForCache);
       notifyNewChat(lastUserMsg);
     }
-
-    // Handle escalations
-    await handleEscalation(text, category, lastUserMsg, sid, req, trimmed);
 
     var quickReplies = getSuggestedReplies(category, text);
     return res.status(200).json({ reply: text, category: category, quickReplies: quickReplies, chatId: chatId, token: sessTok });
@@ -980,44 +847,3 @@ module.exports = async function handler(req, res) {
   }
 };
 
-// ═══ ESCALATION HANDLER (shared by streaming & non-streaming) ═══
-async function handleEscalation(text, category, lastUserMsg, sid, req, trimmed) {
-  var shouldEscalate = false;
-
-  // Solo escalar cuando el bot ha recogido todos los datos de delivery propio
-  if (/DATOS RECOGIDOS:.*Pedido:.*Nombre:.*Telefono:.*Incidencia:/i.test(text)) {
-    shouldEscalate = true;
-  }
-
-  if (shouldEscalate && !_escalatedSessions.has(sid)) {
-    var clientIP = getClientIP(req);
-    if (canEscalateIP(clientIP)) {
-      _escalatedSessions.add(sid);
-      recordEscalationIP(clientIP);
-      try {
-        const incidentData = extractIncidentData(trimmed, text);
-        await Promise.all([
-          sendIncidentEmail(incidentData, sid),
-          sendSlackNotification(incidentData, sid),
-          logIncident(sid, incidentData),
-        ]);
-        // Send automatic agent handoff message + persist escalation
-        try {
-          await logChat(sid, "[ADMIN]", "Un momento, le paso con un agente para atenderle personalmente.", "admin_reply", { input: 0, output: 0 }, "ADMIN");
-          const { getSQLInstance } = require("./_db");
-          const sqlEsc = getSQLInstance();
-          await sqlEsc`INSERT INTO escalated_sessions (session_id) VALUES (${sid}) ON CONFLICT DO NOTHING`;
-        } catch(e2) {}
-        // Extract collected data from bot response for the push notification
-        var dataMatch = text.match(/DATOS RECOGIDOS:(.+?)(?:\.|$)/i);
-        var pushBody = dataMatch ? dataMatch[1].trim().substring(0, 120) : (incidentData.description || lastUserMsg).substring(0, 80);
-        notifyEscalation(pushBody);
-      } catch (emailErr) {
-        console.error("Incident notification error:", emailErr);
-      }
-    } else {
-      console.warn("Escalation throttled for IP:", clientIP);
-      _escalatedSessions.add(sid);
-    }
-  }
-}

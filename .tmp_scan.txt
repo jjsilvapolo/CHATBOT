@@ -1,0 +1,3 @@
+---PROMPT SIZE---
+chat.js chars: 61464
+1023

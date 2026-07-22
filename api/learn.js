@@ -5,7 +5,7 @@ const { isAuthorizedCron } = require("./_auth");
 let dbReady = false;
 let _dbInitPromise = null;
 
-const LEARN_PROMPT = `Eres un analista de calidad para JAZZBOT, el chatbot de atencion al cliente de BURGERJAZZ (cadena de smash burgers en Madrid).
+const LEARN_PROMPT = `Eres un analista de calidad para JAZZBOT, el chatbot de atencion al cliente de BURGERJAZZ™ (cadena de smash burgers en Madrid).
 
 Analiza las siguientes conversaciones reales entre clientes y el bot. Tu objetivo es extraer aprendizajes concretos para que el bot mejore.
 

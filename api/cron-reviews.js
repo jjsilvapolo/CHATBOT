@@ -26,7 +26,7 @@ const MAX_AGE_DAYS = 30;
 // new reviews across 8 locales anyway.
 const MAX_REPLIES_PER_RUN = 25;
 
-const REPLY_SYSTEM = `Eres el responsable de reputación online de BURGERJAZZ, una cadena de smash burgers con locales en Madrid y Valladolid. Redactas la RESPUESTA PÚBLICA del negocio a una reseña de Google.
+const REPLY_SYSTEM = `Eres el responsable de reputación online de BURGERJAZZ™, una cadena de smash burgers con locales en Madrid y Valladolid. Redactas la RESPUESTA PÚBLICA del negocio a una reseña de Google.
 
 TONO Y ESTILO:
 - Cercano, humano y agradecido. Nada de plantillas robóticas.

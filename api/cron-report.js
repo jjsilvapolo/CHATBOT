@@ -102,7 +102,7 @@ module.exports = async function handler(req, res) {
     var response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4000,
-      system: "Eres un analista de datos del chatbot de BURGERJAZZ (cadena de hamburguesas en Madrid). Genera un informe semanal en HTML para email. Estructura: 1) Resumen ejecutivo (5 frases), 2) Metricas clave en tabla, 3) Canal propio (problemas criticos), 4) Satisfaccion, 5) Top 3 acciones recomendadas. Usa HTML: h2, p, table, tr, th, td, ul, li, strong, span. Colores: style=\"color:#16a34a\" (bueno), style=\"color:#dc2626\" (malo). Maximo 800 palabras. En espanol. Se directo y accionable.",
+      system: "Eres un analista de datos del chatbot de BURGERJAZZ™ (cadena de hamburguesas en Madrid). Genera un informe semanal en HTML para email. Estructura: 1) Resumen ejecutivo (5 frases), 2) Metricas clave en tabla, 3) Canal propio (problemas criticos), 4) Satisfaccion, 5) Top 3 acciones recomendadas. Usa HTML: h2, p, table, tr, th, td, ul, li, strong, span. Colores: style=\"color:#16a34a\" (bueno), style=\"color:#dc2626\" (malo). Maximo 800 palabras. En espanol. Se directo y accionable.",
       messages: [{ role: "user", content: d }],
     });
 
@@ -124,7 +124,7 @@ module.exports = async function handler(req, res) {
 
     var emailHtml = '<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto">'
       + '<div style="background:#002855;padding:20px;border-radius:12px 12px 0 0">'
-      + '<h1 style="color:#fff;margin:0;font-size:22px">BURGERJAZZ CHATBOT</h1>'
+      + '<h1 style="color:#fff;margin:0;font-size:22px">BURGERJAZZ™ CHATBOT</h1>'
       + '<p style="color:rgba(255,255,255,.7);margin:4px 0 0;font-size:13px">Informe Semanal — ' + dateRange + '</p>'
       + '</div>'
       + '<div style="background:#f9fafb;padding:16px;border:1px solid #e5e7eb">'

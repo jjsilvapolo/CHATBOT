@@ -5,6 +5,9 @@
   "engines": {
     "node": "24.x"
   },
+  "scripts": {
+    "smoke": "node scripts/smoke-prod.js"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.107.0",
     "@neondatabase/serverless": "^1.0.2",
