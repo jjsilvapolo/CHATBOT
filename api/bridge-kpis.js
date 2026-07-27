@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
   try {
     const sql = getSQLInstance();
     // Una sola pasada agregada: global 30d + desglose por local + pendientes.
-    const [tot30, porLocal, pendientes, nuevas7d, bajas7d] = await Promise.all([
+    const [tot30, porLocal, pendientes, nuevas7d, bajas7d, chat7d, incAb] = await Promise.all([
       sql`SELECT COUNT(*)::int AS n, ROUND(AVG(rating)::numeric, 2) AS media FROM reviews WHERE review_ts >= NOW() - INTERVAL '30 days'`,
       sql`SELECT COALESCE(location_name, location_id, 'desconocido') AS local, COUNT(*)::int AS n, ROUND(AVG(rating)::numeric, 2) AS media
           FROM reviews WHERE review_ts >= NOW() - INTERVAL '30 days'
@@ -30,11 +30,19 @@ module.exports = async function handler(req, res) {
       sql`SELECT review_id, COALESCE(location_name, location_id, 'desconocido') AS local, rating, author, LEFT(COALESCE(comment,''),400) AS comment, review_ts::date AS dia
           FROM reviews WHERE review_ts >= NOW() - INTERVAL '7 days' AND rating <= 2
           ORDER BY review_ts DESC LIMIT 20`,
+      // LIMPIA 27/07: contadores del chatbot para la seccion del informe semanal de la app
+      sql`SELECT COUNT(DISTINCT session)::int AS sesiones, COUNT(*)::int AS mensajes FROM chats WHERE ts >= NOW() - INTERVAL '7 days'`,
+      sql`SELECT COUNT(*)::int AS n FROM incidents WHERE status NOT IN ('resolved','closed')`,
     ]);
     return res.status(200).json({
       ok: true,
       fuente: "jazzbot-resenas",
       at: new Date().toISOString(),
+      chatbot: {
+        sesiones7d: (chat7d[0] && chat7d[0].sesiones) || 0,
+        mensajes7d: (chat7d[0] && chat7d[0].mensajes) || 0,
+        incidenciasAbiertas: (incAb[0] && incAb[0].n) || 0,
+      },
       resenas: {
         notaMedia30d: tot30[0] && tot30[0].media != null ? Number(tot30[0].media) : null,
         total30d: (tot30[0] && tot30[0].n) || 0,
