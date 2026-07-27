@@ -41,10 +41,10 @@ function verifyPassword(stored, provided) {
 // servidor de la app pide un TICKET firmado de corta vida (8h) via /api/sso-ticket
 // y es eso lo que viaja al iframe. Formato: "t." + base64url({u,exp}) + "." + HMAC.
 // Firmado con SESSION_SECRET (o el secreto de federacion si no esta configurado).
-var TICKET_FALLBACK = "3dd79c8d1c6da07755ab42df53b55583a97d99d342784655bf8805c61f2fdd0b";
-function ticketSecret() { return process.env.SESSION_SECRET || process.env.BRIDGE_SECRET || TICKET_FALLBACK; }
+function ticketSecret() { return process.env.SESSION_SECRET || process.env.BRIDGE_SECRET; }
 
 function mintDashTicket(user, ttlMs) {
+  if (!ticketSecret()) throw new Error("sin SESSION_SECRET/BRIDGE_SECRET: no se pueden firmar tickets");
   var payload = Buffer.from(JSON.stringify({ u: String(user || "app").slice(0, 40), exp: Date.now() + (ttlMs || 8 * 3600 * 1000) })).toString("base64url");
   var sig = crypto.createHmac("sha256", ticketSecret()).update(payload).digest("base64url");
   return "t." + payload + "." + sig;
@@ -52,6 +52,7 @@ function mintDashTicket(user, ttlMs) {
 
 // Devuelve el usuario del ticket si es valido y no ha caducado; false si no.
 function verifyDashTicket(raw) {
+  if (!ticketSecret()) return false;
   var s = String(raw || "");
   if (s.indexOf("t.") !== 0) return false;
   var parts = s.split(".");

@@ -2,18 +2,17 @@
 // trabajadores (cerebro diario + tarjeta de canales digitales). NO expone textos de
 // clientes ni datos personales: solo agregados (nota media, volumenes, pendientes).
 //
-// Auth: cabecera `x-bridge-secret`. El valor canonico vive en BRIDGE_SECRET (env);
-// mientras no este dado de alta en Vercel, vale el secreto embebido (repos privados,
-// codigo solo-servidor; migrar a env cuando se pueda y borrar el fallback).
+// Auth: cabecera `x-bridge-secret` contra BRIDGE_SECRET (env, sin fallback desde el
+// 27/07: secreto rotado y solo en Vercel). Sin env configurada, 503.
 const { getSQLInstance } = require("./_db");
 const { timingSafeEqualStr } = require("./_auth");
 
-const BRIDGE_FALLBACK = "3dd79c8d1c6da07755ab42df53b55583a97d99d342784655bf8805c61f2fdd0b";
 
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "GET") return res.status(405).json({ error: "method_not_allowed" });
-  const secret = process.env.BRIDGE_SECRET || BRIDGE_FALLBACK;
+  const secret = process.env.BRIDGE_SECRET;
+  if (!secret) return res.status(503).json({ error: "bridge_no_configurado" });
   if (!timingSafeEqualStr(String(req.headers["x-bridge-secret"] || ""), secret)) {
     return res.status(401).json({ error: "unauthorized" });
   }

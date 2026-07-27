@@ -5,12 +5,12 @@
 // secreto de federacion (mismo que /api/bridge-kpis).
 const { timingSafeEqualStr, mintDashTicket } = require("./_auth");
 
-const BRIDGE_FALLBACK = "3dd79c8d1c6da07755ab42df53b55583a97d99d342784655bf8805c61f2fdd0b";
 
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "method_not_allowed" });
-  const secret = process.env.BRIDGE_SECRET || BRIDGE_FALLBACK;
+  const secret = process.env.BRIDGE_SECRET;
+  if (!secret) return res.status(503).json({ error: "bridge_no_configurado" });
   if (!timingSafeEqualStr(String(req.headers["x-bridge-secret"] || ""), secret)) {
     return res.status(401).json({ error: "unauthorized" });
   }
