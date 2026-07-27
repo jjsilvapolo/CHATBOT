@@ -35,10 +35,42 @@ function verifyPassword(stored, provided) {
   return timingSafeEqualStr(stored, provided);
 }
 
+// --- SSO tickets (27/07/2026) -------------------------------------------------
+// La app de trabajadores entraba al dashboard reenviando la credencial PERMANENTE
+// (user:password) por postMessage — un XSS se la llevaba para siempre. Ahora el
+// servidor de la app pide un TICKET firmado de corta vida (8h) via /api/sso-ticket
+// y es eso lo que viaja al iframe. Formato: "t." + base64url({u,exp}) + "." + HMAC.
+// Firmado con SESSION_SECRET (o el secreto de federacion si no esta configurado).
+var TICKET_FALLBACK = "3dd79c8d1c6da07755ab42df53b55583a97d99d342784655bf8805c61f2fdd0b";
+function ticketSecret() { return process.env.SESSION_SECRET || process.env.BRIDGE_SECRET || TICKET_FALLBACK; }
+
+function mintDashTicket(user, ttlMs) {
+  var payload = Buffer.from(JSON.stringify({ u: String(user || "app").slice(0, 40), exp: Date.now() + (ttlMs || 8 * 3600 * 1000) })).toString("base64url");
+  var sig = crypto.createHmac("sha256", ticketSecret()).update(payload).digest("base64url");
+  return "t." + payload + "." + sig;
+}
+
+// Devuelve el usuario del ticket si es valido y no ha caducado; false si no.
+function verifyDashTicket(raw) {
+  var s = String(raw || "");
+  if (s.indexOf("t.") !== 0) return false;
+  var parts = s.split(".");
+  if (parts.length !== 3) return false;
+  var expected = crypto.createHmac("sha256", ticketSecret()).update(parts[1]).digest("base64url");
+  if (!timingSafeEqualStr(parts[2], expected)) return false;
+  try {
+    var p = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+    if (!p || !p.exp || Date.now() > p.exp) return false;
+    return p.u || "app";
+  } catch (e) { return false; }
+}
+
 // Validate a dashboard credential of the form "user:password" against
 // DASHBOARD_USERS (JSON map) or a single shared DASHBOARD_KEY. Constant-time.
+// Also accepts a short-lived SSO ticket ("t.<payload>.<sig>") from the app.
 function validateDashKey(rawKey) {
   if (!rawKey) return false;
+  if (String(rawKey).indexOf("t.") === 0) return !!verifyDashTicket(rawKey);
   var parts = String(rawKey).split(":");
   if (parts.length >= 2) {
     var user = parts[0];
@@ -107,4 +139,6 @@ module.exports = {
   isAuthorizedCron,
   sessionToken,
   verifySessionToken,
+  mintDashTicket,
+  verifyDashTicket,
 };
