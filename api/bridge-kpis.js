@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
       sql`SELECT COUNT(*)::int AS n FROM reviews WHERE status = 'draft'`,
       sql`SELECT COUNT(*)::int AS n FROM reviews WHERE review_ts >= NOW() - INTERVAL '7 days'`,
       // Reseñas malas (<=2) de la ultima semana: lo unico accionable en el dia a dia.
-      sql`SELECT COALESCE(location_name, location_id, 'desconocido') AS local, rating, review_ts::date AS dia
+      sql`SELECT review_id, COALESCE(location_name, location_id, 'desconocido') AS local, rating, author, LEFT(COALESCE(comment,''),400) AS comment, review_ts::date AS dia
           FROM reviews WHERE review_ts >= NOW() - INTERVAL '7 days' AND rating <= 2
           ORDER BY review_ts DESC LIMIT 20`,
     ]);
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
         nuevas7d: (nuevas7d[0] && nuevas7d[0].n) || 0,
         pendientesRespuesta: (pendientes[0] && pendientes[0].n) || 0,
         porLocal: porLocal.map((r) => ({ local: r.local, n: r.n, media: r.media != null ? Number(r.media) : null })),
-        malas7d: bajas7d.map((r) => ({ local: r.local, rating: r.rating, dia: String(r.dia).slice(0, 10) })),
+        malas7d: bajas7d.map((r) => ({ id: String(r.review_id||"").slice(-24), local: r.local, rating: r.rating, autor: r.author||"", texto: r.comment||"", dia: String(r.dia).slice(0, 10) })),
       },
     });
   } catch (e) {
