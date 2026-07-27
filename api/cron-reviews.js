@@ -202,6 +202,7 @@ module.exports = async function handler(req, res) {
 
     var published = [];
     var errors = [];
+    var autoPub = []; // LIMPIA 27/07 (Rodrigo): positivas publicadas solas
     var scanned = 0;
 
     for (var li = 0; li < locations.length; li++) {
@@ -236,10 +237,12 @@ module.exports = async function handler(req, res) {
         }
         if (!draft || draft.length < 5) continue;
 
-        // MODELO APROBACION (09/07/2026, Rodrigo): el agente YA NO publica solo. Guarda el borrador
-        // y se lo manda por email con boton "Aprobar y publicar" (token firmado) — o se aprueba/edita
-        // en el panel (pestaña Pendientes).
+        // MODELO MIXTO (LIMPIA 27/07, Rodrigo): las POSITIVAS (>=4 estrellas) se publican SOLAS
+        // (el agente llevaba 29/29 aprobadas sin cambios); las <=3 siguen el modelo aprobacion del
+        // 09/07 (borrador + email con boton Aprobar). El correo diario pasa a llegar SOLO cuando
+        // hay reseñas delicadas esperando.
         var posted = false;
+        var _rating = gbp.starToNumber(rv.starRating);
 
         await insertReviewIfNew({
           review_id: rv.name, // full resource name — stable & unique
@@ -251,6 +254,16 @@ module.exports = async function handler(req, res) {
           review_ts: rv.createTime || rv.updateTime || null,
           draft_reply: draft,
         });
+        if (_rating >= 4 && gbp.isConfigured()) {
+          try {
+            await gbp.replyToReview(rv.name, draft);
+            await markReviewPublished(rv.name, draft, "auto (positiva)");
+            posted = true;
+            autoPub.push({ local: loc.name, rating: _rating, author: (rv.reviewer && rv.reviewer.displayName) || "(anónimo)" });
+          } catch (e) {
+            errors.push("autopub " + loc.name + ": " + e.message); // se queda como borrador aprobable
+          }
+        }
         if (!posted) {
           published.push({
             id: rv.name,
@@ -304,7 +317,7 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           from: "BurgerJazz Reseñas <alertas@burgerjazz.com>",
           to: ["rodrigo@burgerjazz.com"],
-          subject: "⭐ " + published.length + " respuesta(s) a reseñas para APROBAR" + (errors.length ? " · " + errors.length + " incidencia(s)" : ""),
+          subject: "⭐ " + published.length + " reseña(s) delicada(s) para APROBAR" + (autoPub.length ? " · " + autoPub.length + " positiva(s) auto-publicada(s)" : "") + (errors.length ? " · " + errors.length + " incidencia(s)" : ""),
           html: html,
         }),
       });
