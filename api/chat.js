@@ -178,7 +178,7 @@ const KNOWLEDGE_SEED = [
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
 7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
-8. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
+8. Valladolid - Claudio Moyano, 20 — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el miercoles 2 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (fuente: web oficial, Centro de Ayuda):
@@ -189,7 +189,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Mirasierra (Fermin Caballero): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Moraleja Green: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
-- Valladolid: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30` },
+- Valladolid: CERRADO POR VACACIONES TODO AGOSTO 2026 (del 1 al 31 de agosto, tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30. Si preguntan por Valladolid en agosto: informa del cierre con amabilidad y sugiere pedir online en pedir.burgerjazz.com para recoger en otro local si les viene bien, o esperar a septiembre` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
 COMBOS: COMBO JAZZ SOLO (burger+patatas+bebida) 18,95€ | MENU DIA (burger+patatas+bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away). NO disponible en cenas, fines de semana, ni en delivery.
