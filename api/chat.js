@@ -175,9 +175,9 @@ const KNOWLEDGE_SEED = [
 2. Plaza Espana - C/ Fomento, 37 (Pick-up y delivery via Glovo/Uber; NO dine-in) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
 3. Delicias - Paseo de las Delicias, 129 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Delicias+Madrid
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
-5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
-6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
+5. Pozuelo - C/ Atenas, 2 — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el martes 1 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
+6. Mirasierra - C/ Fermin Caballero, 76 — ATENCION: CERRADO POR VACACIONES hasta el 9 de agosto de 2026, reabre el domingo 9 de agosto (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
+7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el miercoles 2 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
 8. Valladolid - Claudio Moyano, 20 — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el miercoles 2 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
@@ -185,11 +185,11 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
 - Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Pozuelo: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
+- Pozuelo: CERRADO POR VACACIONES TODO AGOSTO 2026 (tampoco delivery). Reabre el martes 1 de septiembre con su horario habitual: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
-- Mirasierra (Fermin Caballero): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
-- Moraleja Green: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
-- Valladolid: CERRADO POR VACACIONES TODO AGOSTO 2026 (del 1 al 31 de agosto, tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30. Si preguntan por Valladolid en agosto: informa del cierre con amabilidad y sugiere pedir online en pedir.burgerjazz.com para recoger en otro local si les viene bien, o esperar a septiembre` },
+- Mirasierra (Fermin Caballero): CERRADO POR VACACIONES hasta el 9 de agosto de 2026; reabre el domingo 9 de agosto. Desde entonces, horario habitual: L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
+- Moraleja Green: CERRADO POR VACACIONES TODO AGOSTO 2026 (tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
+- Valladolid: CERRADO POR VACACIONES TODO AGOSTO 2026 (del 1 al 31 de agosto, tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30. NOTA AGOSTO 2026: cerrados por vacaciones TODO AGOSTO Valladolid, Pozuelo y Moraleja Green; Mirasierra cerrado hasta el 9 de agosto (reabre el domingo 9). ABIERTOS todo agosto: Chamberi, Plaza Espana, Delicias y Majadahonda. Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
 COMBOS: COMBO JAZZ SOLO (burger+patatas+bebida) 18,95€ | MENU DIA (burger+patatas+bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away). NO disponible en cenas, fines de semana, ni en delivery.
