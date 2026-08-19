@@ -185,7 +185,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
 - Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Pozuelo: REABIERTO desde el miercoles 19 de agosto de 2026. Resto de agosto: L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30. Desde el 1 de septiembre, horario habitual: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
+- Pozuelo: REABIERTO desde el miercoles 19 de agosto de 2026. HASTA EL 31 DE AGOSTO: L-M CERRADO | miercoles a domingo (TODOS los dias igual, tambien viernes, sabado y domingo) 12:30-16:00 y 19:30-23:30. Desde el 1 de septiembre, horario habitual: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Mirasierra (Fermin Caballero): CERRADO POR VACACIONES hasta el 9 de agosto de 2026 INCLUIDO; reabre el lunes 10 de agosto. Desde entonces, horario habitual: L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
 - Moraleja Green: CERRADO POR VACACIONES TODO AGOSTO 2026 (tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
