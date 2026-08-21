@@ -30,6 +30,10 @@
     {
       "path": "/api/cron-reviews",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron-posts",
+      "schedule": "0 8 * * 3"
     }
   ],
   "redirects": [
