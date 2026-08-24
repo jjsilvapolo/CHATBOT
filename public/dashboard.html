@@ -535,6 +535,11 @@ function stopAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshT
 var revStats=null,revLoc=null,revList=null,revFilter="all",revQ="",revTab="stores",revPend=null;
 function starsHtml(n){n=parseInt(n||0);var col=n>=4?"#16a34a":n===3?"#d97706":"#dc2626";return '<span style="color:'+col+'">'+"★".repeat(n)+"☆".repeat(5-n)+'</span>'}
 window.revBack=function(){revLoc=null;revList=null;revTab="stores";render();if(!revStats)loadResenas()};
+// FIX 24/08: todo el script vive en una IIFE, pero los botones de reseñas se generan
+// con onclick inline (necesitan GLOBALES). actPend/actResenaV2 no estaban exportadas
+// → "actResenaV2 is not defined" al pulsar Publicar/Actualizar/Aprobar (reporte Rodrigo).
+window.actPend=function(){return actPend.apply(null,arguments)};
+window.actResenaV2=function(){return actResenaV2.apply(null,arguments)};
 function resenasHTML(){
   if(revLoc)return resenasListHTML();
   var nP=revPend?(revPend.reviews||[]).length:null;
