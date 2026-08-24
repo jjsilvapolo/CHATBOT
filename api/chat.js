@@ -269,17 +269,27 @@ async function buildSystemPrompt() {
   if (dayOfWeek === "miércoles") {
     timeContext += "HOY ES JAZZ DAY: 2x1 en burgers en TODOS los locales (solo dine-in/take-away).\n";
   }
+  // Cierres de verano: hasta el 31/08/2026 los lunes y martes cierran TODOS
+  // los locales (segun la seccion HORARIOS del seed). Expira solo el 01/09.
+  var fechaMadrid = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" }); // YYYY-MM-DD
+  var cierresAgosto = fechaMadrid <= "2026-08-31";
   // Menu del dia check
-  if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
+  if (cierresAgosto && ["lunes", "martes"].includes(dayOfWeek)) {
+    timeContext += "HOY NO HAY MENU DEL DIA: en agosto los lunes y martes descansan TODOS los locales. Vuelve el miercoles a mediodia.\n";
+  } else if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
     timeContext += "MENU DEL DIA DISPONIBLE AHORA: 10,90€ (burger+patatas+bebida). IMPORTANTE: solo en los locales que estan abiertos hoy, consulta los horarios antes de confirmar.\n";
   } else if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek)) {
     timeContext += "MENU DEL DIA HOY: 10,90€ pero solo en horario de comidas (12:30-16:00). Ahora mismo no esta disponible.\n";
   } else {
     timeContext += "HOY NO HAY MENU DEL DIA (solo disponible de lunes a viernes en horario de comidas).\n";
   }
-  // Closed locals reminder
+  // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Plaza Espana, Majadahonda, Moraleja Green y Valladolid. Delicias, Pozuelo y Mirasierra solo abren a mediodia (comida).\n";
+    if (cierresAgosto) {
+      timeContext += "ATENCION (cierres de agosto, hasta el 31/08/2026): hoy " + dayOfWeek + " estan CERRADOS TODOS los locales, tampoco abren de cena. Moraleja Green y Valladolid siguen cerrados por vacaciones todo agosto.\n";
+    } else {
+      timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Plaza Espana, Moraleja Green y Valladolid. Delicias, Pozuelo y Majadahonda abren SOLO de cena (19:30-23:30). Chamberi y Mirasierra abren dia completo (comida y cena).\n";
+    }
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
@@ -571,8 +581,6 @@ setInterval(function () {
   for (var i = 0; i < keys.length; i++) { if (now - _rateBuckets[keys[i]].start > RATE_WINDOW * 2) delete _rateBuckets[keys[i]]; }
   keys = Object.keys(_ipBuckets);
   for (var j = 0; j < keys.length; j++) { if (now - _ipBuckets[keys[j]].start > RATE_WINDOW * 2) delete _ipBuckets[keys[j]]; }
-  keys = Object.keys(_escalationsByIP);
-  for (var k = 0; k < keys.length; k++) { if (now - _escalationsByIP[keys[k]].first > ESCALATION_WINDOW * 2) delete _escalationsByIP[keys[k]]; }
 }, 5 * 60 * 1000);
 
 // CORS: only allow BurgerJazz domains
@@ -691,8 +699,12 @@ module.exports = async function handler(req, res) {
   }
 
   // Validate and sanitize messages
+  // Nos quedamos con la COLA del historial (los 24 mensajes mas recientes),
+  // no con la cabeza: si no, a partir del mensaje 25 se descartaba el ultimo
+  // mensaje del cliente y el bot respondia a uno antiguo.
   const cleanMessages = [];
-  for (var i = 0; i < messages.length && i < 24; i++) {
+  var start = Math.max(0, messages.length - 24);
+  for (var i = start; i < messages.length; i++) {
     var m = messages[i];
     if (!m || typeof m.content !== "string") continue;
     var role = m.role === "assistant" ? "assistant" : "user";
