@@ -147,6 +147,23 @@ module.exports = async function handler(req, res) {
         if (!_stats || Date.now() - _statsAt > 600000) { _stats = await buildStats(); _statsAt = Date.now(); }
         return res.status(200).json({ configured: true, stats: _stats });
       }
+      if (view === "hist") {
+        // Telemetria RRHH BJ (31/08): historial de reseñas por rango para el Dashboard de
+        // productividad de la app (cruce con turnos/menciones de empleados). Solo lectura de
+        // NUESTRA BD (no pega a Google). Auth: misma dash key del panel.
+        var hFrom = String((req.query && req.query.from) || "");
+        var hTo = String((req.query && req.query.to) || "");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(hFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(hTo)) {
+          return res.status(400).json({ error: "from/to requeridos (YYYY-MM-DD)" });
+        }
+        var sqlH = getSQLInstance();
+        var histRows = await sqlH`
+          SELECT location_name, author, rating, comment, review_ts, status
+          FROM reviews
+          WHERE review_ts >= ${hFrom + "T00:00:00Z"} AND review_ts <= ${hTo + "T23:59:59Z"}
+          ORDER BY review_ts DESC LIMIT 500`;
+        return res.status(200).json({ items: histRows.map(function (r) { return { loc: r.location_name || "", author: r.author || "", rating: r.rating || 0, comment: r.comment || "", ts: r.review_ts, status: r.status || "" }; }) });
+      }
       if (view === "list") {
         if (!gbp.isConfigured()) return res.status(200).json({ configured: false, items: [] });
         var key = String((req.query && req.query.loc) || "");
