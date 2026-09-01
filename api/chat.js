@@ -188,7 +188,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
-- Moraleja Green: L-M CERRADO | X-J 12:30-16:00 (solo comidas) | V-D 14:00-23:00 (continuo). Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
+- Moraleja Green: L-M CERRADO | X-J SOLO COMIDAS 12:30-16:00 (ATENCION: miercoles y jueves NO abre de cena, NO existe franja de 19:30 en este local — es el unico sin cenas entre semana) | V-D 14:00-23:00 (continuo). Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30. Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
