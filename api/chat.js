@@ -104,9 +104,9 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - REGLA CRITICA: Si el cliente pregunta por horarios, menu del dia, o si un local esta abierto, SIEMPRE pregunta PRIMERO a que local quiere ir si no lo ha dicho. Cada local tiene horarios DIFERENTES y varios cierran lunes y martes.
 - Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
-- IMPORTANTE: Varios locales cierran lunes y martes. Avisalo si preguntan por esos dias.
+- IMPORTANTE: Pozuelo, Mirasierra, Moraleja Green y Valladolid cierran lunes y martes. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). HASTA EL 31 DE AGOSTO 2026: los lunes y martes NO hay menu del dia en NINGUN local (todos cierran esos dias); los miercoles lo tienen Chamberi, Plaza Espana, Majadahonda, Mirasierra y Pozuelo (Delicias los miercoles esta cerrado); jueves y viernes lo tienen todos los abiertos, incluido Delicias. Ejemplo agosto: si es lunes o martes → "en agosto los lunes y martes descansamos en todos los locales; el menu del dia vuelve el miercoles a mediodia". DESDE EL 1 DE SEPTIEMBRE (habitual): lunes y martes lo tienen Chamberi y Mirasierra (abren a mediodia); Delicias, Pozuelo y Majadahonda abren lunes y martes SOLO de cena (sin menu del dia esos mediodias); Plaza Espana, Moraleja Green y Valladolid cierran lunes y martes.
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana, Delicias y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Mirasierra, Pozuelo y Valladolid; Moraleja Green solo miercoles y jueves (viernes su horario es continuo desde las 14:00, sin menu del dia).
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -175,21 +175,22 @@ const KNOWLEDGE_SEED = [
 2. Plaza Espana - C/ Fomento, 37 (Pick-up y delivery via Glovo/Uber; NO dine-in) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
 3. Delicias - Paseo de las Delicias, 129 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Delicias+Madrid
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
-5. Pozuelo - C/ Atenas, 2 — REABIERTO desde el miercoles 19 de agosto de 2026 tras vacaciones (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
-6. Mirasierra - C/ Fermin Caballero, 76 — ATENCION: CERRADO POR VACACIONES hasta el 9 de agosto de 2026 incluido, reabre el lunes 10 de agosto (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el miercoles 2 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
-8. Valladolid - Claudio Moyano, 20 — ATENCION: CERRADO POR VACACIONES TODO AGOSTO 2026, reabre el miercoles 2 de septiembre (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
+5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
+6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
+7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green — cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con horario normal (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
+8. Valladolid - Claudio Moyano, 20 — cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con horario normal (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
-  { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (fuente: web oficial, Centro de Ayuda):
-- Chamberi (Modesto Lafuente): L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Plaza Espana (Fomento): L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
-- Delicias: L-M 19:30-23:30 (solo cena) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00
-- Pozuelo: REABIERTO desde el miercoles 19 de agosto de 2026 con su horario de siempre de miercoles a domingo (igual que Majadahonda): L-M CERRADO (durante agosto) | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-0:00. Desde el 1 de septiembre vuelve ademas el L-M 19:30-23:30 (solo cena)
-- Majadahonda: L-M 19:30-23:30 (solo cena) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
-- Mirasierra (Fermin Caballero): CERRADO POR VACACIONES hasta el 9 de agosto de 2026 INCLUIDO; reabre el lunes 10 de agosto. Desde entonces, horario habitual: L-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30
-- Moraleja Green: CERRADO POR VACACIONES TODO AGOSTO 2026 (tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X 12:30-16:00 (solo comida) | J 12:30-16:00 y 19:30-23:30 | V-D 14:00-23:00 (continuo)
-- Valladolid: CERRADO POR VACACIONES TODO AGOSTO 2026 (del 1 al 31 de agosto, tampoco delivery). Reabre el miercoles 2 de septiembre con su horario habitual: L-M CERRADO | X-J 12:30-16:00 y 19:30-23:30 | V-D 12:30-16:30 y 19:30-23:30. NOTA AGOSTO 2026: cerrados por vacaciones TODO AGOSTO Valladolid y Moraleja Green; Mirasierra cerrado hasta el 9 de agosto incluido (reabrio el lunes 10); Pozuelo reabrio el miercoles 19 de agosto (X-D, horario de siempre, igual que Majadahonda). ABIERTOS: Chamberi, Plaza Espana, Delicias, Majadahonda, Mirasierra y Pozuelo (desde el 19/08). IMPORTANTE hasta el 31/08: los LUNES y MARTES estan cerrados TODOS los locales (tampoco cenas), y Delicias ademas cierra los miercoles (abre de jueves a domingo); el resto de dias cada local mantiene sus franjas de arriba. Los horarios habituales por dia (incluidos lunes/martes) vuelven el 1 de septiembre. Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
+  { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 31 de agosto de 2026):
+- Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
+- Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-0:00
+- Delicias: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
+- Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
+- Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
+- Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
+- Moraleja Green: L-M CERRADO | X-J 12:30-16:00 (solo comidas) | V-D 14:00-23:00 (continuo). Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
+- Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30. Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
+Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
 COMBOS: COMBO JAZZ SOLO (burger+patatas+bebida) 18,95€ | MENU DIA (burger+patatas+bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away). NO disponible en cenas, fines de semana, ni en delivery.
@@ -269,27 +270,17 @@ async function buildSystemPrompt() {
   if (dayOfWeek === "miércoles") {
     timeContext += "HOY ES JAZZ DAY: 2x1 en burgers en TODOS los locales (solo dine-in/take-away).\n";
   }
-  // Cierres de verano: hasta el 31/08/2026 los lunes y martes cierran TODOS
-  // los locales (segun la seccion HORARIOS del seed). Expira solo el 01/09.
-  var fechaMadrid = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" }); // YYYY-MM-DD
-  var cierresAgosto = fechaMadrid <= "2026-08-31";
-  // Menu del dia check
-  if (cierresAgosto && ["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "HOY NO HAY MENU DEL DIA: en agosto los lunes y martes descansan TODOS los locales. Vuelve el miercoles a mediodia.\n";
-  } else if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
+  // Menu del dia check (cierres de agosto 2026 ya expirados y retirados 01/09)
+  if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
     timeContext += "MENU DEL DIA DISPONIBLE AHORA: 10,90€ (burger+patatas+bebida). IMPORTANTE: solo en los locales que estan abiertos hoy, consulta los horarios antes de confirmar.\n";
   } else if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek)) {
-    timeContext += "MENU DEL DIA HOY: 10,90€ pero solo en horario de comidas (12:30-16:00). Ahora mismo no esta disponible.\n";
+    timeContext += "MENU DEL DIA HOY: 10,90€ pero solo en horario de comidas (mediodia, hasta las 16:00). Ahora mismo no esta disponible.\n";
   } else {
     timeContext += "HOY NO HAY MENU DEL DIA (solo disponible de lunes a viernes en horario de comidas).\n";
   }
   // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    if (cierresAgosto) {
-      timeContext += "ATENCION (cierres de agosto, hasta el 31/08/2026): hoy " + dayOfWeek + " estan CERRADOS TODOS los locales, tampoco abren de cena. Moraleja Green y Valladolid siguen cerrados por vacaciones todo agosto.\n";
-    } else {
-      timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Plaza Espana, Moraleja Green y Valladolid. Delicias, Pozuelo y Majadahonda abren SOLO de cena (19:30-23:30). Chamberi y Mirasierra abren dia completo (comida y cena).\n";
-    }
+    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Mirasierra, Moraleja Green y Valladolid. Chamberi, Plaza Espana, Delicias y Majadahonda abren dia completo (comida y cena).\n";
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
