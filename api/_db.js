@@ -504,20 +504,24 @@ async function getABStats() {
 
 async function getAlertData() {
   const sql = getSQL();
-  // Last 24h vs previous 24h
+  // Last 24h vs previous 24h.
+  // 2026-09-03: se EXCLUYEN las sesiones smoke-* (npm run smoke tras cada deploy y
+  // pruebas manuales smoke-test-*): el 01/09 un smoke 13/13 dejo 27 sesiones y al dia
+  // siguiente el trafico real (0-3 msgs/dia) disparo la falsa alarma "chatbot caido".
   const current = await sql`
     SELECT COUNT(*) as total, COUNT(DISTINCT session) as sessions,
            COUNT(CASE WHEN category = 'error' THEN 1 END) as errors
-    FROM chats WHERE ts > NOW() - INTERVAL '24 hours'
+    FROM chats WHERE ts > NOW() - INTERVAL '24 hours' AND session NOT ILIKE 'smoke%'
   `;
   const previous = await sql`
     SELECT COUNT(*) as total, COUNT(DISTINCT session) as sessions,
            COUNT(CASE WHEN category = 'error' THEN 1 END) as errors
     FROM chats WHERE ts > NOW() - INTERVAL '48 hours' AND ts <= NOW() - INTERVAL '24 hours'
+      AND session NOT ILIKE 'smoke%'
   `;
   const escalations24h = await sql`
     SELECT COUNT(DISTINCT session) as count FROM chats
-    WHERE ts > NOW() - INTERVAL '24 hours'
+    WHERE ts > NOW() - INTERVAL '24 hours' AND session NOT ILIKE 'smoke%'
       AND (bot_msg ILIKE '%registrado tu incidencia%' OR bot_msg ILIKE '%info@burgerjazz%'
            OR bot_msg ILIKE '%no puedo resolver%')
   `;
