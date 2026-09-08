@@ -201,20 +201,27 @@ POSTRES: Chocolate Candy Jazz, Pistachio Candy Jazz (5,50€)
 EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€
 SOLO EN CHAMBERI (Modesto Lafuente, 64): aros de cebolla y tenders de pollo. Si preguntan el precio de aros o tenders y no lo sabes con certeza, di que lo consulten en el local.
 NO tenemos opciones sin gluten en ningun local.` },
-  { key: "alergenos", title: "Alergenos", content: `ALERGENOS (✓=contiene):
-BASIC JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Apio✓ Mostaza✓ Sesamo✓ Sulfitos✓
-BURGER JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Apio✓ Mostaza✓ Sesamo✓ Sulfitos✓
-ROYAL JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Mostaza✓ Sesamo✓ Sulfitos✓
-BLUE JAZZ: Gluten✓ Crustaceos✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓ Mostaza✓ Sesamo✓ Cacahuete✓
-BACON CHEESE JAZZ: Gluten✓ Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
-BASIC FRIES: F.Cascara✓ Apio✓
-BACON CHEESE FRIES: Huevo✓ Lacteos✓ F.Cascara✓ Sulfitos✓
-TRUFFLE FRIES: Huevo✓ Pescado✓ Soja✓ Lacteos✓ F.Cascara✓ Apio✓ Mostaza✓
-SPICY FRIES: Sin alergenos
-SHAKE CHOCOLATE: Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
-SHAKE VAINILLA: Huevo✓ Soja✓ Lacteos✓ F.Cascara✓
-CHOCOLATE CANDY: Lacteos✓ F.Cascara✓
-PISTACHIO CANDY: F.Cascara✓` },
+  { key: "alergenos", title: "Alergenos", content: `ALERGENOS — tabla oficial Supply Chain 08/09/2026 (contiene | trazas=puede contener por proveedor):
+BASIC JAZZ: contiene Gluten, Huevo, Lacteos, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
+BURGER JAZZ: contiene Gluten, Huevo, Lacteos, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
+ROYAL JAZZ: contiene Gluten, Huevo, PESCADO, Lacteos, Apio, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
+BLUE JAZZ: contiene Gluten, Huevo, PESCADO, Soja, Lacteos, Mostaza, Sulfitos | trazas: F.Cascara, Sesamo
+BACON CHEESE JAZZ: contiene Gluten, Huevo, PESCADO, Lacteos, Apio, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
+BASIC FRIES: sin alergenos declarados
+SPICY FRIES: sin alergenos declarados
+BACON CHEESE FRIES: contiene Huevo, Lacteos
+TRUFFLE FRIES: contiene Gluten, Huevo, Lacteos, Mostaza, Sulfitos | trazas: Crustaceos, Pescado, Soja, F.Cascara, Apio
+TENDERS: contiene Gluten | trazas: Soja, Sulfitos
+SHAKE CHOCOLATE: contiene Lacteos | trazas: Huevo, Soja, F.Cascara
+SHAKE VAINILLA: contiene Lacteos | trazas: Huevo, Soja, F.Cascara
+CHOCOLATE CANDY: contiene Gluten, Huevo, Soja, Lacteos, F.Cascara | trazas: Sesamo
+PISTACHIO CANDY: contiene Gluten, Huevo, F.Cascara | trazas: Cacahuetes, Sesamo
+SALSA SMOKEY BBQ: contiene Gluten, Pescado, Soja, Mostaza, Sulfitos
+SALSA CHEDDAR AHUMADO: contiene Huevo, Lacteos
+MAYO TRUFA: contiene Gluten, Huevo, Mostaza, Sulfitos | trazas: Crustaceos, Pescado, Soja, Lacteos, F.Cascara, Apio
+SALSA BURGER: contiene Huevo, Pescado, Apio, Mostaza, Sulfitos
+SALSA MOSTAZA: contiene Mostaza
+KETCHUP: sin alergenos declarados` },
   { key: "delivery", title: "Pedidos y Delivery", content: `PEDIDOS: En local (dine-in / take-away) | A domicilio (entrega en casa): SOLO a traves de Glovo y Uber Eats. NO tenemos delivery propio. | Pick-up / take-away online (pedir online y recoger en el local): pedir.burgerjazz.com
 Precios iguales en local y online. Se pueden personalizar ingredientes.
 Para recibir en casa, el cliente pide por Glovo o Uber Eats (ellos gestionan el reparto). Para recoger, pide online (pick-up) y pasa a por el a su local.
