@@ -106,7 +106,7 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - Si no especifica local, pregunta cual le interesa.
 - IMPORTANTE: Pozuelo, Mirasierra, Moraleja Green y Valladolid cierran lunes y martes. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana, Delicias y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Mirasierra, Pozuelo y Valladolid; Moraleja Green solo miercoles y jueves (viernes su horario es continuo desde las 14:00, sin menu del dia).
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Delicias, Mirasierra, Pozuelo y Valladolid (Delicias los lunes y martes solo abre de cena, sin menu del dia esos dos dias); Moraleja Green solo miercoles y jueves (viernes su horario es continuo desde las 14:00, sin menu del dia).
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -184,7 +184,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 31 de agosto de 2026):
 - Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-0:00
-- Delicias: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
+- Delicias: TODOS LOS DIAS · L-M SOLO CENA 19:30-23:30 (lunes y martes NO abre a mediodia) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
@@ -287,7 +287,7 @@ async function buildSystemPrompt() {
   }
   // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Mirasierra, Moraleja Green y Valladolid. Chamberi, Plaza Espana, Delicias y Majadahonda abren dia completo (comida y cena).\n";
+    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Mirasierra, Moraleja Green y Valladolid. Chamberi, Plaza Espana y Majadahonda abren dia completo (comida y cena); Delicias abre SOLO de cena (19:30-23:30), no a mediodia.\n";
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
@@ -464,7 +464,7 @@ function getOfflineFallback(text, category) {
     "plaza espana": "L-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
     "fomento": "L-M CERRADO, X-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
     "plaza espana": "L-M CERRADO, X-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
-    "delicias": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
+    "delicias": "L-M solo cena 19:30-23:30 (no abre a mediodia), X-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
     "chamberi": "L-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
     "modesto lafuente": "L-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
     "pozuelo": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
