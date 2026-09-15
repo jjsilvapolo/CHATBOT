@@ -585,6 +585,7 @@ setInterval(function () {
 const ALLOWED_ORIGINS = [
   "https://burgerjazz.com",
   "https://www.burgerjazz.com",
+  "https://pedir.burgerjazz.com", // shop: el widget vive aquí — sin esto el navegador bloquea (CORS) y el cliente ve "problemas de conexion"
   "https://bot.burgerjazz.com",
   "https://burgerjazz-chatbot.vercel.app",
   "http://localhost:3000",
