@@ -461,18 +461,19 @@ function getOfflineFallback(text, category) {
   var t = (text || "").toLowerCase();
   // Schedule data
   var schedules = {
-    "plaza espana": "L-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
-    "fomento": "L-M CERRADO, X-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
-    "plaza espana": "L-M CERRADO, X-J 12:30-16:00 y 19:30-0:00, V-D 12:30-16:30 y 19:30-0:00",
-    "delicias": "L-M solo cena 19:30-23:30 (no abre a mediodia), X-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
-    "chamberi": "L-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
-    "modesto lafuente": "L-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
-    "pozuelo": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
-    "majadahonda": "L-M CERRADO, X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
-    "mirasierra": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
+    // Fuente: seccion "horarios" del KNOWLEDGE_SEED (tabla septiembre 2026). Mantener sincronizado.
+    "chamberi": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
+    "modesto lafuente": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
+    "plaza espana": "TODOS LOS DIAS: L-J 12:30-16:00 y 19:30-23:00, V-D 12:30-16:30 y 19:30-0:00",
+    "fomento": "TODOS LOS DIAS: L-J 12:30-16:00 y 19:30-23:00, V-D 12:30-16:30 y 19:30-0:00",
+    "delicias": "TODOS LOS DIAS: L-M solo cena 19:30-23:30 (no abre a mediodia), X-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
+    "majadahonda": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
+    "pozuelo": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30",
+    "mirasierra": "L-M CERRADO, X-D 12:30-16:00 y 19:30-23:30",
+    "fermin caballero": "L-M CERRADO, X-D 12:30-16:00 y 19:30-23:30",
     "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
     "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
-    "valladolid": "L-M CERRADO, X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-23:30"
+    "valladolid": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30"
   };
 
   if (category === "horarios") {
