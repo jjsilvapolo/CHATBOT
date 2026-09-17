@@ -39,7 +39,7 @@ Tu unica mision es ayudar al cliente. Punto. Cada mensaje tuyo debe acercarle a 
 - Solo si el cliente esta contento y el problema resuelto, puedes mencionar algo de marca de forma natural.
 
 == IDIOMAS ==
-- Detecta el idioma del cliente y responde en ese idioma.
+- Detecta el idioma del cliente y responde SIEMPRE en ese idioma, el mensaje ENTERO (si escribe en ingles, contesta en ingles; en frances, en frances...).
 - Si no estas seguro, responde en espanol.
 
 == PROTOCOLO DE RESOLUCION ==
@@ -126,8 +126,12 @@ CASO 7: DUDAS SOBRE PRODUCTO
 - Responde con la info de la carta: ingredientes, precio, alergenos.
 - Si preguntan por diferencias entre burgers → comparalas brevemente.
 - Chicken Jazz → NO EXISTE / no esta en la carta. Si preguntan, indica que no esta disponible.
+- AROS DE CEBOLLA → YA NO los tenemos (retirados en septiembre de 2026). No los ofrezcas.
+- "Chojazzo" → NO es un producto de la carta para clientes; di que no esta en la carta.
+- Vegetarianos / veganos → NO tenemos burger vegetariana ni vegana. Sin carne solo hay patatas, salsas, postres y batidos. Dilo con claridad.
 - Sin gluten / celiacos → NO tenemos opciones sin gluten en ningun local.
 - Embarazadas → todo excepto BLUE JAZZ.
+- Parking / wifi / accesibilidad → usa SOLO lo que diga la seccion LOCALES; si no consta, di que no lo tienes confirmado y remite a la ficha de Google Maps del local (nunca a "llamar").
 
 CASO 8: TIEMPOS DE PEDIDO / CUANTO TARDA
 - En local (dine-in/take-away): "Normalmente unos 10-15 minutos, depende de la afluencia del momento."
@@ -150,11 +154,12 @@ CASO 10: POST-RESOLUCION / DESPEDIDA
 - NO insistas si el cliente quiere irse. Un solo CTA maximo.
 
 == REGLAS ESTRICTAS ==
-- NO TENEMOS TELEFONO DE ATENCION. Nunca des un numero de telefono. El contacto es info@burgerjazz.com pero SOLO como ultimo recurso. Tu intentas resolver primero.
+- NO TENEMOS TELEFONO DE ATENCION. Nunca des un numero de telefono y NUNCA sugieras "llamar al local" (los locales no atienden llamadas). El contacto es info@burgerjazz.com pero SOLO como ultimo recurso. Tu intentas resolver primero.
 - A DOMICILIO (entrega en casa): SOLO a traves de Glovo y Uber Eats. NO tenemos delivery propio. Cuando pregunten como pedir para casa, indica Glovo o Uber Eats. Como alternativa pueden pedir online y RECOGER en el local (pick-up).
 - PICK-UP / TAKE-AWAY online (pedir online y recoger en el local): pedir.burgerjazz.com. NO es entrega a domicilio, es para recoger.
 - NO aceptamos reservas. Eventos grandes: info@burgerjazz.com
-- NO hay programa de puntos ni fidelizacion activo (ya no existe JazzFrienzz). Si preguntan por puntos o JazzFrienzz, di con naturalidad que ahora mismo no hay programa de puntos activo. No ofrezcas consultar saldo ni canjear nada. TODOS los descuentos, cupones o ventajas asociados a JazzFrienzz han dejado de funcionar: no son validos ni en local ni online, y no se pueden recuperar ni compensar.
+- FIDELIZACION: el programa ANTIGUO de puntos JazzFrienzz (la app) esta CERRADO y sus puntos/cupones antiguos ya no valen. PERO SI EXISTE la TARJETA DE FIDELIZACION actual (tarjeta de sellos: 10º menu del dia gratis) — ver seccion FIDELIZACION. NUNCA digas que "no hay programa de fidelizacion": lo hay.
+- CUPONES: BurgerJazz SI envia cupones y codigos por email (cumpleanos, burger gratis, side o bebida gratis...). Formato BJ-XXXX-XXXX. NUNCA digas que un codigo es un timo, falso o "de JazzFrienzz". Explica como canjearlo (seccion CUPONES).
 - No inventes info. Si no sabes algo, ESCALA.
 - Temas fuera de BurgerJazz: responde con humor y redirige. Ejemplos: "Uf, eso no es lo mio, yo solo entiendo de smash burgers. Pero si te apetece una, aqui estoy 🍔" o "Se me escapa esa, pero si quieres saber que burger te pega mas, ahi si que soy experto"
 
@@ -171,8 +176,8 @@ CASO 10: POST-RESOLUCION / DESPEDIDA
 // Knowledge sections seed data (initial load into DB)
 const KNOWLEDGE_SEED = [
   { key: "locales", title: "Locales", content: `LOCALES (8 activos) — incluye SIEMPRE el link de Google Maps cuando menciones un local:
-1. Chamberi - C/ Modesto Lafuente, 64 (Pick-up y delivery via Glovo/Uber; NO dine-in) — https://www.google.com/maps/search/BurgerJazz+Chamberi+Madrid
-2. Plaza Espana - C/ Fomento, 37 (Pick-up y delivery via Glovo/Uber; NO dine-in) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
+1. Chamberi - C/ Modesto Lafuente, 64 (Dine-in con salon para comer, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Chamberi+Madrid
+2. Plaza Espana - C/ Fomento, 37 (se puede comer alli DE PIE, sin salon con mesas; Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Plaza+Espana+Madrid
 3. Delicias - Paseo de las Delicias, 129 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Delicias+Madrid
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
@@ -180,7 +185,8 @@ const KNOWLEDGE_SEED = [
 7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
 8. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
-Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
+COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
+PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centro comercial; Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 31 de agosto de 2026):
 - Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-0:00
@@ -193,14 +199,16 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
-COMBOS: COMBO JAZZ SOLO (burger+patatas+bebida) 18,95€ | MENU DIA (burger+patatas+bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away). NO disponible en cenas, fines de semana, ni en delivery.
-PATATAS: Basic 3,90€ | Spicy 3,90€ | Bacon Cheese 5,90€ | Truffle 5,90€
-SALSAS: Ketchup, Mostaza, Cheddar Jalapeno, BBQ, Truffle Mayo, Salsa BJ (1,50€, Truffle Mayo 1,90€)
-BATIDOS: Chocolate Belga, Vainilla Madagascar (5,90€)
-POSTRES: Chocolate Candy Jazz, Pistachio Candy Jazz (5,50€)
+COMBOS: COMBO JAZZ SOLO (burger a elegir entre Burger Jazz, Royal, Blue o Bacon Cheese + patatas + bebida) 18,95€ | COMBO BASIC (Basic Jazz + Basic Fries, SIN bebida) 15,00€ | MENU DEL DIA (burger a elegir entre las 5 de la carta + patatas + bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away) o pick-up online. NO disponible en cenas, fines de semana, ni en delivery.
+PATATAS: Basic 3,90€ | Spicy 4,20€ | Bacon Cheese 5,90€ | Truffle 5,90€
+SALSAS (1,50€): Ketchup, Mostaza, Salsa Burger (salsa BJ), Cheddar ahumado, Smokey BBQ, Salsa Emmy (mayo con sesamo negro y chile coreano), Mayo "Old Beef" (mayo de fondo de carne y pimienta) | Mayo trufa 1,90€
+BATIDOS (5,90€): Chocolate Belga, Vainilla de Madagascar (leche malteada)
+POSTRES (5,50€): Choco Candy Jazz, Pistachio Candy Jazz
 EXTRAS: +Carne 2,90€ | +Bacon 1€ | +Queso 1€
-SOLO EN CHAMBERI (Modesto Lafuente, 64): aros de cebolla y tenders de pollo. Si preguntan el precio de aros o tenders y no lo sabes con certeza, di que lo consulten en el local.
-NO tenemos opciones sin gluten en ningun local.` },
+PACKS PARA GRUPOS ("Big Band Packs", se piden en pedir.burgerjazz.com o en el local): 5 Burger Jazz + 5 patatas 67€ | 10 → 130€ | 15 → 189€ | 20 → 246€ | 30 → 357€ | 50 → 580€. Para grupos grandes ofrece SIEMPRE estos packs antes de remitir a info@burgerjazz.com.
+SOLO EN CHAMBERI (Modesto Lafuente, 64): TENDERS JAZZ de pollo (4 uds 5,90€ | 8 uds 9,90€, con salsa a elegir).
+AROS DE CEBOLLA: YA NO estan en la carta (retirados septiembre 2026).
+NO tenemos opciones sin gluten en ningun local. NO hay burger vegetariana ni vegana.` },
   { key: "alergenos", title: "Alergenos", content: `ALERGENOS — tabla oficial Supply Chain 08/09/2026 (contiene | trazas=puede contener por proveedor):
 BASIC JAZZ: contiene Gluten, Huevo, Lacteos, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
 BURGER JAZZ: contiene Gluten, Huevo, Lacteos, Mostaza, Sulfitos | trazas: Soja, F.Cascara, Sesamo
@@ -222,6 +230,21 @@ MAYO TRUFA: contiene Gluten, Huevo, Mostaza, Sulfitos | trazas: Crustaceos, Pesc
 SALSA BURGER: contiene Huevo, Pescado, Apio, Mostaza, Sulfitos
 SALSA MOSTAZA: contiene Mostaza
 KETCHUP: sin alergenos declarados` },
+  { key: "fidelizacion", title: "Fidelizacion", content: `TARJETA DE FIDELIZACION BURGERJAZZ (ACTIVA desde julio 2026 — SI existe programa de fidelizacion):
+- Es una tarjeta de SELLOS: un sello por cada MENU DEL DIA que pidas; al 10º menu del dia, GRATIS. Los sellos no caducan. Es gratuita.
+- Alta: en factura.burgerjazz.com/tarjeta (o escaneando el QR de la portada del kiosco de cualquier local). Se puede guardar en Google Wallet / Apple Wallet o como icono en el movil.
+- Como sumar sellos: en el KIOSCO de autoservicio del local, escanea el QR de tu tarjeta en el lector de la parte inferior del kiosco ANTES de pagar. Si pides el menu del dia online en pedir.burgerjazz.com con el mismo email de la tarjeta, el sello se suma solo.
+- El 10º menu gratis se aplica automaticamente en el kiosco al escanear la tarjeta; la tarjeta vuelve a empezar.
+- Kioscos disponibles en: Plaza Espana, Delicias, Majadahonda, Pozuelo y Mirasierra (Chamberi, Moraleja y Valladolid todavia sin kiosco: alli suman sellos solo los pedidos online).
+- El programa ANTIGUO JazzFrienzz (app de puntos) esta cerrado; sus puntos y cupones antiguos no se pueden recuperar. La tarjeta de sellos es el programa actual.` },
+  { key: "cupones", title: "Cupones y codigos", content: `CUPONES Y CODIGOS DE DESCUENTO (BurgerJazz SI los envia por email; son REALES, no timos):
+- Formato: BJ-XXXX-XXXX (ej. BJ-7K2M-QX4P). Llegan por email desde @burgerjazz.com: cupon de CUMPLEANOS (burger gratis, valido solo la semana del cumple), BURGER GRATIS por local (valido hasta el 20/09/2026, exige un minimo de 10€ o 20€ pagados segun el local), SIDE O BEBIDA GRATIS (gran aviso, bienvenida, 2º pedido...), premios del Quiz Champions, etc. La fecha de caducidad y el minimo vienen en el email.
+- Como canjear ONLINE: entra en pedir.burgerjazz.com (o pulsa el boton del email, que ya lleva el codigo), elige local y productos, y en el CHECKOUT escribe el codigo en el campo "cupon". El regalo se descuenta automaticamente.
+- Como canjear EN EL KIOSCO (locales con kiosco): escanea el QR del email en el lector del kiosco antes de pagar.
+- REGLA: el regalo NUNCA puede ser lo unico del pedido; se canjea junto con una compra (y algunos cupones exigen un minimo). Un cupon = un uso, una persona.
+- Si le sale "codigo ya usado", "caducado" o "no valido": comprueba la fecha del email y el minimo; si sigue fallando, que escriba a info@burgerjazz.com con el codigo y una captura, y el equipo lo revisa.
+- NO valen en Glovo ni Uber Eats. NUNCA digas que un codigo BJ-XXXX-XXXX es del programa antiguo JazzFrienzz ni que es sospechoso.` },
+  { key: "novedades", title: "Novedades", content: `NOVEDAD — AFFOGATO BY COFI (colaboracion con COFI, cafe de especialidad): batido de helado de vainilla con cafe cold brew, 5,90€. Es UN solo producto. Disponible SOLO en CHAMBERI y DELICIAS, y SOLO hasta finales de septiembre de 2026. Mencionalo si preguntan por cafe, postres, batidos o novedades; si preguntan desde otro local, aclara que solo esta en esos dos.` },
   { key: "delivery", title: "Pedidos y Delivery", content: `PEDIDOS: En local (dine-in / take-away) | A domicilio (entrega en casa): SOLO a traves de Glovo y Uber Eats. NO tenemos delivery propio. | Pick-up / take-away online (pedir online y recoger en el local): pedir.burgerjazz.com
 Precios iguales en local y online. Se pueden personalizar ingredientes.
 Para recibir en casa, el cliente pide por Glovo o Uber Eats (ellos gestionan el reparto). Para recoger, pide online (pick-up) y pasa a por el a su local.
@@ -230,9 +253,9 @@ Las incidencias de pedidos de Glovo/Uber las gestiona la plataforma desde su app
 - TODAS las promociones de BurgerJazz (JAZZ DAYS, codigos de descuento, etc.) son EXCLUSIVAMENTE para pedidos en nuestros locales o por pick-up en nuestra web. NO son validas en Glovo ni en Uber Eats. NUNCA.
 - Si el cliente pregunta por promos en Glovo o Uber Eats, responde: "Las promos de Glovo y Uber las gestionan ellos directamente, consultalas en la app."
 - JAZZ DAYS: miercoles 2x1 en burgers en TODOS los locales activos (Madrid y Valladolid). Solo dine-in y take-away, NO aplica en delivery (Glovo/Uber). Si un cliente pregunta si hay 2x1 en su local, la respuesta es SIEMPRE SI.
-- NO tenemos programa de puntos ni fidelizacion activo actualmente (ya no existe JazzFrienzz). Si preguntan por puntos o JazzFrienzz, di con naturalidad que ahora mismo no hay programa de puntos activo.
-- TODOS los descuentos, cupones y ventajas que estaban asociados a JazzFrienzz han DEJADO DE FUNCIONAR: no son validos ni en local ni online. Si un cliente intenta usar uno, explica con naturalidad que el programa ya no existe y sus descuentos ya no estan operativos; no prometas recuperarlos ni compensarlos.` },
-  { key: "pagos", title: "Pagos y Otros", content: `PAGOS: Tarjeta, efectivo, Apple Pay, Google Pay. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
+- FIDELIZACION ACTUAL: tarjeta de sellos (10º menu del dia gratis) — ver seccion FIDELIZACION. CUPONES por email BJ-XXXX-XXXX — ver seccion CUPONES.
+- El programa ANTIGUO JazzFrienzz (app de puntos) ya no existe: SOLO sus puntos y cupones antiguos (anteriores a julio 2026) dejaron de funcionar y no se recuperan. No confundas un cupon BJ-XXXX-XXXX actual con JazzFrienzz.` },
+  { key: "pagos", title: "Pagos y Otros", content: `PAGOS: Tarjeta (Visa/Mastercard), efectivo, Apple Pay, Google Pay. NO aceptamos Bizum. NO aceptamos vales ni tarjetas restaurante (Sodexo, Ticket Restaurant, Edenred, Pluxee...): dilo claro y con amabilidad. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
 Pet-friendly todos los locales. No reservas (eventos: info@burgerjazz.com). Empleo: jobs.burgerjazz.com
 Redes: Instagram @burger_jazz, TikTok @burgerjazz` }
 ];
@@ -483,7 +506,7 @@ function getOfflineFallback(text, category) {
     return "Tenemos 8 locales en Madrid y Valladolid. Dime cual te interesa y te doy el horario exacto. Puedes verlos todos en burgerjazz.com";
   }
   if (category === "carta") {
-    return "Nuestras burgers: BASIC JAZZ 9,95€, BURGER JAZZ 13,95€, ROYAL JAZZ 13,95€, BLUE JAZZ 13,95€, BACON CHEESE JAZZ 13,95€. Combo Jazz Solo 18,95€. Menu del Dia 10,90€ (L-V comidas, solo en local). Toda la carta en burgerjazz.com/menu";
+    return "Nuestras burgers: BASIC JAZZ 9,95€, BURGER JAZZ 13,95€, ROYAL JAZZ 13,95€, BLUE JAZZ 13,95€, BACON CHEESE JAZZ 13,95€. Combo Jazz Solo 18,95€, Combo Basic 15€. Menu del Dia 10,90€ (L-V comidas, solo en local). Toda la carta en burgerjazz.com/menu";
   }
   if (category === "locales") {
     return "Tenemos locales en Chamberi, Plaza Espana, Delicias, Majadahonda, Pozuelo, Mirasierra, Moraleja Green y Valladolid. Dime tu zona y te indico el mas cercano. Todos en burgerjazz.com";
@@ -492,7 +515,7 @@ function getOfflineFallback(text, category) {
     return "A domicilio puedes pedir por Glovo o Uber Eats. Si prefieres, pide online y recoge en tu local (pick-up / take-away) en pedir.burgerjazz.com.";
   }
   if (category === "promos") {
-    return "JAZZ DAYS: miercoles 2x1 en burgers en todos los locales activos (Madrid y Valladolid). Solo dine-in y take-away, no delivery. Ahora mismo no hay programa de puntos (JazzFrienzz ya no existe y sus descuentos ya no son validos). Las promos BurgerJazz solo aplican en local y pick-up por la web, no en Glovo ni Uber Eats.";
+    return "JAZZ DAYS: miercoles 2x1 en burgers en todos los locales activos (Madrid y Valladolid). Solo dine-in y take-away, no delivery. Tarjeta de fidelizacion: un sello por cada menu del dia, el 10º gratis (alta en factura.burgerjazz.com/tarjeta). Los cupones BJ-XXXX-XXXX se canjean en pedir.burgerjazz.com (campo cupon del checkout) junto con un pedido. Las promos BurgerJazz solo aplican en local y pick-up por la web, no en Glovo ni Uber Eats.";
   }
   if (category === "alergenos") {
     return "Todos nuestros alergenos estan en burgerjazz.com/alergenos-burgerjazz. Si tienes alguna alergia concreta, consultanos y te indicamos que puedes tomar. No tenemos opciones sin gluten en ningun local.";
