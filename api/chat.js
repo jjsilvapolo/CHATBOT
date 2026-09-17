@@ -106,7 +106,7 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - Si no especifica local, pregunta cual le interesa.
 - IMPORTANTE: Pozuelo, Mirasierra, Moraleja Green y Valladolid cierran lunes y martes. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Delicias, Mirasierra, Pozuelo y Valladolid (Delicias los lunes y martes solo abre de cena, sin menu del dia esos dos dias); Moraleja Green solo miercoles y jueves (viernes su horario es continuo desde las 14:00, sin menu del dia).
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Delicias, Mirasierra, Pozuelo y Valladolid (Delicias los lunes y martes solo abre de cena, sin menu del dia esos dos dias); Moraleja Green SOLO los miercoles (los jueves abre solo de cena, sin menu del dia; viernes su horario es continuo desde las 14:00, sin menu del dia).
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -188,7 +188,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
-- Moraleja Green: L-M CERRADO | X-J SOLO COMIDAS 12:30-16:00 (ATENCION: miercoles y jueves NO abre de cena, NO existe franja de 19:30 en este local — es el unico sin cenas entre semana) | V-D 14:00-23:00 (continuo). Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
+- Moraleja Green: L-M CERRADO | MIERCOLES SOLO COMIDA 12:30-16:00 (ATENCION: el miercoles NO abre de cena, no existe franja de 19:30 ese dia) | JUEVES SOLO CENA 19:30-23:30 (ATENCION: el jueves NO abre a mediodia, ni menu del dia; horario vigente desde el 17 de septiembre de 2026) | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30. Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
@@ -470,8 +470,8 @@ function getOfflineFallback(text, category) {
     "pozuelo": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
     "majadahonda": "L-M CERRADO, X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
     "mirasierra": "L-M 12:30-16:00 (solo comida), X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-0:00",
-    "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
-    "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
+    "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
+    "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
     "valladolid": "L-M CERRADO, X-J 12:30-16:00 y 19:30-23:30, V-D 12:30-16:30 y 19:30-23:30"
   };
 
