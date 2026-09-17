@@ -177,8 +177,8 @@ const KNOWLEDGE_SEED = [
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green — cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con horario normal (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
-8. Valladolid - Claudio Moyano, 20 — cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con horario normal (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
+7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
+8. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO dine-in.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 31 de agosto de 2026):
@@ -189,7 +189,7 @@ Chamberi y Plaza Espana: solo recogida (pick-up) y delivery por Glovo/Uber, NO d
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
 - Moraleja Green: L-M CERRADO | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 19:30-23:30 (solo cena; el jueves SI abre por la noche, pero NO a mediodia y sin menu del dia) | V-D 14:00-23:00 (continuo)
-- Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30. Cerrado por vacaciones hasta el martes 1 de septiembre de 2026 incluido; desde el miercoles 2 de septiembre abierto con este horario
+- Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€
