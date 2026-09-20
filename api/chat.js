@@ -194,6 +194,7 @@ PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centr
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
+- ⚠️ AVISO TEMPORAL: HOY domingo 20 de septiembre de 2026 Moraleja Green esta CERRADO por un imprevisto (no hay servicio ni pedidos online ese dia); si preguntan por Moraleja hoy, dilo con amabilidad y sugiere Mirasierra, Chamberi o Plaza Espana. Vuelve a su horario normal el miercoles 23.
 - Moraleja Green: L-M CERRADO | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 19:30-23:30 (solo cena; el jueves SI abre por la noche, pero NO a mediodia y sin menu del dia) | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
