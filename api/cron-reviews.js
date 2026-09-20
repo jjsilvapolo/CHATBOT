@@ -12,7 +12,7 @@
 
 const Anthropic = require("@anthropic-ai/sdk");
 const crypto = require("crypto");
-const { initDB, insertReviewIfNew, markReviewPublished, getKnowledgeSections, countPendingReviews } = require("./_db");
+const { initDB, insertReviewIfNew, markReviewPublished, getKnowledgeSections, countPendingReviews, getSQLInstance } = require("./_db");
 const { isAuthorizedCron } = require("./_auth");
 const gbp = require("./_gbp");
 
@@ -227,6 +227,14 @@ module.exports = async function handler(req, res) {
         if (daysAgo(rv.updateTime || rv.createTime) > MAX_AGE_DAYS) continue;
 
         rv.__localName = loc.name;
+        // 20/09 (queja Rodrigo «no paras de enviarme lo mismo»): una reseña que YA está en
+        // nuestra BD (borrador esperando aprobación, descartada o publicada) no se vuelve a
+        // redactar ni a incluir en el correo diario. El correo solo lleva reseñas NUEVAS;
+        // las pendientes se recuerdan una vez por semana (lunes) al final.
+        try {
+          var known = await getSQLInstance()`SELECT status FROM reviews WHERE review_id = ${rv.name} LIMIT 1`;
+          if (known.length > 0) continue;
+        } catch (e) { /* si falla la consulta, seguimos como antes */ }
         // anti-plantilla: las ultimas respuestas publicadas de ESTE local (de Google mismo)
         var prevReplies = reviews.filter(function (x) { return x.reviewReply && x.reviewReply.comment; })
           .slice(0, 10).map(function (x) { return String(x.reviewReply.comment).replace(/\s+/g, " ").slice(0, 160); });
@@ -326,10 +334,40 @@ module.exports = async function handler(req, res) {
       if (!emailRes.ok) console.error("Reviews email error:", emailRes.status, await emailRes.text().catch(function(){return ""}));
     }
 
+    // Recordatorio SEMANAL (lunes, Madrid) de las delicadas que siguen sin aprobar — solo si
+    // hoy no ha salido ya el correo de nuevas.
+    var recordatorio = false;
+    try {
+      var dow = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid", weekday: "short" });
+      var pendRows = await getSQLInstance()`SELECT review_id, location_name, rating, review_ts, comment, draft_reply FROM reviews WHERE status = 'draft' ORDER BY review_ts`;
+      if (dow === "Mon" && published.length === 0 && pendRows.length > 0 && RESEND_KEY) {
+        var SEC2 = process.env.CRON_SECRET || "";
+        var rows2 = pendRows.map(function (d) {
+          var tok2 = crypto.createHmac("sha256", SEC2).update(d.review_id).digest("hex").slice(0, 24);
+          var apr = "https://bot.burgerjazz.com/api/reviews?action=approve&id=" + encodeURIComponent(d.review_id) + "&t=" + tok2;
+          return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:12px"><div style="font-size:12px;color:#6b7280">' + escHTML(d.location_name || "") + ' · ' + "★".repeat(d.rating || 0) + ' · ' + String(d.review_ts || "").slice(0, 10) + '</div>' +
+            '<div style="font-size:13px;color:#374151;margin:6px 0">“' + escHTML(String(d.comment || "").slice(0, 400)) + '”</div>' +
+            '<div style="font-size:13px;background:#f9fafb;border-left:3px solid #d97706;padding:8px 12px;border-radius:0 8px 8px 0"><strong>Propuesta:</strong> ' + escHTML(d.draft_reply || "") + '</div>' +
+            '<div style="margin-top:10px"><a href="' + apr + '" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px">✓ Aprobar y publicar</a> <a href="https://bot.burgerjazz.com/dashboard.html#resenas" style="margin-left:8px;color:#374151;font-size:13px">Editar / descartar en el panel</a></div></div>';
+        }).join("");
+        var r2 = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + RESEND_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "BurgerJazz Reseñas <alertas@burgerjazz.com>",
+            to: ["rodrigo@burgerjazz.com"],
+            subject: "⭐ Recordatorio semanal: " + pendRows.length + " reseña(s) delicada(s) siguen sin respuesta",
+            html: '<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto"><p style="font-size:13px;color:#374151">Siguen esperando tu decisión (aprobar, editar o descartar). Este recordatorio sale solo los lunes; el resto de la semana solo te aviso de reseñas nuevas.</p>' + rows2 + '</div>',
+          }),
+        });
+        recordatorio = r2.ok;
+      }
+    } catch (e) { console.error("Reviews recordatorio error:", e && e.message); }
     return res.status(200).json({
       status: "ok",
       scanned: scanned,
       drafted: published.length,
+      recordatorio: recordatorio,
       errors: errors,
     });
   } catch (err) {
