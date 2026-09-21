@@ -300,14 +300,14 @@ async function buildSystemPrompt() {
   if (dayOfWeek === "miércoles") {
     timeContext += "HOY ES JAZZ DAY: 2x1 en burgers en TODOS los locales (solo dine-in/take-away).\n";
   }
-  // PROMO «Esta semana invita la casa» (23-27/09/2026, campaña CRM 21/09). Solo aparece esos dias.
+  // PROMO «Esta semana invita la casa» (24-29/09/2026, campaña CRM, pautas Rodrigo 21/09). Solo esos dias.
   var ymdMadrid = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" }); // YYYY-MM-DD
-  if (ymdMadrid >= "2026-09-23" && ymdMadrid <= "2026-09-27") {
-    timeContext += "PROMO ACTIVA 'ESTA SEMANA INVITA LA CASA' (hasta el domingo 27/09, SOLO con el codigo BJ-XXXX-XXXX que llego por email; SOLO en pedir.burgerjazz.com o en el kiosco del local, NUNCA en Glovo/Uber): "
-      + "en Valladolid, Mirasierra y Delicias el regalo es una BURGER GRATIS (la de menor precio del pedido) con pedido minimo de 10 EUR sin contar el regalo; "
-      + "en Chamberi, Plaza de Espana, Majadahonda, Pozuelo y La Moraleja el regalo es un MILKSHAKE GRATIS (vainilla de Madagascar, chocolate belga o affogato) al pedir una burger, minimo 10 EUR sin contar el regalo. "
-      + "Como canjear: web = escribir el codigo en el campo 'cupon' del checkout (el boton del email ya lo lleva); kiosco = ensenar el QR/codigo del email antes de pagar. Un regalo por pedido y por persona. "
-      + "Si no ha recibido el email, no se puede dar codigo desde el chat: la promo es solo para quien lo recibio. Valladolid estrena kiosco esta semana.\n";
+  if (ymdMadrid >= "2026-09-24" && ymdMadrid <= "2026-09-29") {
+    timeContext += "PROMO ACTIVA 'ESTA SEMANA INVITA LA CASA' (del jueves 24 al martes 29/09, SOLO con el codigo personal BJ-XXXX-XXXX que llego por email con un ticket de turno amarillo; SOLO en pedir.burgerjazz.com o en el kiosco del local, NUNCA en Glovo/Uber; en TODOS los locales): "
+      + "con pedido de 15 EUR o mas (sin contar el regalo) → un MILKSHAKE GRATIS (vainilla de Madagascar o chocolate belga, 5,90); "
+      + "con pedido de 20 EUR o mas → una BASIC JAZZ GRATIS (9,95) o el milkshake, lo que el cliente haya metido en el pedido (si lleva las dos cosas y llega a 20, sale gratis la Basic). Nunca los dos regalos. "
+      + "Como canjear: web = escribir el codigo en el campo 'cupon' del checkout (el boton del email ya lo lleva); kiosco = ensenar el email o teclear el codigo antes de pagar. Un codigo por persona y un regalo por pedido; no acumulable con otros codigos ni con el 2x1. "
+      + "Si no ha recibido el email, no se puede dar codigo desde el chat: la promo es solo para quien lo recibio. El miercoles 30 ya no vale (ese dia es Jazz Day 2x1).\n";
   }
   // Menu del dia check (cierres de agosto 2026 ya expirados y retirados 01/09)
   if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
