@@ -300,6 +300,15 @@ async function buildSystemPrompt() {
   if (dayOfWeek === "miércoles") {
     timeContext += "HOY ES JAZZ DAY: 2x1 en burgers en TODOS los locales (solo dine-in/take-away).\n";
   }
+  // PROMO «Esta semana invita la casa» (23-27/09/2026, campaña CRM 21/09). Solo aparece esos dias.
+  var ymdMadrid = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" }); // YYYY-MM-DD
+  if (ymdMadrid >= "2026-09-23" && ymdMadrid <= "2026-09-27") {
+    timeContext += "PROMO ACTIVA 'ESTA SEMANA INVITA LA CASA' (hasta el domingo 27/09, SOLO con el codigo BJ-XXXX-XXXX que llego por email; SOLO en pedir.burgerjazz.com o en el kiosco del local, NUNCA en Glovo/Uber): "
+      + "en Valladolid, Mirasierra y Delicias el regalo es una BURGER GRATIS (la de menor precio del pedido) con pedido minimo de 10 EUR sin contar el regalo; "
+      + "en Chamberi, Plaza de Espana, Majadahonda, Pozuelo y La Moraleja el regalo es un MILKSHAKE GRATIS (vainilla de Madagascar, chocolate belga o affogato) al pedir una burger, minimo 10 EUR sin contar el regalo. "
+      + "Como canjear: web = escribir el codigo en el campo 'cupon' del checkout (el boton del email ya lo lleva); kiosco = ensenar el QR/codigo del email antes de pagar. Un regalo por pedido y por persona. "
+      + "Si no ha recibido el email, no se puede dar codigo desde el chat: la promo es solo para quien lo recibio. Valladolid estrena kiosco esta semana.\n";
+  }
   // Menu del dia check (cierres de agosto 2026 ya expirados y retirados 01/09)
   if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
     timeContext += "MENU DEL DIA DISPONIBLE AHORA: 10,90€ (burger+patatas+bebida). IMPORTANTE: solo en los locales que estan abiertos hoy, consulta los horarios antes de confirmar.\n";
