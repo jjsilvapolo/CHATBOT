@@ -193,7 +193,7 @@ PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centr
 - Delicias: TODOS LOS DIAS · L-M SOLO CENA 19:30-23:30 (lunes y martes NO abre a mediodia) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
-- Mirasierra (Fermin Caballero): LUNES SOLO CENA 19:30-23:30 (no abre a mediodia) | M-D 12:30-16:00 y 19:30-23:30 (desde el 21 de septiembre de 2026 abre tambien lunes y martes)
+- Mirasierra (Fermin Caballero): LUNES SOLO CENA 19:30-23:30 (no abre a mediodia) | M-D 12:30-16:00 y 19:30-23:30
 - Moraleja Green: L-M CERRADO | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 19:30-23:30 (solo cena; el jueves SI abre por la noche, pero NO a mediodia y sin menu del dia) | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
