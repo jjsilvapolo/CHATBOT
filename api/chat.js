@@ -104,9 +104,9 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - REGLA CRITICA: Si el cliente pregunta por horarios, menu del dia, o si un local esta abierto, SIEMPRE pregunta PRIMERO a que local quiere ir si no lo ha dicho. Cada local tiene horarios DIFERENTES y varios cierran lunes y martes.
 - Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
-- IMPORTANTE: Pozuelo, Mirasierra, Moraleja Green y Valladolid cierran lunes y martes. Avisalo si preguntan por esos dias.
+- IMPORTANTE: Pozuelo, Moraleja Green y Valladolid cierran lunes y martes; Mirasierra los lunes abre SOLO de cena (19:30-23:30) y los martes completo. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana y Majadahonda (abren a mediodia todos los dias); de MIERCOLES A VIERNES lo tienen ademas Delicias, Mirasierra, Pozuelo y Valladolid (Delicias los lunes y martes solo abre de cena, sin menu del dia esos dos dias); Moraleja Green SOLO los miercoles (los jueves abre solo de cena, sin menu del dia; viernes su horario es continuo desde las 14:00, sin menu del dia).
+- REGLA MENU DEL DIA: Cuando pregunten por el menu del dia, SIEMPRE pregunta PRIMERO "¿A que local irias?" porque la disponibilidad varia por local y dia. El menu del dia es SOLO de lunes a viernes y SOLO en horario de comida (hasta ~16:00; NUNCA en cenas ni fines de semana). Por local (horarios vigentes desde el 31 de agosto de 2026): LUNES Y MARTES lo tienen Chamberi, Plaza Espana y Majadahonda (abren a mediodia todos los dias); Mirasierra lo tiene de MARTES a viernes (los lunes solo abre de cena, sin menu del dia); de MIERCOLES A VIERNES lo tienen ademas Delicias, Pozuelo y Valladolid (Delicias los lunes y martes solo abre de cena, sin menu del dia esos dos dias); Moraleja Green SOLO los miercoles (los jueves abre solo de cena, sin menu del dia; viernes su horario es continuo desde las 14:00, sin menu del dia).
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
 - Da el local mas cercano si mencionan zona/barrio.
@@ -193,7 +193,7 @@ PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centr
 - Delicias: TODOS LOS DIAS · L-M SOLO CENA 19:30-23:30 (lunes y martes NO abre a mediodia) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
-- Mirasierra (Fermin Caballero): L-M CERRADO | X-D 12:30-16:00 y 19:30-23:30
+- Mirasierra (Fermin Caballero): LUNES SOLO CENA 19:30-23:30 (no abre a mediodia) | M-D 12:30-16:00 y 19:30-23:30 (desde el 21 de septiembre de 2026 abre tambien lunes y martes)
 - Moraleja Green: L-M CERRADO | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 19:30-23:30 (solo cena; el jueves SI abre por la noche, pero NO a mediodia y sin menu del dia) | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
@@ -319,7 +319,7 @@ async function buildSystemPrompt() {
   }
   // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Mirasierra, Moraleja Green y Valladolid. Chamberi, Plaza Espana y Majadahonda abren dia completo (comida y cena); Delicias abre SOLO de cena (19:30-23:30), no a mediodia.\n";
+    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Moraleja Green y Valladolid. Chamberi, Plaza Espana y Majadahonda abren dia completo (comida y cena); Delicias abre SOLO de cena (19:30-23:30), no a mediodia; Mirasierra " + (dayOfWeek === "lunes" ? "abre SOLO de cena (19:30-23:30)" : "abre dia completo (12:30-16:00 y 19:30-23:30)") + ".\n";
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
@@ -501,8 +501,8 @@ function getOfflineFallback(text, category) {
     "delicias": "TODOS LOS DIAS: L-M solo cena 19:30-23:30 (no abre a mediodia), X-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
     "majadahonda": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
     "pozuelo": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30",
-    "mirasierra": "L-M CERRADO, X-D 12:30-16:00 y 19:30-23:30",
-    "fermin caballero": "L-M CERRADO, X-D 12:30-16:00 y 19:30-23:30",
+    "mirasierra": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
+    "fermin caballero": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
     "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
     "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
     "valladolid": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30"
