@@ -110,7 +110,7 @@ CASO 5: HORARIOS Y MENU DEL DIA
   · LUNES: Chamberi, Plaza Espana, Majadahonda.
   · MARTES: Chamberi, Plaza Espana, Majadahonda, Mirasierra.
   · MIERCOLES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid, Moraleja Green.
-  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid (Moraleja NO: los jueves solo abre de cena).
+  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid y Moraleja (desde el 24/09 Moraleja abre tambien a mediodia los jueves).
   · VIERNES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid (Moraleja NO: horario continuo desde las 14:00).
   · SABADO y DOMINGO: en ningun local.
 
@@ -196,7 +196,7 @@ const KNOWLEDGE_SEED = [
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in y delivery via Glovo/Uber; ⚠️ los PEDIDOS ONLINE de recogida estan CERRADOS temporalmente en este local: no mandes a nadie a pedir alli por la web) — CARTA REDUCIDA: solo BASIC JAZZ, BURGER JAZZ y ROYAL JAZZ (no hay Blue Jazz ni Bacon Cheese); patatas solo Basic y Spicy; salsas solo Ketchup, Mostaza y Salsa Burger — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
+7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber; los pedidos online de recogida en pedir.burgerjazz.com VUELVEN A ESTAR ABIERTOS desde el 24/09) — CARTA REDUCIDA: solo BASIC JAZZ, BURGER JAZZ y ROYAL JAZZ (no hay Blue Jazz ni Bacon Cheese); patatas solo Basic y Spicy; salsas solo Ketchup, Mostaza y Salsa Burger — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
 8. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
@@ -208,7 +208,7 @@ PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centr
 - Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
 - Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 - Mirasierra (Fermin Caballero): LUNES SOLO CENA 19:30-23:30 (no abre a mediodia) | M-D 12:30-16:00 y 19:30-23:30
-- Moraleja Green: CERRADO LUNES Y MARTES ENTEROS (si preguntan un lunes, reabre el MIERCOLES, no el martes) | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 19:30-23:30 (solo cena; el jueves SI abre por la noche, pero NO a mediodia y sin menu del dia) | V-D 14:00-23:00 (continuo)
+- Moraleja Green: CERRADO LUNES Y MARTES ENTEROS (si preguntan un lunes, reabre el MIERCOLES, no el martes) | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 12:30-16:00 y 19:30-23:30 (desde el 24/09 abre comida y cena) | V-D 14:00-23:00 (continuo)
 - Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
@@ -522,8 +522,8 @@ function getOfflineFallback(text, category) {
     "pozuelo": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30",
     "mirasierra": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
     "fermin caballero": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
-    "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
-    "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 19:30-23:30 (solo cena), V-D 14:00-23:00",
+    "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
+    "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
     "valladolid": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30"
   };
 
