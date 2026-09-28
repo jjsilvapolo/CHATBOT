@@ -104,14 +104,14 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - REGLA CRITICA: Si el cliente pregunta por horarios, menu del dia, o si un local esta abierto, SIEMPRE pregunta PRIMERO a que local quiere ir si no lo ha dicho. Cada local tiene horarios DIFERENTES y varios cierran lunes y martes.
 - Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
-- IMPORTANTE: Pozuelo, Moraleja Green y Valladolid cierran lunes y martes; Mirasierra los lunes abre SOLO de cena (19:30-23:30) y los martes completo. Avisalo si preguntan por esos dias.
-- MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta 16:00). NO fines de semana, NO cenas, NO delivery.
-- REGLA MENU DEL DIA: el menu del dia (10,90€) es SOLO de lunes a viernes y SOLO a mediodia (hasta ~16:00): nunca en cenas ni fines de semana. Solo lo hay donde el local ABRE a mediodia ese dia. Si no dicen el local, pregunta "¿A que local irias?". TABLA EXACTA por dia (usala tal cual, no deduzcas):
+- IMPORTANTE: Pozuelo, Moraleja Green, Valladolid, Delicias y Mirasierra cierran lunes y martes (enteros). Solo Chamberi, Plaza Espana y Majadahonda abren lunes y martes. Avisalo si preguntan por esos dias.
+- MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta las 15:45). NO fines de semana, NO cenas, NO delivery.
+- REGLA MENU DEL DIA: el menu del dia (10,90€) es SOLO de lunes a viernes y SOLO a mediodia (hasta las 15:45): nunca en cenas ni fines de semana. Solo lo hay donde el local ABRE a mediodia ese dia. Si no dicen el local, pregunta "¿A que local irias?". TABLA EXACTA por dia (usala tal cual, no deduzcas):
   · LUNES: Chamberi, Plaza Espana, Majadahonda.
-  · MARTES: Chamberi, Plaza Espana, Majadahonda, Mirasierra.
+  · MARTES: Chamberi, Plaza Espana, Majadahonda.
   · MIERCOLES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid, Moraleja Green.
-  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid y Moraleja (desde el 24/09 Moraleja abre tambien a mediodia los jueves).
-  · VIERNES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid (Moraleja NO: horario continuo desde las 14:00).
+  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid y Moraleja Green.
+  · VIERNES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid (Moraleja NO: horario continuo desde las 14:15).
   · SABADO y DOMINGO: en ningun local.
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
@@ -201,19 +201,19 @@ const KNOWLEDGE_SEED = [
 CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
 PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centro comercial; Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
-  { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 31 de agosto de 2026):
-- Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
-- Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-16:00 y 19:30-23:00 | V-D 12:30-16:30 y 19:30-0:00
-- Delicias: TODOS LOS DIAS · L-M SOLO CENA 19:30-23:30 (lunes y martes NO abre a mediodia) | X-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
-- Majadahonda: TODOS LOS DIAS · L-J 12:00-16:00 y 19:30-23:30 | V-D 12:00-16:30 y 19:30-0:00
-- Pozuelo: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
-- Mirasierra (Fermin Caballero): LUNES SOLO CENA 19:30-23:30 (no abre a mediodia) | M-D 12:30-16:00 y 19:30-23:30
-- Moraleja Green: CERRADO LUNES Y MARTES ENTEROS (si preguntan un lunes, reabre el MIERCOLES, no el martes) | MIERCOLES 12:30-16:00 (solo comida; el miercoles NO abre de cena) | JUEVES 12:30-16:00 y 19:30-23:30 (desde el 24/09 abre comida y cena) | V-D 14:00-23:00 (continuo)
-- Valladolid: L-M CERRADO | X-D 12:00-16:00 y 19:30-23:30
+  { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 28 de septiembre de 2026):
+- Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
+- Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
+- Majadahonda: TODOS LOS DIAS · L-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
+- Delicias: L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
+- Mirasierra (Fermin Caballero): L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
+- Pozuelo: L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-15:45 y 19:30-23:45
+- Valladolid: L-M CERRADO | X-D 12:30-15:45 y 19:30-23:15
+- Moraleja Green: CERRADO LUNES Y MARTES ENTEROS (si preguntan un lunes, reabre el MIERCOLES, no el martes) | MIERCOLES 12:30-15:45 (solo comida; el miercoles NO abre de cena) | JUEVES 12:30-15:45 y 19:30-23:15 | V-D 14:15-22:45 (continuo)
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€ — en el kiosco y la web aparece como "BC Jazz": es la misma
-COMBOS: COMBO JAZZ SOLO (burger a elegir entre Burger Jazz, Royal, Blue o Bacon Cheese + patatas + bebida) 18,95€ | COMBO BASIC (Basic Jazz + patatas + bebida) 15,00€ | MENU DEL DIA (burger a elegir entre las 5 de la carta + patatas + bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 16:00 aprox.), SOLO en local (dine-in/take-away) o pick-up online. NO disponible en cenas, fines de semana, ni en delivery.
+COMBOS: COMBO JAZZ SOLO (burger a elegir entre Burger Jazz, Royal, Blue o Bacon Cheese + patatas + bebida) 18,95€ | COMBO BASIC (Basic Jazz + patatas + bebida) 15,00€ | MENU DEL DIA (burger a elegir entre las 5 de la carta + patatas + bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 15:45), SOLO en local (dine-in/take-away) o pick-up online. NO disponible en cenas, fines de semana, ni en delivery.
 PATATAS: Basic 3,90€ | Spicy 4,20€ | Bacon Cheese 5,90€ | Truffle 5,90€
 SALSAS: Ketchup 1,00€ | Mostaza 1,00€ | Salsa Burger (salsa BJ) 1,50€ | Cheddar ahumado 1,50€ | Smokey BBQ 1,50€ | Salsa Emmy (mayo con sesamo negro y chile coreano) 1,50€ | Mayo "Old Beef" (mayo de fondo de carne y pimienta) 1,50€ | Mayo trufa 1,90€. OJO: no todos los locales tienen todas las salsas sueltas (Moraleja Green solo Ketchup, Mostaza y Salsa Burger) — si dudan, que lo miren al pedir.
 BEBIDAS: Coca-Cola, Coca-Cola Zero y Nestea 3,00€ | Agua Fuenteliviana 2,50€ | Cerveza Victoria 4,00€ | Mahou 0,0 Tostada 4,00€ (esta ultima solo en Chamberi, Delicias, Pozuelo y Mirasierra)
@@ -270,7 +270,7 @@ Las incidencias de pedidos de Glovo/Uber las gestiona la plataforma desde su app
 - Si el cliente pregunta por promos en Glovo o Uber Eats, responde: "Las promos de Glovo y Uber las gestionan ellos directamente, consultalas en la app."
 - JAZZ DAYS: miercoles 2x1 en BURGERS DE CARTA (Basic, Burger, Royal, Blue, Bacon Cheese) en todos los locales activos. Solo dine-in y take-away, NO en delivery (Glovo/Uber).
 - El 2x1 NO se aplica al MENU DEL DIA ni a los combos (Jazz Solo, Basic) ni a packs: son ofertas que ya llevan descuento. Si preguntan, dilo claro y sin rodeos.
-- El 2x1 solo vale si el local esta ABIERTO a esa hora: los miercoles Moraleja Green solo abre a mediodia (12:30-16:00), asi que alli no hay 2x1 de cena.
+- El 2x1 solo vale si el local esta ABIERTO a esa hora: los miercoles Moraleja Green solo abre a mediodia (12:30-15:45), asi que alli no hay 2x1 de cena.
 - FIDELIZACION ACTUAL: tarjeta de sellos (10º menu del dia gratis) — ver seccion FIDELIZACION. CUPONES por email BJ-XXXX-XXXX — ver seccion CUPONES.
 - El programa ANTIGUO JazzFrienzz (app de puntos) ya no existe: SOLO sus puntos y cupones antiguos (anteriores a julio 2026) dejaron de funcionar y no se recuperan. No confundas un cupon BJ-XXXX-XXXX actual con JazzFrienzz.` },
   { key: "pagos", title: "Pagos y Otros", content: `PAGOS: Tarjeta (Visa/Mastercard), efectivo, Apple Pay, Google Pay. NO aceptamos Bizum. NO aceptamos vales ni tarjetas restaurante (Sodexo, Ticket Restaurant, Edenred, Pluxee...): dilo claro y con amabilidad. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
@@ -332,13 +332,13 @@ async function buildSystemPrompt() {
   if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
     timeContext += "MENU DEL DIA DISPONIBLE AHORA: 10,90€ (burger+patatas+bebida). IMPORTANTE: solo en los locales que estan abiertos hoy, consulta los horarios antes de confirmar.\n";
   } else if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek)) {
-    timeContext += "MENU DEL DIA HOY: 10,90€ pero solo en horario de comidas (mediodia, hasta las 16:00). Ahora mismo no esta disponible.\n";
+    timeContext += "MENU DEL DIA HOY: 10,90€ pero solo en horario de comidas (mediodia, hasta las 15:45). Ahora mismo no esta disponible.\n";
   } else {
     timeContext += "HOY NO HAY MENU DEL DIA (solo disponible de lunes a viernes en horario de comidas).\n";
   }
   // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Moraleja Green y Valladolid. Chamberi, Plaza Espana y Majadahonda abren dia completo (comida y cena); Delicias abre SOLO de cena (19:30-23:30), no a mediodia; Mirasierra " + (dayOfWeek === "lunes" ? "abre SOLO de cena (19:30-23:30)" : "abre dia completo (12:30-16:00 y 19:30-23:30)") + ".\n";
+    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Moraleja Green, Valladolid, Delicias y Mirasierra. Solo abren Chamberi, Plaza Espana y Majadahonda, dia completo (12:30-15:45 y 19:30-23:15).\n";
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
@@ -512,19 +512,19 @@ function getOfflineFallback(text, category) {
   var t = (text || "").toLowerCase();
   // Schedule data
   var schedules = {
-    // Fuente: seccion "horarios" del KNOWLEDGE_SEED (tabla septiembre 2026). Mantener sincronizado.
-    "chamberi": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
-    "modesto lafuente": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
-    "plaza espana": "TODOS LOS DIAS: L-J 12:30-16:00 y 19:30-23:00, V-D 12:30-16:30 y 19:30-0:00",
-    "fomento": "TODOS LOS DIAS: L-J 12:30-16:00 y 19:30-23:00, V-D 12:30-16:30 y 19:30-0:00",
-    "delicias": "TODOS LOS DIAS: L-M solo cena 19:30-23:30 (no abre a mediodia), X-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
-    "majadahonda": "TODOS LOS DIAS: L-J 12:00-16:00 y 19:30-23:30, V-D 12:00-16:30 y 19:30-0:00",
-    "pozuelo": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30",
-    "mirasierra": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
-    "fermin caballero": "L solo cena 19:30-23:30, M-D 12:30-16:00 y 19:30-23:30",
-    "moraleja": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
-    "moraleja green": "L-M CERRADO, X 12:30-16:00 (solo comida), J 12:30-16:00 y 19:30-23:30, V-D 14:00-23:00",
-    "valladolid": "L-M CERRADO, X-D 12:00-16:00 y 19:30-23:30"
+    // Fuente: seccion "horarios" del KNOWLEDGE_SEED (horarios 28/09/2026). Mantener sincronizado.
+    "chamberi": "TODOS LOS DIAS: L-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "modesto lafuente": "TODOS LOS DIAS: L-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "plaza espana": "TODOS LOS DIAS: L-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "fomento": "TODOS LOS DIAS: L-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "majadahonda": "TODOS LOS DIAS: L-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "delicias": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "mirasierra": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "fermin caballero": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
+    "pozuelo": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-15:45 y 19:30-23:45",
+    "valladolid": "L-M CERRADO, X-D 12:30-15:45 y 19:30-23:15",
+    "moraleja": "L-M CERRADO, X 12:30-15:45 (solo comida), J 12:30-15:45 y 19:30-23:15, V-D 14:15-22:45",
+    "moraleja green": "L-M CERRADO, X 12:30-15:45 (solo comida), J 12:30-15:45 y 19:30-23:15, V-D 14:15-22:45"
   };
 
   if (category === "horarios") {
