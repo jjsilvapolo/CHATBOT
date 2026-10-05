@@ -328,6 +328,16 @@ async function buildSystemPrompt() {
       + "Como canjear: web = escribir el codigo en el campo 'cupon' del checkout (el boton del email ya lo lleva); kiosco = ensenar el email o teclear el codigo antes de pagar. Un codigo por persona y un regalo por pedido; no acumulable con otros codigos ni con el 2x1. "
       + "Si no ha recibido el email, no se puede dar codigo desde el chat: la promo es solo para quien lo recibio. El miercoles 30 ya no vale (ese dia es Jazz Day 2x1).\n";
   }
+  // CUESTIONARIO DE OCTUBRE (06-11/10/2026, campaña CRM, pautas Rodrigo 05/10). Solo esos dias.
+  if (ymdMadrid >= "2026-10-06" && ymdMadrid <= "2026-10-11") {
+    timeContext += "PROMO ACTIVA 'CUESTIONARIO DE OCTUBRE' (del martes 6 al domingo 11/10): quien recibio el email 'Un minuto de tu opinion' y contesta el cuestionario (8 preguntas de un toque, con el enlace personal de ese email) recibe POR EMAIL un codigo personal BJ-XXXX-XXXX que invita a una BASIC JAZZ GRATIS (9,95) con pedido de 20 EUR o mas (sin contar la Basic de regalo). "
+      + "El codigo NO se ensena en la pantalla del cuestionario: llega por correo al terminar (si no aparece, mirar en Promociones o spam). Un cuestionario y un codigo por persona. "
+      + "Vale hasta el domingo 11/10 incluido, en TODOS los locales, SOLO en pedir.burgerjazz.com o en el kiosco del local, NUNCA en Glovo/Uber. "
+      + "Como canjear: hay que anadir una Basic Jazz al pedido (es el regalo); web = escribir el codigo en el campo 'cupon' del checkout (el boton del email ya lo lleva); kiosco = ensenar el QR del email en el lector antes de pagar. Un codigo por pedido; no acumulable con otros codigos; el miercoles, lo que regala el 2x1 no cuenta para llegar a los 20 EUR. "
+      + "El codigo SOLO regala la Basic Jazz: no vale para otra burger, ni para un combo, ni para el menu del dia. "
+      + "La burger de la foto de ese email es una novedad que TODAVIA NO esta en carta: no hay fecha, precio ni mas detalles que dar, y la invitacion NO es a esa burger. No inventes nada sobre ella; di que lo anunciaremos por email. "
+      + "Si no ha recibido el email del cuestionario, no se puede dar codigo desde el chat.\n";
+  }
   // Menu del dia check (cierres de agosto 2026 ya expirados y retirados 01/09)
   if (["lunes", "martes", "miércoles", "jueves", "viernes"].includes(dayOfWeek) && hour >= 12 && hour < 16) {
     timeContext += "MENU DEL DIA DISPONIBLE AHORA: 10,90€ (burger+patatas+bebida). IMPORTANTE: solo en los locales que estan abiertos hoy, consulta los horarios antes de confirmar.\n";
