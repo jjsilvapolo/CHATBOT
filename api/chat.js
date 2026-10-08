@@ -196,7 +196,9 @@ const KNOWLEDGE_SEED = [
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
 7. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
-CERRADOS (ya no operativos; si preguntan por ellos, di que estan cerrados y recomienda el local abierto mas cercano: para Moraleja Green y Alcobendas, Mirasierra): Moraleja Green (CC Moraleja Green, Av. de Europa, 13; tampoco hace recogida ni delivery), Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
+LOCALES ABIERTOS: 7 en total = 6 en Madrid (Chamberi, Plaza Espana, Delicias, Majadahonda, Pozuelo, Mirasierra) + 1 en Valladolid.
+MORALEJA GREEN (CC Moraleja Green, Av. de Europa, 13): CERRADO, sin sala, recogida ni delivery. NO digas desde cuando ni el motivo: solo que esta cerrado, y recomienda Mirasierra (el mas cercano).
+CERRADOS (ya no operativos; si preguntan por ellos, di que estan cerrados y recomienda el local abierto mas cercano; para Alcobendas, Mirasierra): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
 PARKING (segun ficha de Google): Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 28 de septiembre de 2026):
@@ -540,7 +542,7 @@ function getOfflineFallback(text, category) {
     for (var loc in schedules) {
       if (t.includes(loc)) return "El horario de " + loc.charAt(0).toUpperCase() + loc.slice(1) + " es: " + schedules[loc] + ". Para mas info consulta nuestra web burgerjazz.com";
     }
-    return "Tenemos 7 locales en Madrid y Valladolid. Dime cual te interesa y te doy el horario exacto. Puedes verlos todos en burgerjazz.com";
+    return "Tenemos 7 locales: 6 en Madrid y 1 en Valladolid. Dime cual te interesa y te doy el horario exacto. Puedes verlos todos en burgerjazz.com";
   }
   if (category === "carta") {
     return "Nuestras burgers: BASIC JAZZ 9,95€, BURGER JAZZ 13,95€, ROYAL JAZZ 13,95€, BLUE JAZZ 13,95€, BACON CHEESE JAZZ 13,95€. Combo Jazz Solo 18,95€, Combo Basic 15€. Menu del Dia 10,90€ (L-V comidas, solo en local). Toda la carta en burgerjazz.com/menu";
