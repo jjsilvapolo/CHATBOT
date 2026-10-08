@@ -104,14 +104,14 @@ CASO 5: HORARIOS Y MENU DEL DIA
 - REGLA CRITICA: Si el cliente pregunta por horarios, menu del dia, o si un local esta abierto, SIEMPRE pregunta PRIMERO a que local quiere ir si no lo ha dicho. Cada local tiene horarios DIFERENTES y varios cierran lunes y martes.
 - Usa los horarios exactos de la seccion HORARIOS de la base de conocimiento. Da el horario del local concreto que pregunte.
 - Si no especifica local, pregunta cual le interesa.
-- IMPORTANTE: Pozuelo, Moraleja Green, Valladolid, Delicias y Mirasierra cierran lunes y martes (enteros). Solo Chamberi, Plaza Espana y Majadahonda abren lunes y martes. Avisalo si preguntan por esos dias.
+- IMPORTANTE: Pozuelo, Valladolid, Delicias y Mirasierra cierran lunes y martes (enteros). Solo Chamberi, Plaza Espana y Majadahonda abren lunes y martes. Avisalo si preguntan por esos dias.
 - MENU DEL DIA: 10,90€ (burger + patatas + bebida). SOLO de lunes a viernes en horario de comidas (hasta las 15:45). NO fines de semana, NO cenas, NO delivery.
 - REGLA MENU DEL DIA: el menu del dia (10,90€) es SOLO de lunes a viernes y SOLO a mediodia (hasta las 15:45): nunca en cenas ni fines de semana. Solo lo hay donde el local ABRE a mediodia ese dia. Si no dicen el local, pregunta "¿A que local irias?". TABLA EXACTA por dia (usala tal cual, no deduzcas):
   · LUNES: Chamberi, Plaza Espana, Majadahonda.
   · MARTES: Chamberi, Plaza Espana, Majadahonda.
-  · MIERCOLES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid, Moraleja Green.
-  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid y Moraleja Green.
-  · VIERNES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid (Moraleja NO: horario continuo desde las 14:15).
+  · MIERCOLES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid.
+  · JUEVES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid.
+  · VIERNES: Chamberi, Plaza Espana, Majadahonda, Mirasierra, Delicias, Pozuelo, Valladolid.
   · SABADO y DOMINGO: en ningun local.
 
 CASO 6: LOCALIZACION / DONDE ESTAMOS
@@ -125,7 +125,6 @@ CASO 6: LOCALIZACION / DONDE ESTAMOS
   - Majadahonda: https://www.google.com/maps/search/BurgerJazz+Majadahonda
   - Pozuelo: https://www.google.com/maps/search/BurgerJazz+Pozuelo
   - Mirasierra: https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-  - Moraleja Green: https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
   - Valladolid: https://www.google.com/maps/search/BurgerJazz+Valladolid
 
 CASO 7: DUDAS SOBRE PRODUCTO
@@ -196,11 +195,10 @@ const KNOWLEDGE_SEED = [
 4. Majadahonda - Av. de los Reyes Catolicos, 8 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Majadahonda
 5. Pozuelo - C/ Atenas, 2 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Pozuelo
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
-7. Moraleja Green - Av. de Europa, 13, CC Moraleja Green (Dine-in, Pick-up y delivery via Glovo/Uber; los pedidos online de recogida en pedir.burgerjazz.com estan ABIERTOS de nuevo desde el 29/09, en su horario: X comida, J comida y cena, V-D continuo; lunes y martes cerrado) — CARTA REDUCIDA: solo BASIC JAZZ, BURGER JAZZ y ROYAL JAZZ (no hay Blue Jazz ni Bacon Cheese); patatas solo Basic y Spicy; salsas solo Ketchup, Mostaza y Salsa Burger — https://www.google.com/maps/search/BurgerJazz+Moraleja+Green
-8. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
-CERRADOS (ya no operativos): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
+7. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
+CERRADOS (ya no operativos; si preguntan por ellos, di que estan cerrados y recomienda el local abierto mas cercano: para Moraleja Green y Alcobendas, Mirasierra): Moraleja Green (CC Moraleja Green, Av. de Europa, 13; tampoco hace recogida ni delivery), Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
-PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centro comercial; Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
+PARKING (segun ficha de Google): Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
   { key: "horarios", title: "Horarios", content: `HORARIOS POR LOCAL (vigentes desde el 28 de septiembre de 2026):
 - Chamberi (Modesto Lafuente): TODOS LOS DIAS · L-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
 - Plaza Espana (Fomento): TODOS LOS DIAS · L-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
@@ -209,13 +207,13 @@ PARKING (segun ficha de Google): Moraleja Green tiene parking GRATUITO del centr
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
 - Pozuelo: L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-15:45 y 19:30-23:45
 - Valladolid: L-M CERRADO | X-D 12:30-15:45 y 19:30-23:15
-- Moraleja Green: CERRADO LUNES Y MARTES ENTEROS (si preguntan un lunes, reabre el MIERCOLES, no el martes) | MIERCOLES 12:30-15:45 (solo comida; el miercoles NO abre de cena) | JUEVES 12:30-15:45 y 19:30-23:15 | V-D 14:15-22:45 (continuo)
+- Moraleja Green: CERRADO, el local ya no abre ningun dia (ni sala, ni recogida, ni delivery). El mas cercano es Mirasierra.
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€ — en el kiosco y la web aparece como "BC Jazz": es la misma
 COMBOS: COMBO JAZZ SOLO (burger a elegir entre Burger Jazz, Royal, Blue o Bacon Cheese + patatas + bebida) 18,95€ | COMBO BASIC (Basic Jazz + patatas + bebida) 15,00€ | MENU DEL DIA (burger a elegir entre las 5 de la carta + patatas + bebida) 10,90€ — SOLO de lunes a viernes en HORARIO DE COMIDAS (hasta las 15:45), SOLO en local (dine-in/take-away) o pick-up online. NO disponible en cenas, fines de semana, ni en delivery.
 PATATAS: Basic 3,90€ | Spicy 4,20€ | Bacon Cheese 5,90€ | Truffle 5,90€
-SALSAS: Ketchup 1,00€ | Mostaza 1,00€ | Salsa Burger (salsa BJ) 1,50€ | Cheddar ahumado 1,50€ | Smokey BBQ 1,50€ | Salsa Emmy (mayo con sesamo negro y chile coreano) 1,50€ | Mayo "Old Beef" (mayo de fondo de carne y pimienta) 1,50€ | Mayo trufa 1,90€. OJO: no todos los locales tienen todas las salsas sueltas (Moraleja Green solo Ketchup, Mostaza y Salsa Burger) — si dudan, que lo miren al pedir.
+SALSAS: Ketchup 1,00€ | Mostaza 1,00€ | Salsa Burger (salsa BJ) 1,50€ | Cheddar ahumado 1,50€ | Smokey BBQ 1,50€ | Salsa Emmy (mayo con sesamo negro y chile coreano) 1,50€ | Mayo "Old Beef" (mayo de fondo de carne y pimienta) 1,50€ | Mayo trufa 1,90€.
 BEBIDAS: Coca-Cola, Coca-Cola Zero y Nestea 3,00€ | Agua Fuenteliviana 2,50€ | Cerveza Victoria 4,00€ | Mahou 0,0 Tostada 4,00€ (esta ultima solo en Chamberi, Delicias, Pozuelo y Mirasierra)
 BATIDOS (5,90€): Chocolate Belga, Vainilla de Madagascar (leche malteada)
 POSTRES (5,50€): Choco Candy Jazz, Pistachio Candy Jazz
@@ -251,7 +249,7 @@ KETCHUP: sin alergenos declarados
 - Alta: SOLO en esta direccion, escribela SIEMPRE tal cual y sin cambiar ni una letra: factura.burgerjazz.com/tarjeta (OJO: es "factura", NO "facturacion"; facturacion@burgerjazz.com es el correo de facturas, no la tarjeta) (o escaneando el QR de la portada del kiosco de cualquier local). Se puede guardar en Google Wallet / Apple Wallet o como icono en el movil.
 - Como sumar sellos: en el KIOSCO de autoservicio del local, escanea el QR de tu tarjeta en el lector de la parte inferior del kiosco ANTES de pagar. Si pides el menu del dia online en pedir.burgerjazz.com con el mismo email de la tarjeta, el sello se suma solo.
 - El 10º menu gratis se aplica automaticamente en el kiosco al escanear la tarjeta; la tarjeta vuelve a empezar.
-- Kioscos disponibles en: Plaza Espana, Delicias, Majadahonda, Pozuelo y Mirasierra (Chamberi, Moraleja y Valladolid todavia sin kiosco: alli suman sellos solo los pedidos online).
+- Kioscos disponibles en: Plaza Espana, Delicias, Majadahonda, Pozuelo y Mirasierra (Chamberi y Valladolid todavia sin kiosco: alli suman sellos solo los pedidos online).
 - INVITA A UN AMIGO (referral de tarjetas): quien tiene tarjeta con correo ve en su tarjeta (y en el correo de alta) el boton "Invitar por WhatsApp". Su amigo se hace la tarjeta con ese enlace y tiene que ABRIR EL CORREO que le llega y pulsar "Abrir mi tarjeta": en ese momento recibe su sello de regalo (NO HAY PLAZO: puede hacerlo cuando quiera, y a los 3 dias le llega un recordatorio con el mismo boton). Cuando el amigo pide su PRIMER MENU DEL DIA y escanea su tarjeta antes de pagar, quien le invito recibe su sello (1). Sin menu del dia pagado del amigo, quien invita no cobra. Maximo 3 amigos premiados al mes por persona. El amigo tiene que hacerse la tarjeta CON EL ENLACE (si se la hace por su cuenta en el kiosco no cuenta como invitado). Si alguien pregunta por que no le han llegado los sellos: si es el AMIGO quien pregunta, aun no ha confirmado su correo (abrir la tarjeta desde el correo de alta); si es QUIEN INVITA, su amigo aun no ha pedido el menu del dia escaneando la tarjeta.
 - El programa ANTIGUO JazzFrienzz (app de puntos) esta cerrado; sus puntos y cupones antiguos no se pueden recuperar. La tarjeta de sellos es el programa actual.` },
   { key: "cupones", title: "Cupones y codigos", content: `CUPONES Y CODIGOS DE DESCUENTO (BurgerJazz SI los envia por email; son REALES, no timos):
@@ -271,7 +269,7 @@ Las incidencias de pedidos de Glovo/Uber las gestiona la plataforma desde su app
 - Si el cliente pregunta por promos en Glovo o Uber Eats, responde: "Las promos de Glovo y Uber las gestionan ellos directamente, consultalas en la app."
 - JAZZ DAYS: miercoles 2x1 en BURGERS DE CARTA (Basic, Burger, Royal, Blue, Bacon Cheese) en todos los locales activos. Solo dine-in y take-away, NO en delivery (Glovo/Uber).
 - El 2x1 NO se aplica al MENU DEL DIA ni a los combos (Jazz Solo, Basic) ni a packs: son ofertas que ya llevan descuento. Si preguntan, dilo claro y sin rodeos.
-- El 2x1 solo vale si el local esta ABIERTO a esa hora: los miercoles Moraleja Green solo abre a mediodia (12:30-15:45), asi que alli no hay 2x1 de cena.
+- El 2x1 solo vale si el local esta ABIERTO a esa hora.
 - FIDELIZACION ACTUAL: tarjeta de sellos (10º menu del dia gratis) — ver seccion FIDELIZACION. CUPONES por email BJ-XXXX-XXXX — ver seccion CUPONES.
 - El programa ANTIGUO JazzFrienzz (app de puntos) ya no existe: SOLO sus puntos y cupones antiguos (anteriores a julio 2026) dejaron de funcionar y no se recuperan. No confundas un cupon BJ-XXXX-XXXX actual con JazzFrienzz.` },
   { key: "pagos", title: "Pagos y Otros", content: `PAGOS: Tarjeta (Visa/Mastercard), efectivo, Apple Pay, Google Pay. NO aceptamos Bizum. NO aceptamos vales ni tarjetas restaurante (Sodexo, Ticket Restaurant, Edenred, Pluxee...): dilo claro y con amabilidad. Factura: facturacion@burgerjazz.com (siempre), app Glovo/Uber para facturas de delivery de esas plataformas.
@@ -349,7 +347,7 @@ async function buildSystemPrompt() {
   }
   // Recordatorio de cierres lunes/martes, coherente con la seccion HORARIOS del seed
   if (["lunes", "martes"].includes(dayOfWeek)) {
-    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Moraleja Green, Valladolid, Delicias y Mirasierra. Solo abren Chamberi, Plaza Espana y Majadahonda, dia completo (12:30-15:45 y 19:30-23:15).\n";
+    timeContext += "ATENCION: Hoy " + dayOfWeek + " estan CERRADOS: Pozuelo, Valladolid, Delicias y Mirasierra. Solo abren Chamberi, Plaza Espana y Majadahonda, dia completo (12:30-15:45 y 19:30-23:15).\n";
   }
   // PROMPT CACHING: separamos la parte estatica (cacheable en la API) del
   // contexto temporal, que cambia cada minuto e invalidaria la cache.
@@ -534,21 +532,21 @@ function getOfflineFallback(text, category) {
     "fermin caballero": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
     "pozuelo": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-15:45 y 19:30-23:45",
     "valladolid": "L-M CERRADO, X-D 12:30-15:45 y 19:30-23:15",
-    "moraleja": "L-M CERRADO, X 12:30-15:45 (solo comida), J 12:30-15:45 y 19:30-23:15, V-D 14:15-22:45",
-    "moraleja green": "L-M CERRADO, X 12:30-15:45 (solo comida), J 12:30-15:45 y 19:30-23:15, V-D 14:15-22:45"
+    "moraleja": "CERRADO: el local de Moraleja Green ya no abre. El mas cercano es Mirasierra (C/ Fermin Caballero, 76)",
+    "moraleja green": "CERRADO: el local de Moraleja Green ya no abre. El mas cercano es Mirasierra (C/ Fermin Caballero, 76)"
   };
 
   if (category === "horarios") {
     for (var loc in schedules) {
       if (t.includes(loc)) return "El horario de " + loc.charAt(0).toUpperCase() + loc.slice(1) + " es: " + schedules[loc] + ". Para mas info consulta nuestra web burgerjazz.com";
     }
-    return "Tenemos 8 locales en Madrid y Valladolid. Dime cual te interesa y te doy el horario exacto. Puedes verlos todos en burgerjazz.com";
+    return "Tenemos 7 locales en Madrid y Valladolid. Dime cual te interesa y te doy el horario exacto. Puedes verlos todos en burgerjazz.com";
   }
   if (category === "carta") {
     return "Nuestras burgers: BASIC JAZZ 9,95€, BURGER JAZZ 13,95€, ROYAL JAZZ 13,95€, BLUE JAZZ 13,95€, BACON CHEESE JAZZ 13,95€. Combo Jazz Solo 18,95€, Combo Basic 15€. Menu del Dia 10,90€ (L-V comidas, solo en local). Toda la carta en burgerjazz.com/menu";
   }
   if (category === "locales") {
-    return "Tenemos locales en Chamberi, Plaza Espana, Delicias, Majadahonda, Pozuelo, Mirasierra, Moraleja Green y Valladolid. Dime tu zona y te indico el mas cercano. Todos en burgerjazz.com";
+    return "Tenemos locales en Chamberi, Plaza Espana, Delicias, Majadahonda, Pozuelo, Mirasierra y Valladolid. Dime tu zona y te indico el mas cercano. Todos en burgerjazz.com";
   }
   if (category === "pedidos") {
     return "A domicilio puedes pedir por Glovo o Uber Eats. Si prefieres, pide online y recoge en tu local (pick-up / take-away) en pedir.burgerjazz.com.";
