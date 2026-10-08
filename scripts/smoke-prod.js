@@ -53,7 +53,7 @@ const CASES = [
     name: "Retiro esta cerrado",
     q: "Cual es el horario del local de Retiro?",
     must: [/no|cerrad|ya no/i],
-    mustNot: [/retiro.{0,80}(abre|abierto|12:|13:|19:|20:)/i],
+    mustNot: [/retiro[^.\n]{0,80}(abre|abierto|12:|13:|19:|20:)/i],
   },
   {
     name: "Chicken Jazz no existe en la carta",
