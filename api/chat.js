@@ -197,7 +197,7 @@ const KNOWLEDGE_SEED = [
 6. Mirasierra - C/ Fermin Caballero, 76 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Mirasierra+Madrid
 7. Valladolid - Claudio Moyano, 20 (Dine-in, Pick-up y delivery via Glovo/Uber) — https://www.google.com/maps/search/BurgerJazz+Valladolid
 LOCALES ABIERTOS: 7 en total = 6 en Madrid (Chamberi, Plaza Espana, Delicias, Majadahonda, Pozuelo, Mirasierra) + 1 en Valladolid.
-MORALEJA GREEN (CC Moraleja Green, Av. de Europa, 13): CERRADO, sin sala, recogida ni delivery. NO digas desde cuando ni el motivo: solo que esta cerrado, y recomienda Mirasierra (el mas cercano).
+MORALEJA GREEN (CC Moraleja Green, Av. de Europa, 13): SOLO ABRE ESTE FIN DE SEMANA: viernes 9 de octubre de 13:00 a 18:30, sabado 10 de 13:00 a 18:30 y domingo 11 de 13:00 a 23:00 (sala y recogida; pedido online en pedir.burgerjazz.com). Fuera de esos tres dias esta CERRADO: no abre de lunes a jueves ni despues del domingo 11; entonces recomienda Mirasierra (el mas cercano). NO digas el motivo.
 CERRADOS (ya no operativos; si preguntan por ellos, di que estan cerrados y recomienda el local abierto mas cercano; para Alcobendas, Mirasierra): Retiro (O'Donnell, 40), Alcorcon (Timanfaya, 40), Alcobendas (Paseo Fuente Lucha, 14), Malasana (Marques de Santa Ana, 7).
 COMER EN EL LOCAL: todos los locales tienen salon para sentarse EXCEPTO Plaza Espana (Fomento), donde se puede comer pero DE PIE (sin mesas). Chamberi SI tiene salon.
 PARKING (segun ficha de Google): Pozuelo y Delicias tienen parking de pago cerca (no propio); el resto no tiene parking propio (aparcamiento en calle). Pozuelo: entrada y aseo accesibles en silla de ruedas. Ningun local acepta reservas.` },
@@ -209,7 +209,7 @@ PARKING (segun ficha de Google): Pozuelo y Delicias tienen parking de pago cerca
 - Mirasierra (Fermin Caballero): L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-16:15 y 19:30-23:45
 - Pozuelo: L-M CERRADO | X-J 12:30-15:45 y 19:30-23:15 | V-D 12:30-15:45 y 19:30-23:45
 - Valladolid: L-M CERRADO | X-D 12:30-15:45 y 19:30-23:15
-- Moraleja Green: CERRADO, el local ya no abre ningun dia (ni sala, ni recogida, ni delivery). El mas cercano es Mirasierra.
+- Moraleja Green: SOLO ESTE FIN DE SEMANA: viernes 9 de octubre de 13:00 a 18:30, sabado 10 de 13:00 a 18:30 y domingo 11 de 13:00 a 23:00. El resto de dias CERRADO (el mas cercano es Mirasierra).
 Si preguntan por un local cerrado: informa del cierre con amabilidad, di cuando reabre y sugiere el local abierto mas cercano o pedir en pedir.burgerjazz.com` },
   { key: "carta", title: "Carta / Menu", content: `CARTA:
 BURGERS: BASIC JAZZ (1x vaca vieja, queso americano, cebolla, pepinillos, ketchup, mostaza) 9,95€ | BURGER JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, ketchup, mostaza) 13,95€ | ROYAL JAZZ (2x vaca vieja, 2x queso americano, cebolla, pepinillos, lechuga iceberg, salsa BJ) 13,95€ | BLUE JAZZ (2x vaca vieja, queso azul, cebolla plancha, smokey BBQ) 13,95€ | BACON CHEESE JAZZ (2x vaca vieja, 2x queso americano, bacon crujiente, salsa BJ) 13,95€ — en el kiosco y la web aparece como "BC Jazz": es la misma
@@ -534,8 +534,8 @@ function getOfflineFallback(text, category) {
     "fermin caballero": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-16:15 y 19:30-23:45",
     "pozuelo": "L-M CERRADO, X-J 12:30-15:45 y 19:30-23:15, V-D 12:30-15:45 y 19:30-23:45",
     "valladolid": "L-M CERRADO, X-D 12:30-15:45 y 19:30-23:15",
-    "moraleja": "CERRADO: el local de Moraleja Green ya no abre. El mas cercano es Mirasierra (C/ Fermin Caballero, 76)",
-    "moraleja green": "CERRADO: el local de Moraleja Green ya no abre. El mas cercano es Mirasierra (C/ Fermin Caballero, 76)"
+    "moraleja": "SOLO ESTE FIN DE SEMANA: V 9/10 13:00-18:30, S 10/10 13:00-18:30, D 11/10 13:00-23:00; el resto de dias cerrado (el mas cercano es Mirasierra, C/ Fermin Caballero, 76)",
+    "moraleja green": "SOLO ESTE FIN DE SEMANA: V 9/10 13:00-18:30, S 10/10 13:00-18:30, D 11/10 13:00-23:00; el resto de dias cerrado (el mas cercano es Mirasierra, C/ Fermin Caballero, 76)"
   };
 
   if (category === "horarios") {
